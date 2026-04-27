@@ -13,15 +13,15 @@
 | Repository | https://github.com/kwmin122/SUN-Design |
 | Branch | main |
 | Roadmap status | created |
-| Phase 01 status | context_ready |
+| Phase 01 status | planned |
 | Requirement coverage | 26/26 v1 requirements mapped exactly once |
-| Next action | `/sunco:plan 1` |
+| Next action | `/sunco:execute 1` |
 
 ## Phase Queue
 
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
-| Phase 01 | Safe HTML Document Foundation | context_ready | 8 |
+| Phase 01 | Safe HTML Document Foundation | planned | 8 |
 | Phase 02 | Direct Editing and Tweaks | planned | 8 |
 | Phase 03 | Prompt, Assets, and Korean Presets | planned | 4 |
 | Phase 04 | Responsive Preview and Export Fidelity | planned | 6 |
@@ -50,10 +50,13 @@ Phase 01 proves the safe artifact foundation before any richer editing surface d
 - `.planning/ROADMAP.md` mirrors that mapping and keeps v2 requirements outside Milestone 1.
 - Research summary risks were incorporated into phase ordering: security and normalization first, direct editing second, prompt and asset handling third, export fidelity last.
 - The local workspace is initialized as a git repository on `main` and connected to `origin` at `https://github.com/kwmin122/SUN-Design`.
-- Phase 01 context was captured in `.planning/phases/01-safe-html-document-foundation/01-CONTEXT.md`; next step is `/sunco:plan 1`.
+- Phase 01 context was captured in `.planning/phases/01-safe-html-document-foundation/01-CONTEXT.md`.
 - Phase 01 context was updated to capture the production-shaped foundation constraint without expanding the phase boundary.
+- Phase 01 execution plans were created in `.planning/phases/01-safe-html-document-foundation/`; next step is `/sunco:execute 1`.
 
 ---
-*Last updated: 2026-04-27 after Phase 01 context capture*
+*Last updated: 2026-04-27 after Phase 01 planning*
 - **phase**: 1
-- **last_updated**: 2026-04-27T10:59:28.738Z
+- **last_updated**: 2026-04-27T11:13:00.263Z
+- **status**: planned
+- **next_action**: Execute Phase 1: /sunco:execute 1
