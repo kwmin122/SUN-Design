@@ -8,6 +8,10 @@ K-Design Studio is a Korean-first, browser-based AI design workspace. It lets a 
 
 Turn generated HTML designs into something a user can inspect, tweak, edit, and export without dropping into source code.
 
+## Product Quality Bar
+
+The target is product completeness 100: Claude Design-level quality, not a lightweight demo. Scope remains phased, but each phase must leave production-shaped foundations that can grow into the full deployed product without architectural rewrites.
+
 ## Requirements
 
 ### Validated
@@ -42,13 +46,14 @@ Turn generated HTML designs into something a user can inspect, tweak, edit, and 
 | Overlay-based direct editing | Keeps the generated page visually intact while the parent app owns selection and editing UI. | Accepted |
 | Patch-limited visual editing | Full arbitrary DOM editing is too fragile for v1. | Accepted |
 | Korean-first design system | The user's wedge is not just "Claude Design clone"; it is a Korean product/design sensibility. | Accepted |
+| Claude Design-level quality bar | The product must reach the same class of completeness and polish; phase scope may be narrow, but foundations cannot be throwaway shortcuts. | Accepted |
 
 ## Context
 
 **Target users:** Korean AI-native builders, designers, and small teams who want polished generated design artifacts but need direct control after generation.
 **Current alternative:** Use Claude Design, use an HTML-generating skill such as Huashu Design, hand-edit generated HTML, or move screenshots into Figma/Canva.
 **v1 deadline:** Not set.
-**Constraints:** Solo-builder scope, current folder is greenfield, prioritize proof of the core loop before product sprawl.
+**Constraints:** Solo-builder scope, current folder is greenfield, prioritize proof of the core loop before product sprawl while preserving the Claude Design-level product quality bar.
 
 ## Office Hours Summary
 
@@ -85,5 +90,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-27 after initialization*
-
+*Last updated: 2026-04-27 after Phase 01 plan review*

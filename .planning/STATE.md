@@ -38,6 +38,7 @@ Phase 01 proves the safe artifact foundation before any richer editing surface d
 - Parent-owned overlay and inspector controls own selection, editing, undo/redo, and persistence.
 - Export must materialize from stored document state, not ad-hoc live iframe mutations.
 - Korean-first typography, copy rhythm, and presets are part of the product wedge, not polish-only work.
+- The product quality target is product-complete, Claude Design-level output; phase scope can be narrow, but foundations cannot be throwaway demos.
 - Full Figma parity, multiplayer, PPTX authoring, marketplace, and leaked prompt cloning stay outside v1.
 
 ## Blockers
@@ -53,10 +54,11 @@ Phase 01 proves the safe artifact foundation before any richer editing surface d
 - Phase 01 context was captured in `.planning/phases/01-safe-html-document-foundation/01-CONTEXT.md`.
 - Phase 01 context was updated to capture the production-shaped foundation constraint without expanding the phase boundary.
 - Phase 01 execution plans were created in `.planning/phases/01-safe-html-document-foundation/`; next step is `/sunco:execute 1`.
+- Phase 01 plan review tightened the ESLint security guard and recorded the Claude Design-level product quality bar in project memory.
 
 ---
-*Last updated: 2026-04-27 after Phase 01 planning*
+*Last updated: 2026-04-27 after Phase 01 plan review fix*
 - **phase**: 1
-- **last_updated**: 2026-04-27T11:13:00.263Z
+- **last_updated**: 2026-04-27T11:23:08Z
 - **status**: planned
 - **next_action**: Execute Phase 1: /sunco:execute 1

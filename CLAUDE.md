@@ -6,9 +6,11 @@ K-Design Studio is a Korean-first AI design workspace. Users enter a prompt, gen
 
 Core value: turn generated HTML designs into something a user can inspect, tweak, edit, and export without dropping into source code.
 
-Current phase: Phase 01 — Safe HTML Document Foundation  
-Phase status: context_ready  
-Next SUNCO action: `/sunco:plan 1`
+Product quality bar: the target is production-complete, Claude Design-level quality. Scope can be staged by phase, but phase outputs must be production-shaped foundations rather than throwaway demos.
+
+Current phase: Phase 01 — Safe HTML Document Foundation
+Phase status: planned
+Next SUNCO action: `/sunco:execute 1`
 
 ## Planned Stack
 
@@ -32,6 +34,7 @@ Next SUNCO action: `/sunco:plan 1`
 | Typed patch operations | Avoid brittle string mutation and make replay/export testable. |
 | Stored-state export | Export must materialize from base artifact, assets, tweak values, and patch log. |
 | Korean-first defaults | Hangul typography and Korean design contexts are part of the product wedge. |
+| Claude Design-level product bar | The final product should compete at the same quality level; every phase should avoid shortcuts that block that bar. |
 
 ## File Conventions
 
