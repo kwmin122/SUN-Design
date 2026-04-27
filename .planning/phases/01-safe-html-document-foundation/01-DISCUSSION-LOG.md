@@ -5,8 +5,8 @@
 
 **Date:** 2026-04-27
 **Phase:** 01-safe-html-document-foundation
-**Areas discussed:** artifact input scope, source of truth, normalization, sanitization, sandbox bridge, persistence, diagnostics, tool compatibility
-**Mode:** auto/defaults
+**Areas discussed:** artifact input scope, source of truth, normalization, sanitization, sandbox bridge, persistence, diagnostics, tool compatibility, production readiness boundary
+**Mode:** auto/defaults plus user-directed production constraint
 
 ---
 
@@ -113,6 +113,19 @@
 
 ---
 
+## Production Readiness Boundary
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Production-shaped foundation | Build real schemas, tests, reloadable state, sandbox boundaries, and module seams without adding full SaaS infrastructure to Phase 01. | yes |
+| Throwaway prototype | Fastest demo path, but likely to corrupt later editing, export, and security architecture. | |
+| Full SaaS infrastructure in Phase 01 | More deploy-like immediately, but adds auth, permissions, storage, queues, and ops before the document foundation is proven. | |
+
+**User's choice:** User stated they want the actual full deployment-level product; captured as a production-shaped foundation constraint for Phase 01.
+**Notes:** Phase 01 remains narrow. Production hardening is deferred, but Phase 01 must avoid shortcuts that block it later.
+
+---
+
 ## Claude's Discretion
 
 - Exact local persistence mechanism, if it preserves the serializable stored-state contract.
@@ -122,4 +135,4 @@
 ## Deferred Ideas
 
 - AI prompt generation, direct editing, Tweaks, responsive preview, and export remain in later phases per roadmap.
-
+- Full production hardening for auth, hosted storage, export queues, quota/rate limits, deployment isolation, and observability remains after the core Phase 01-04 loop.

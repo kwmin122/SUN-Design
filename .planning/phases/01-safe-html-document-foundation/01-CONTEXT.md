@@ -72,11 +72,30 @@ This phase does **not** implement AI prompt generation, direct visual editing, T
 - **Reason:** The local SUNCO `phase-op` parser only recognized `Phase 01` style headings, not `Phase 1:` headings.
 - **Impact:** Downstream planning should preserve zero-padded phase labels.
 
+### Production Readiness Boundary
+
+- **D-10:** Phase 01 should be built as a production-shaped foundation, not a throwaway prototype, while still avoiding full SaaS infrastructure in this phase.
+- **Reason:** The product goal is an eventual deployed app. The first foundation must not encode shortcuts that block auth, server persistence, asset storage, export workers, observability, or stricter isolation later.
+- **Impact:** Planner should require real schemas, deterministic fixtures, sanitizer/bridge negative tests, reloadable state, and clear module boundaries. Full account/project permissions, hosted storage, queues, billing, quota, and production observability remain outside Phase 01 unless needed as interfaces or seams.
+
 ### Claude's Discretion
 
 Claude/planner may choose the exact local persistence mechanism and sanitizer library during planning, as long as the stored-state contract, static-first policy, and bridge validation requirements above are preserved.
 
 </decisions>
+
+<constraints>
+
+## Constraints
+
+- Do not implement real AI prompt generation, direct editing, Tweaks, responsive preview, or export in Phase 01.
+- Do not persist or export the live iframe DOM as the source of truth.
+- Do not render untrusted generated/imported HTML directly into the app DOM.
+- Do not use same-origin iframe access as the core editor architecture.
+- Do not make Phase 01 in-memory only; close/reopen must prove serializable stored state.
+- Do not choose a local persistence shape that would be hard to port to server-backed projects, object storage, or export workers later.
+
+</constraints>
 
 <canonical_refs>
 
@@ -129,11 +148,23 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 ## Specific Ideas
 
 - The product should feel like a real app, not a skill-only generator.
+- The user wants the project to reach real deployment quality, so Phase 01 must avoid demo-only shortcuts even though the first slice remains narrow.
 - The preview/editing mental model is "PPT/Figma-like direct manipulation," but Phase 01 only lays the safe document/runtime foundation.
 - The app should avoid copying leaked Claude Design prompts or restricted Huashu Design templates.
 - The product wedge remains Korean-first design behavior, but Korean presets and typography QA start in Phase 03/04, not Phase 01.
 
 </specifics>
+
+<assumptions>
+
+## Assumptions
+
+- This is still a greenfield planning repository with no implementation code, package manifest, or codebase map.
+- Phase 01 fixtures can stand in for future AI-generated HTML as long as they enter the same sanitize, normalize, persist, preview, and diagnostics pipeline.
+- Local-first persistence is acceptable for Phase 01 only if the serialized model is portable to later hosted storage.
+- Production hardening for accounts, permissions, quotas, worker queues, deployment environments, and observability should be planned after the core Phase 01-04 product loop is proven.
+
+</assumptions>
 
 <deferred>
 
@@ -143,6 +174,7 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 - Direct text/style editing and Tweaks panel — Phase 02.
 - Responsive preview modes and export — Phase 04.
 - Interactive generated JavaScript preview mode — future phase after static sandbox is reliable.
+- Production hardening for auth, project permissions, hosted storage, export worker queues, quota/rate limits, deployment isolation, and observability — after the core Phase 01-04 loop is proven.
 - Full Figma/PPT parity, collaboration, template marketplace, native app packaging, editable PPTX/Figma export — out of v1.
 
 </deferred>
@@ -151,4 +183,3 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 
 *Phase: 01-safe-html-document-foundation*
 *Context gathered: 2026-04-27*
-

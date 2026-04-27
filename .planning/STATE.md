@@ -34,6 +34,7 @@ Phase 01 proves the safe artifact foundation before any richer editing surface d
 
 - HTML base plus edit graph plus patch log is the v1 source-of-truth pattern.
 - The sandboxed iframe is a projection boundary, not the persistence source.
+- Phase 01 should be production-shaped, not a throwaway prototype; full SaaS hardening stays deferred.
 - Parent-owned overlay and inspector controls own selection, editing, undo/redo, and persistence.
 - Export must materialize from stored document state, not ad-hoc live iframe mutations.
 - Korean-first typography, copy rhythm, and presets are part of the product wedge, not polish-only work.
@@ -50,6 +51,9 @@ Phase 01 proves the safe artifact foundation before any richer editing surface d
 - Research summary risks were incorporated into phase ordering: security and normalization first, direct editing second, prompt and asset handling third, export fidelity last.
 - The local workspace is initialized as a git repository on `main` and connected to `origin` at `https://github.com/kwmin122/SUN-Design`.
 - Phase 01 context was captured in `.planning/phases/01-safe-html-document-foundation/01-CONTEXT.md`; next step is `/sunco:plan 1`.
+- Phase 01 context was updated to capture the production-shaped foundation constraint without expanding the phase boundary.
 
 ---
 *Last updated: 2026-04-27 after Phase 01 context capture*
+- **phase**: 1
+- **last_updated**: 2026-04-27T10:59:28.738Z
