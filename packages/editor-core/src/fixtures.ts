@@ -1,0 +1,18 @@
+export const BASIC_LANDING_FIXTURE_NAME = "basic-landing.html";
+
+export const BASIC_LANDING_FIXTURE_HTML = String.raw`<main class="landing">
+  <section class="hero" style="background: #f7f8fb; padding: 64px;">
+    <p class="eyebrow">K-Design Studio</p>
+    <h1>AI 디자인을 바로 편집 가능한 결과물로</h1>
+    <p>한국어 문맥과 실제 제품 화면을 바탕으로 더 빠르게 다듬는 HTML 디자인 작업대입니다.</p>
+    <a href="https://example.com/signup" class="cta" target="_blank">시작하기</a>
+  </section>
+  <section class="product">
+    <img src="https://example.com/mock-product.png" alt="제품 미리보기">
+    <button onclick="alert('blocked')">차단 테스트</button>
+  </section>
+  <form action="https://example.com/leak">
+    <input name="email" value="blocked@example.com">
+  </form>
+  <script>alert("blocked")</script>
+</main>`;
