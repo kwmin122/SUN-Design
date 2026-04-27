@@ -34,7 +34,55 @@ export function createPreviewBridgeScript(input: {
     parent.postMessage(payload, "*");
   };
 
+  const editableSelector = "[data-cdx-id]";
+  let scheduled = false;
+
+  const roundedRect = (rect) => ({
+    x: Math.round(rect.left),
+    y: Math.round(rect.top),
+    width: Math.round(rect.width),
+    height: Math.round(rect.height)
+  });
+
+  const nodePayload = (element) => {
+    const rect = element.getBoundingClientRect();
+    const text = (element.textContent || "").replace(/\\s+/g, " ").trim().slice(0, 80);
+    const payload = {
+      nodeId: element.getAttribute("data-cdx-id") || "",
+      kind: element.getAttribute("data-cdx-role") || "unknown",
+      tagName: element.tagName.toLowerCase(),
+      ...roundedRect(rect)
+    };
+    if (text) {
+      payload.textPreview = text;
+    }
+    return payload;
+  };
+
+  const collectNodes = () => Array.from(document.querySelectorAll(editableSelector))
+    .map(nodePayload)
+    .filter((node) => node.nodeId && node.width > 0 && node.height > 0);
+
+  const postNodes = () => {
+    post({ type: "preview.nodes", nonce, documentId, nodes: collectNodes() });
+  };
+
+  const scheduleNodes = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      postNodes();
+    });
+  };
+
+  const closestEditable = (target) => {
+    if (!(target instanceof Element)) return null;
+    return target.closest(editableSelector);
+  };
+
   post({ type: "preview.ready", nonce, documentId, nodeCount });
+  scheduleNodes();
 
   const stringifyArgs = (args) => args.map((arg) => {
     if (typeof arg === "string") return arg;
@@ -74,6 +122,24 @@ export function createPreviewBridgeScript(input: {
       stack: reason && reason.stack ? String(reason.stack) : undefined
     });
   });
+
+  window.addEventListener("pointerover", (event) => {
+    const element = closestEditable(event.target);
+    if (!element) return;
+    post({ type: "preview.hover", nonce, node: nodePayload(element) });
+  }, true);
+
+  window.addEventListener("click", (event) => {
+    const element = closestEditable(event.target);
+    if (!element) return;
+    event.preventDefault();
+    event.stopPropagation();
+    post({ type: "preview.select", nonce, node: nodePayload(element) });
+    scheduleNodes();
+  }, true);
+
+  window.addEventListener("resize", scheduleNodes);
+  window.addEventListener("scroll", scheduleNodes, true);
 })();`;
 }
 

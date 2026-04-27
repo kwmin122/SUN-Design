@@ -5,7 +5,14 @@ export type PreviewMessageValidationResult =
   | { ok: true; message: PreviewMessage }
   | { ok: false; failure: BridgeValidationFailure };
 
-const KNOWN_MESSAGE_TYPES = new Set(["preview.ready", "preview.runtime-error", "preview.console"]);
+const KNOWN_MESSAGE_TYPES = new Set([
+  "preview.ready",
+  "preview.runtime-error",
+  "preview.console",
+  "preview.nodes",
+  "preview.select",
+  "preview.hover"
+]);
 
 export function validatePreviewMessage(
   event: MessageEvent,

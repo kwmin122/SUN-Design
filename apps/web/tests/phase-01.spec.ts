@@ -4,7 +4,7 @@ test("renders fixture in a sandboxed iframe", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByText("K-Design Studio")).toBeVisible();
-  await expect(page.getByText("Phase 01 Foundation", { exact: false })).toBeVisible();
+  await expect(page.getByText("Phase 02 Direct Canvas", { exact: false })).toBeVisible();
 
   const iframe = page.getByTitle("Sandboxed design preview");
   await expect(iframe).toHaveAttribute("sandbox", "allow-scripts");

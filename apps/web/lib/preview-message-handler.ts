@@ -1,6 +1,6 @@
 "use client";
 
-import type { PreviewError } from "@kdesign/editor-core";
+import type { PreviewError, PreviewNodeRect } from "@kdesign/editor-core";
 import { validatePreviewMessage } from "@kdesign/preview-runtime";
 
 type PreviewErrorInput = {
@@ -13,6 +13,9 @@ type PreviewErrorInput = {
 
 type PreviewMessageHandlerResult =
   | { kind: "ready" }
+  | { kind: "nodes"; nodes: PreviewNodeRect[] }
+  | { kind: "select"; node: PreviewNodeRect }
+  | { kind: "hover"; node: PreviewNodeRect }
   | { kind: "diagnostic"; error: PreviewError }
   | { kind: "ignored" };
 
@@ -55,6 +58,12 @@ export function handlePreviewMessage(
   switch (result.message.type) {
     case "preview.ready":
       return { kind: "ready" };
+    case "preview.nodes":
+      return { kind: "nodes", nodes: result.message.nodes };
+    case "preview.select":
+      return { kind: "select", node: result.message.node };
+    case "preview.hover":
+      return { kind: "hover", node: result.message.node };
     case "preview.runtime-error":
       return {
         kind: "diagnostic",

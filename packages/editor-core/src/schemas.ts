@@ -48,13 +48,47 @@ export type EditGraph = z.infer<typeof EditGraphSchema>;
 export const EditPatchSchema = z.object({
   id: z.string().min(1),
   nodeId: z.string().min(1),
-  op: z.enum(["setText", "setStyle", "replaceAsset", "setAttr"]),
+  op: z.enum([
+    "setText",
+    "setStyle",
+    "replaceAsset",
+    "setAttr",
+    "move",
+    "resize",
+    "align",
+    "reorder",
+    "setVisibility"
+  ]),
   value: z.unknown(),
   source: z.enum(["system", "canvas", "tweaks", "agent"]),
   baseRevision: z.string().min(1),
   createdAt: z.string().min(1)
 });
 export type EditPatch = z.infer<typeof EditPatchSchema>;
+
+export const CanvasCommentSchema = z.object({
+  id: z.string().min(1),
+  nodeId: z.string().min(1),
+  body: z.string().min(1),
+  author: z.string().min(1),
+  rect: z.object({
+    x: z.number(),
+    y: z.number(),
+    width: z.number().nonnegative(),
+    height: z.number().nonnegative()
+  }).optional(),
+  createdAt: z.string().min(1)
+});
+export type CanvasComment = z.infer<typeof CanvasCommentSchema>;
+
+export const BundleVersionSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  html: z.string(),
+  patchCount: z.number().int().nonnegative(),
+  createdAt: z.string().min(1)
+});
+export type BundleVersion = z.infer<typeof BundleVersionSchema>;
 
 export const SanitizerChangeSchema = z.object({
   kind: z.enum(["removed-element", "removed-attribute", "blocked-url", "rewritten-style"]),
@@ -91,7 +125,10 @@ export const ProjectBundleSchema = z.object({
   assets: z.array(AssetRefSchema),
   editGraph: EditGraphSchema,
   patches: z.array(EditPatchSchema),
-  sanitizerReport: SanitizerReportSchema
+  sanitizerReport: SanitizerReportSchema,
+  comments: z.array(CanvasCommentSchema).default([]),
+  versions: z.array(BundleVersionSchema).default([]),
+  tweakValues: z.record(z.string(), z.unknown()).default({})
 });
 export type ProjectBundle = z.infer<typeof ProjectBundleSchema>;
 

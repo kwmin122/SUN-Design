@@ -5,3 +5,4 @@ export * from "./sanitize.js";
 export * from "./normalize.js";
 export * from "./persistence.js";
 export * from "./fixtures.js";
+export * from "./patches.js";

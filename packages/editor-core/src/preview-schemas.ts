@@ -47,10 +47,41 @@ export const PreviewConsoleMessageSchema = PreviewMessageBaseSchema.extend({
   args: z.array(z.string())
 });
 
+export const PreviewNodeRectSchema = z.object({
+  nodeId: z.string().min(1),
+  kind: z.string().min(1),
+  tagName: z.string().min(1),
+  textPreview: z.string().optional(),
+  x: z.number(),
+  y: z.number(),
+  width: z.number().nonnegative(),
+  height: z.number().nonnegative()
+});
+export type PreviewNodeRect = z.infer<typeof PreviewNodeRectSchema>;
+
+export const PreviewNodesMessageSchema = PreviewMessageBaseSchema.extend({
+  type: z.literal("preview.nodes"),
+  documentId: z.string().min(1),
+  nodes: z.array(PreviewNodeRectSchema)
+});
+
+export const PreviewSelectMessageSchema = PreviewMessageBaseSchema.extend({
+  type: z.literal("preview.select"),
+  node: PreviewNodeRectSchema
+});
+
+export const PreviewHoverMessageSchema = PreviewMessageBaseSchema.extend({
+  type: z.literal("preview.hover"),
+  node: PreviewNodeRectSchema
+});
+
 export const PreviewMessageSchema = z.discriminatedUnion("type", [
   PreviewReadyMessageSchema,
   PreviewRuntimeErrorMessageSchema,
-  PreviewConsoleMessageSchema
+  PreviewConsoleMessageSchema,
+  PreviewNodesMessageSchema,
+  PreviewSelectMessageSchema,
+  PreviewHoverMessageSchema
 ]);
 export type PreviewMessage = z.infer<typeof PreviewMessageSchema>;
 

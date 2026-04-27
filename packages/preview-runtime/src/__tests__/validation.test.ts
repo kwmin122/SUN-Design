@@ -101,4 +101,60 @@ describe("validatePreviewMessage", () => {
     expect(result.ok).toBe(false);
     expect(result.ok ? undefined : result.failure.code).toBe("schema_invalid");
   });
+
+  it("accepts validated node registry and selection messages", () => {
+    const node = {
+      nodeId: "cdx_123",
+      kind: "text",
+      tagName: "h1",
+      textPreview: "AI 디자인",
+      x: 10,
+      y: 20,
+      width: 300,
+      height: 80
+    };
+
+    const nodes = validatePreviewMessage(
+      messageEvent({
+        type: "preview.nodes",
+        nonce: "nonce-1",
+        documentId: "phase-01-fixture",
+        nodes: [node]
+      }),
+      { source, nonce: "nonce-1" }
+    );
+    const selected = validatePreviewMessage(
+      messageEvent({
+        type: "preview.select",
+        nonce: "nonce-1",
+        node
+      }),
+      { source, nonce: "nonce-1" }
+    );
+
+    expect(nodes.ok).toBe(true);
+    expect(selected.ok).toBe(true);
+  });
+
+  it("rejects schema-invalid selection geometry", () => {
+    const result = validatePreviewMessage(
+      messageEvent({
+        type: "preview.select",
+        nonce: "nonce-1",
+        node: {
+          nodeId: "cdx_123",
+          kind: "text",
+          tagName: "h1",
+          x: 10,
+          y: 20,
+          width: -1,
+          height: 80
+        }
+      }),
+      { source, nonce: "nonce-1" }
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? undefined : result.failure.code).toBe("schema_invalid");
+  });
 });

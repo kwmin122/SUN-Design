@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bot,
   ChevronDown,
@@ -22,8 +22,22 @@ import {
   Sparkles,
   ZoomIn
 } from "lucide-react";
-import type { PreviewError, ProjectBundle } from "@kdesign/editor-core";
-import { BASIC_LANDING_FIXTURE_HTML, normalizeHtml } from "@kdesign/editor-core";
+import type {
+  BundleVersion,
+  CanvasComment,
+  EditPatch,
+  PreviewError,
+  PreviewNodeRect,
+  ProjectBundle
+} from "@kdesign/editor-core";
+import {
+  BASIC_LANDING_FIXTURE_HTML,
+  ProjectBundleSchema,
+  applyEditPatchToBundle,
+  applyEditPatchesToBundle,
+  findNodeIdsByClass,
+  normalizeHtml
+} from "@kdesign/editor-core";
 import { createPreviewNonce } from "@kdesign/preview-runtime";
 
 import { DiagnosticsPanel } from "./diagnostics-panel";
@@ -53,10 +67,14 @@ const POINT_COLORS: Record<FixtureTweaks["pointColor"], string> = {
 };
 
 function createFixtureBundle(tweaks: FixtureTweaks = DEFAULT_TWEAKS): ProjectBundle {
-  return normalizeHtml({
+  const bundle = normalizeHtml({
     id: "phase-01-fixture",
     title: "Phase 01 Fixture",
     html: applyFixtureTweaks(BASIC_LANDING_FIXTURE_HTML, tweaks)
+  });
+  return ProjectBundleSchema.parse({
+    ...bundle,
+    tweakValues: tweaks
   });
 }
 
@@ -78,6 +96,8 @@ function applyFixtureTweaks(html: string, tweaks: FixtureTweaks): string {
 
 export function EditorShell() {
   const [projectBundle, setProjectBundle] = useState<ProjectBundle | null>(null);
+  const projectBundleRef = useRef<ProjectBundle | null>(null);
+  const hasLoadedInitialBundleRef = useRef(false);
   const [nonce, setNonce] = useState<string>("");
   const [diagnostics, setDiagnostics] = useState<PreviewError[]>([]);
   const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -86,6 +106,17 @@ export function EditorShell() {
   const [toolMode, setToolMode] = useState<"comment" | "edit" | "draw">("edit");
   const [tweaks, setTweaks] = useState<FixtureTweaks>(DEFAULT_TWEAKS);
   const [prompt, setPrompt] = useState("Describe what you want to create...");
+  const [nodeRects, setNodeRects] = useState<Record<string, PreviewNodeRect>>({});
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [textDraft, setTextDraft] = useState("");
+  const [commentDraft, setCommentDraft] = useState("");
+  const [undoStack, setUndoStack] = useState<ProjectBundle[]>([]);
+  const [redoStack, setRedoStack] = useState<ProjectBundle[]>([]);
+
+  useEffect(() => {
+    projectBundleRef.current = projectBundle;
+  }, [projectBundle]);
 
   const resetRuntime = useCallback(() => {
     setNonce(createPreviewNonce());
@@ -93,8 +124,14 @@ export function EditorShell() {
     setIsPreviewReady(false);
   }, []);
 
-  const commitBundle = useCallback((bundle: ProjectBundle) => {
+  const commitBundle = useCallback((bundle: ProjectBundle, options: { trackUndo?: boolean } = {}) => {
+    const current = projectBundleRef.current;
+    if (options.trackUndo && current) {
+      setUndoStack((stack) => [...stack, current].slice(-30));
+      setRedoStack([]);
+    }
     saveLocalProjectBundle(bundle);
+    projectBundleRef.current = bundle;
     setProjectBundle(bundle);
     resetRuntime();
   }, [resetRuntime]);
@@ -102,7 +139,9 @@ export function EditorShell() {
   const loadOrCreateBundle = useCallback(() => {
     const saved = loadLocalProjectBundle();
     if (saved) {
+      setTweaks(readFixtureTweaks(saved.tweakValues));
       setProjectBundle(saved);
+      projectBundleRef.current = saved;
       resetRuntime();
       return;
     }
@@ -111,13 +150,32 @@ export function EditorShell() {
   }, [commitBundle, resetRuntime, tweaks]);
 
   useEffect(() => {
+    if (hasLoadedInitialBundleRef.current) {
+      return;
+    }
+    hasLoadedInitialBundleRef.current = true;
     loadOrCreateBundle();
   }, [loadOrCreateBundle]);
 
   const rebuildWithTweaks = useCallback((nextTweaks: FixtureTweaks) => {
     setTweaks(nextTweaks);
-    commitBundle(createFixtureBundle(nextTweaks));
-  }, [commitBundle]);
+    const current = projectBundleRef.current;
+    if (!current) {
+      commitBundle(createFixtureBundle(nextTweaks));
+      return;
+    }
+
+    const bundleWithTweaks = ProjectBundleSchema.parse({
+      ...current,
+      tweakValues: nextTweaks,
+      updatedAt: new Date().toISOString()
+    });
+    const patches = createTweakPatches(current, tweaks, nextTweaks);
+    const nextBundle = patches.length > 0
+      ? applyEditPatchesToBundle(bundleWithTweaks, patches)
+      : bundleWithTweaks;
+    commitBundle(nextBundle, { trackUndo: true });
+  }, [commitBundle, tweaks]);
 
   const reloadSample = useCallback(() => {
     commitBundle(createFixtureBundle(tweaks));
@@ -131,6 +189,148 @@ export function EditorShell() {
   const appendDiagnostic = useCallback((error: PreviewError) => {
     setDiagnostics((current) => [error, ...current].slice(0, 30));
   }, []);
+
+  const selectedNode = selectedNodeId && projectBundle ? projectBundle.editGraph.nodes[selectedNodeId] : undefined;
+  const selectedRect = selectedNodeId ? nodeRects[selectedNodeId] : undefined;
+  const hoveredRect = hoveredNodeId ? nodeRects[hoveredNodeId] : undefined;
+
+  useEffect(() => {
+    setTextDraft(selectedNode?.textPreview ?? "");
+  }, [selectedNode?.id, selectedNode?.textPreview]);
+
+  const handleNodeRegistry = useCallback((nodes: PreviewNodeRect[]) => {
+    setNodeRects(Object.fromEntries(nodes.map((node) => [node.nodeId, node])));
+  }, []);
+
+  const handleNodeSelected = useCallback((node: PreviewNodeRect) => {
+    setNodeRects((current) => ({ ...current, [node.nodeId]: node }));
+    setSelectedNodeId(node.nodeId);
+    setHoveredNodeId(null);
+  }, []);
+
+  const handleNodeHovered = useCallback((node: PreviewNodeRect) => {
+    setNodeRects((current) => ({ ...current, [node.nodeId]: node }));
+    setHoveredNodeId(node.nodeId);
+  }, []);
+
+  const applyPatch = useCallback((
+    nodeId: string,
+    op: EditPatch["op"],
+    value: unknown,
+    source: EditPatch["source"] = "canvas"
+  ) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+
+    const patch: EditPatch = {
+      id: createLocalId("patch"),
+      nodeId,
+      op,
+      value,
+      source,
+      baseRevision: current.baseRevision,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      const nextBundle = applyEditPatchToBundle(current, patch);
+      commitBundle(nextBundle, { trackUndo: true });
+      setSelectedNodeId(nodeId);
+    } catch (error) {
+      appendDiagnostic({
+        id: createLocalId("patch_error"),
+        source: "bridge",
+        severity: "warning",
+        code: "patch_rejected",
+        message: error instanceof Error ? error.message : "Patch was rejected.",
+        createdAt: new Date().toISOString()
+      });
+    }
+  }, [appendDiagnostic, commitBundle]);
+
+  const addComment = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current || !selectedNodeId || !commentDraft.trim()) {
+      return;
+    }
+
+    const comment: CanvasComment = {
+      id: createLocalId("comment"),
+      nodeId: selectedNodeId,
+      body: commentDraft.trim(),
+      author: "You",
+      createdAt: new Date().toISOString()
+    };
+    const rect = nodeRects[selectedNodeId];
+    if (rect) {
+      comment.rect = {
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height
+      };
+    }
+
+    const nextBundle = ProjectBundleSchema.parse({
+      ...current,
+      comments: [comment, ...current.comments],
+      updatedAt: comment.createdAt
+    });
+    setCommentDraft("");
+    commitBundle(nextBundle, { trackUndo: true });
+  }, [commentDraft, commitBundle, nodeRects, selectedNodeId]);
+
+  const saveVersion = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+
+    const createdAt = new Date().toISOString();
+    const version: BundleVersion = {
+      id: createLocalId("version"),
+      label: `Direction ${current.versions.length + 1}`,
+      html: current.html.normalized,
+      patchCount: current.patches.length,
+      createdAt
+    };
+
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      versions: [version, ...current.versions],
+      updatedAt: createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const undo = useCallback(() => {
+    const current = projectBundleRef.current;
+    const previous = undoStack.at(-1);
+    if (!current || !previous) {
+      return;
+    }
+    setUndoStack((stack) => stack.slice(0, -1));
+    setRedoStack((stack) => [current, ...stack].slice(0, 30));
+    saveLocalProjectBundle(previous);
+    projectBundleRef.current = previous;
+    setProjectBundle(previous);
+    resetRuntime();
+  }, [resetRuntime, undoStack]);
+
+  const redo = useCallback(() => {
+    const current = projectBundleRef.current;
+    const next = redoStack[0];
+    if (!current || !next) {
+      return;
+    }
+    setRedoStack((stack) => stack.slice(1));
+    setUndoStack((stack) => [...stack, current].slice(-30));
+    saveLocalProjectBundle(next);
+    projectBundleRef.current = next;
+    setProjectBundle(next);
+    resetRuntime();
+  }, [redoStack, resetRuntime]);
 
   const setFeedColumns = (feedColumns: FixtureTweaks["feedColumns"]) => {
     rebuildWithTweaks({ ...tweaks, feedColumns });
@@ -267,7 +467,7 @@ export function EditorShell() {
             <button type="button" onClick={clearSavedState}><RotateCcw size={15} /></button>
           </div>
           <div className="tool-spacer" />
-          <label className="toggle-control">
+          <label className="toggle-control" data-testid="tweaks-toggle">
             Tweaks
             <input
               checked={tweaksEnabled}
@@ -295,11 +495,11 @@ export function EditorShell() {
           <div className="canvas-surface">
             <div className="canvas-meta">
               <div>
-                <span>Phase 01 Foundation</span>
+                <span>Phase 02 Direct Canvas</span>
                 <h1>{projectBundle.title}</h1>
               </div>
               <span className={isPreviewReady ? "stage-status ready" : "stage-status"}>
-                {isPreviewReady ? "ready" : "booting"}
+                {isPreviewReady ? selectedNode ? `selected ${selectedNode.kind}` : "ready" : "booting"}
               </span>
             </div>
             <PreviewFrame
@@ -309,11 +509,101 @@ export function EditorShell() {
               onRuntimeError={appendDiagnostic}
               onConsoleError={appendDiagnostic}
               onBridgeFailure={appendDiagnostic}
+              onNodeRegistry={handleNodeRegistry}
+              onNodeSelected={handleNodeSelected}
+              onNodeHovered={handleNodeHovered}
+              selectedNode={selectedRect}
+              hoveredNode={hoveredRect}
             />
           </div>
 
           {tweaksEnabled ? (
-            <aside className="tweaks-rail" aria-label="Tweaks">
+            <aside className="tweaks-rail" aria-label="Tweaks panel">
+              <section className="tweak-card inspector-card" data-testid="selection-inspector">
+                <div className="inspector-heading">
+                  <div>
+                    <h2>Inspector</h2>
+                    <p>{selectedNode ? `${selectedNode.kind} · ${selectedNode.tagName}` : "캔버스 요소를 선택하세요"}</p>
+                  </div>
+                  <span>{projectBundle.patches.length} patches</span>
+                </div>
+
+                {selectedNode && selectedNodeId ? (
+                  <>
+                    <label className="field-stack">
+                      <span>선택 텍스트</span>
+                      <textarea
+                        data-testid="selected-text-input"
+                        value={textDraft}
+                        onChange={(event) => setTextDraft(event.target.value)}
+                      />
+                    </label>
+                    <div className="control-grid">
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "setText", textDraft)}>
+                        텍스트 적용
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "setStyle", { color: "#2f9f8f" })}>
+                        텍스트 틸
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "setStyle", { backgroundColor: "#fff8df" })}>
+                        배경 옐로
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "setStyle", { borderRadius: "28px" })}>
+                        라운드 크게
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "move", { x: 18, y: 0 })}>
+                        오른쪽 이동
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "resize", { width: Math.max(180, (selectedRect?.width ?? 220) + 40) })}>
+                        넓게
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "align", "center")}>
+                        가운데 정렬
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "reorder", { order: -1 })}>
+                        앞으로 정렬
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "setVisibility", false)}>
+                        숨기기
+                      </button>
+                      <button type="button" onClick={() => applyPatch(selectedNodeId, "setVisibility", true)}>
+                        보이기
+                      </button>
+                    </div>
+
+                    <label className="field-stack">
+                      <span>코멘트</span>
+                      <textarea
+                        data-testid="comment-input"
+                        value={commentDraft}
+                        onChange={(event) => setCommentDraft(event.target.value)}
+                        placeholder="이 영역에 원하는 변경을 남기기"
+                      />
+                    </label>
+                    <div className="control-grid">
+                      <button type="button" onClick={addComment}>코멘트 추가</button>
+                      <button type="button" onClick={saveVersion}>버전 저장</button>
+                      <button type="button" disabled={undoStack.length === 0} onClick={undo}>Undo</button>
+                      <button type="button" disabled={redoStack.length === 0} onClick={redo}>Redo</button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="empty-inspector">iframe 안의 제목, 버튼, 이미지, 카드, 섹션을 클릭하면 여기서 바로 수정할 수 있습니다.</p>
+                )}
+
+                <div className="mini-list" data-testid="comments-list">
+                  <strong>Comments</strong>
+                  {projectBundle.comments.length === 0 ? <span>아직 없음</span> : projectBundle.comments.slice(0, 3).map((comment) => (
+                    <span key={comment.id}>{comment.body}</span>
+                  ))}
+                </div>
+                <div className="mini-list" data-testid="versions-list">
+                  <strong>Versions</strong>
+                  {projectBundle.versions.length === 0 ? <span>아직 없음</span> : projectBundle.versions.slice(0, 3).map((version) => (
+                    <span key={version.id}>{version.label} · {version.patchCount} patches</span>
+                  ))}
+                </div>
+              </section>
               <section className="tweak-card">
                 <h2>Tweaks</h2>
                 <TweakSegment
@@ -351,6 +641,80 @@ export function EditorShell() {
       </section>
     </main>
   );
+}
+
+function readFixtureTweaks(value: Record<string, unknown>): FixtureTweaks {
+  return {
+    feedColumns: value.feedColumns === 2 || value.feedColumns === 3 || value.feedColumns === 4
+      ? value.feedColumns
+      : DEFAULT_TWEAKS.feedColumns,
+    density: value.density === "compact" || value.density === "comfortable"
+      ? value.density
+      : DEFAULT_TWEAKS.density,
+    pointColor: value.pointColor === "coral" || value.pointColor === "teal" || value.pointColor === "blue"
+      ? value.pointColor
+      : DEFAULT_TWEAKS.pointColor
+  };
+}
+
+function createTweakPatches(current: ProjectBundle, previous: FixtureTweaks, next: FixtureTweaks): EditPatch[] {
+  const createdAt = new Date().toISOString();
+  const patches: EditPatch[] = [];
+  const featureGridId = findNodeIdsByClass(current, "feature-grid")[0];
+  const heroId = findNodeIdsByClass(current, "hero")[0];
+
+  if (featureGridId && previous.feedColumns !== next.feedColumns) {
+    patches.push(createPatch(current, featureGridId, "setStyle", {
+      gridTemplateColumns: `repeat(${next.feedColumns}, minmax(0, 1fr))`
+    }, createdAt));
+  }
+
+  if (featureGridId && previous.density !== next.density) {
+    patches.push(createPatch(current, featureGridId, "setStyle", {
+      gap: next.density === "compact" ? "12px" : "18px"
+    }, createdAt));
+  }
+
+  if (heroId && previous.density !== next.density) {
+    patches.push(createPatch(current, heroId, "setStyle", {
+      padding: next.density === "compact" ? "clamp(24px, 5vw, 40px)" : "clamp(28px, 7vw, 54px)"
+    }, createdAt));
+  }
+
+  if (previous.pointColor !== next.pointColor) {
+    for (const node of Object.values(current.editGraph.nodes)) {
+      if (node.kind === "text" && ["01", "02", "03", "K-Design Studio"].includes(node.textPreview ?? "")) {
+        patches.push(createPatch(current, node.id, "setStyle", { color: POINT_COLORS[next.pointColor] }, createdAt));
+      }
+    }
+  }
+
+  return patches;
+}
+
+function createPatch(
+  bundle: ProjectBundle,
+  nodeId: string,
+  op: EditPatch["op"],
+  value: unknown,
+  createdAt: string
+): EditPatch {
+  return {
+    id: createLocalId("patch"),
+    nodeId,
+    op,
+    value,
+    source: "tweaks",
+    baseRevision: bundle.baseRevision,
+    createdAt
+  };
+}
+
+function createLocalId(prefix: string): string {
+  if (globalThis.crypto?.randomUUID) {
+    return `${prefix}_${globalThis.crypto.randomUUID()}`;
+  }
+  return `${prefix}_${Date.now()}`;
 }
 
 function TweakSegment({

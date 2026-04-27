@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 1 |
-| Current phase | Phase 02: Direct Editing, Comments, and Tweaks |
+| Current phase | Phase 03: Prompt, Creation Modes, Assets, and Korean Presets |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -22,14 +22,14 @@
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
 | Phase 01 | Safe HTML Document Foundation | complete | 9 |
-| Phase 02 | Direct Editing, Comments, and Tweaks | current | 13 |
-| Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | planned | 9 |
+| Phase 02 | Direct Editing, Comments, and Tweaks | complete | 13 |
+| Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | current | 9 |
 | Phase 04 | Responsive Preview and Export Fidelity | planned | 9 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | planned | 9 |
 
 ## Active Phase
 
-Phase 02 is the active phase. It must make generated output directly editable as constrained PPT/Figma/Paper-style canvas objects while preserving the Phase 01 source-of-truth and sandbox boundaries.
+Phase 03 is the active phase. It must connect prompt creation modes, fidelity targets, context attachments, and asset handling to the same safe artifact pipeline without introducing real AI provider dependence in this milestone slice.
 
 ## Key Decisions Carried Forward
 
@@ -71,10 +71,12 @@ Phase 02 is the active phase. It must make generated output directly editable as
 - The four mandatory coding principles were recorded in `docs/guides/coding-principles.md` and linked from the canonical project files.
 - Verification gates already run during execution: `pnpm build:packages`, `pnpm --filter @kdesign/web typecheck`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm e2e`, and Playwright screenshot smoke. Formal SUNCO verification remains next.
 - Phase 01 formal verification passed in `.planning/phases/01-safe-html-document-foundation/01-VERIFICATION.md`.
+- Phase 02 completed the parent-owned direct editing loop in `apps/web` and `packages/*`: iframe node registry/selection bridge, overlay, inspector, text/style/layout patches, comments, versions, undo/redo, persisted Tweaks, and browser path tests.
+- Phase 02 verification passed in `.planning/phases/02-direct-editing-comments-and-tweaks/02-VERIFICATION.md`. Computer Use remained blocked by macOS Apple event error `-1743`, so Playwright browser automation and screenshots were used as fallback visual verification.
 
 ---
-*Last updated: 2026-04-27 after Phase 01 verification*
-- **phase**: 2
-- **last_updated**: 2026-04-27T13:19:26.000Z
-- **status**: phase-02-current
-- **next_action**: Discuss Phase 2: /sunco:discuss 2
+*Last updated: 2026-04-27 after Phase 02 verification*
+- **phase**: 3
+- **last_updated**: 2026-04-27T22:48:00.000+09:00
+- **status**: phase-03-current
+- **next_action**: Discuss Phase 3: /sunco:discuss 3
