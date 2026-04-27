@@ -12,6 +12,8 @@ Turn generated HTML designs into something a user can inspect, tweak, edit, and 
 
 The target is product completeness 100: Claude Design-level quality, not a lightweight demo. Scope remains phased, but each phase must leave production-shaped foundations that can grow into the full deployed product without architectural rewrites.
 
+Design-producing agents must use `docs/prompts/context-driven-design-agent-prompt.md` before creating screens, prototypes, slides, landing pages, animations, infographics, or design reviews. That prompt defines the product's design execution standard: fact-check first, collect source notes and design context, use real assets, avoid generic AI visuals, stage work, and verify in browser before completion.
+
 ## Requirements
 
 ### Validated
@@ -47,6 +49,7 @@ The target is product completeness 100: Claude Design-level quality, not a light
 | Patch-limited visual editing | Full arbitrary DOM editing is too fragile for v1. | Accepted |
 | Korean-first design system | The user's wedge is not just "Claude Design clone"; it is a Korean product/design sensibility. | Accepted |
 | Claude Design-level quality bar | The product must reach the same class of completeness and polish; phase scope may be narrow, but foundations cannot be throwaway shortcuts. | Accepted |
+| Context-driven design agent prompt | Visual artifact generation must be driven by `docs/prompts/context-driven-design-agent-prompt.md`, not ad-hoc generic web design behavior. | Accepted |
 
 ## Context
 
@@ -90,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-27 after Phase 01 plan review*
+*Last updated: 2026-04-27 after adding core design agent prompt*

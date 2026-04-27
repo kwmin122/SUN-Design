@@ -8,6 +8,8 @@ Core value: turn generated HTML designs into something a user can inspect, tweak
 
 Product quality bar: the target is production-complete, Claude Design-level quality. Scope can be staged by phase, but phase outputs must be production-shaped foundations rather than throwaway demos.
 
+Core design implementation prompt: `docs/prompts/context-driven-design-agent-prompt.md`. This prompt is for the AI that produces or implements design artifacts with HTML/CSS/JS. Pass it to design-producing agents before they create screens, prototypes, slides, landing pages, animations, infographics, or design reviews.
+
 Current phase: Phase 01 — Safe HTML Document Foundation
 Phase status: planned
 Next SUNCO action: `/sunco:execute 1`
@@ -35,6 +37,7 @@ Next SUNCO action: `/sunco:execute 1`
 | Stored-state export | Export must materialize from base artifact, assets, tweak values, and patch log. |
 | Korean-first defaults | Hangul typography and Korean design contexts are part of the product wedge. |
 | Claude Design-level product bar | The final product should compete at the same quality level; every phase should avoid shortcuts that block that bar. |
+| Context-driven design agent prompt | Design-producing AI must use `docs/prompts/context-driven-design-agent-prompt.md` before creating visual artifacts. |
 
 ## File Conventions
 
@@ -71,6 +74,12 @@ This project is managed with SUNCO. Before substantial work:
 4. Verify against `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md`.
 
 Do not make broad implementation edits outside a SUNCO workflow unless explicitly bypassing it.
+
+## Design Agent Prompt
+
+When a task asks an AI to create a visual artifact, first provide it with `docs/prompts/context-driven-design-agent-prompt.md`.
+
+This prompt is not a general engineering prompt. It is the production standard for design-producing agents: confirm facts, collect design context and source notes, use real assets where required, avoid generic AI design tropes, stage design work, and verify the artifact in a browser before claiming completion.
 
 ## Current Phase
 

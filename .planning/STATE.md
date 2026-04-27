@@ -39,6 +39,7 @@ Phase 01 proves the safe artifact foundation before any richer editing surface d
 - Export must materialize from stored document state, not ad-hoc live iframe mutations.
 - Korean-first typography, copy rhythm, and presets are part of the product wedge, not polish-only work.
 - The product quality target is product-complete, Claude Design-level output; phase scope can be narrow, but foundations cannot be throwaway demos.
+- Design-producing agents must use `docs/prompts/context-driven-design-agent-prompt.md` before creating visual artifacts.
 - Full Figma parity, multiplayer, PPTX authoring, marketplace, and leaked prompt cloning stay outside v1.
 
 ## Blockers
@@ -55,10 +56,11 @@ Phase 01 proves the safe artifact foundation before any richer editing surface d
 - Phase 01 context was updated to capture the production-shaped foundation constraint without expanding the phase boundary.
 - Phase 01 execution plans were created in `.planning/phases/01-safe-html-document-foundation/`; next step is `/sunco:execute 1`.
 - Phase 01 plan review tightened the ESLint security guard and recorded the Claude Design-level product quality bar in project memory.
+- The core context-driven design agent prompt was added at `docs/prompts/context-driven-design-agent-prompt.md` for AI agents that create design artifacts.
 
 ---
-*Last updated: 2026-04-27 after Phase 01 plan review fix*
+*Last updated: 2026-04-27 after adding core design agent prompt*
 - **phase**: 1
-- **last_updated**: 2026-04-27T11:23:08Z
+- **last_updated**: 2026-04-27T11:36:25Z
 - **status**: planned
 - **next_action**: Execute Phase 1: /sunco:execute 1
