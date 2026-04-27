@@ -6,16 +6,20 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 1 |
-| Current phase | Phase 05: Design Systems, Sharing, and Agent-Agnostic Handoff |
+| Current phase | Complete |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
 | Repository | https://github.com/kwmin122/SUN-Design |
 | Branch | main |
-| Roadmap status | created |
+| Roadmap status | v1 complete |
 | Phase 01 status | complete |
+| Phase 02 status | complete |
+| Phase 03 status | complete |
+| Phase 04 status | complete |
+| Phase 05 status | complete |
 | Requirement coverage | 49/49 v1 requirements mapped exactly once |
-| Next action | `/sunco:discuss 2` |
+| Next action | `/sunco:milestone complete` or independent verification |
 
 ## Phase Queue
 
@@ -25,11 +29,11 @@
 | Phase 02 | Direct Editing, Comments, and Tweaks | complete | 13 |
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | complete | 9 |
 | Phase 04 | Responsive Preview and Export Fidelity | complete | 9 |
-| Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | current | 9 |
+| Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
 
 ## Active Phase
 
-Phase 05 is the active phase. It must close the remaining v1 product surfaces: design-system setup/inheritance, share permissions, Canva handoff surface, and agent-agnostic portable handoff.
+No active phase remains in Milestone 1. Phase 05 closed the remaining v1 product surfaces: design-system setup/inheritance, share permissions, Canva handoff surface, and agent-agnostic portable handoff.
 
 ## Key Decisions Carried Forward
 
@@ -77,10 +81,13 @@ Phase 05 is the active phase. It must close the remaining v1 product surfaces: d
 - Phase 03 verification passed in `.planning/phases/03-prompt-creation-modes-assets-and-korean-presets/03-VERIFICATION.md`.
 - Phase 04 completed responsive preview modes, stored-state export job surfaces, clean HTML materialization, and Korean quality flags.
 - Phase 04 verification passed in `.planning/phases/04-responsive-preview-and-export-fidelity/04-VERIFICATION.md`.
+- Phase 05 completed design-system learning, share access records, Canva handoff, and portable handoff packages for Codex, Claude Code, Cursor, local agents, and web agents.
+- Phase 05 verification passed in `.planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-VERIFICATION.md`.
+- All 49 v1 requirements are now marked complete in `.planning/REQUIREMENTS.md`.
 
 ---
-*Last updated: 2026-04-27 after Phase 04 verification*
+*Last updated: 2026-04-27 after Phase 05 verification*
 - **phase**: 5
-- **last_updated**: 2026-04-27T23:06:00.000+09:00
-- **status**: phase-05-current
-- **next_action**: Discuss Phase 5: /sunco:discuss 5
+- **last_updated**: 2026-04-27T23:10:00.000+09:00
+- **status**: milestone-1-complete
+- **next_action**: Run independent verification or /sunco:milestone complete

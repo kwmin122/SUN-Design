@@ -28,6 +28,12 @@ export type PreviewDevice = z.infer<typeof PreviewDeviceSchema>;
 export const ExportKindSchema = z.enum(["html", "png", "pdf", "zip", "pptx"]);
 export type ExportKind = z.infer<typeof ExportKindSchema>;
 
+export const ShareAccessSchema = z.enum(["view", "comment", "edit"]);
+export type ShareAccess = z.infer<typeof ShareAccessSchema>;
+
+export const AgentRuntimeSchema = z.enum(["codex", "claudeCode", "cursor", "localAgent", "webAgent"]);
+export type AgentRuntime = z.infer<typeof AgentRuntimeSchema>;
+
 export const ContextAttachmentSchema = z.object({
   id: z.string().min(1),
   kind: z.enum(["image", "document", "slideDeck", "spreadsheet", "codebase", "webCapture", "designFile"]),
@@ -138,6 +144,46 @@ export const QualityIssueSchema = z.object({
 });
 export type QualityIssue = z.infer<typeof QualityIssueSchema>;
 
+export const DesignSystemSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  colors: z.record(z.string(), z.string()),
+  typography: z.object({
+    heading: z.string().min(1),
+    body: z.string().min(1)
+  }),
+  radius: z.string().min(1),
+  spacing: z.string().min(1),
+  source: z.enum(["manual", "learned", "connected"]),
+  createdAt: z.string().min(1)
+});
+export type DesignSystem = z.infer<typeof DesignSystemSchema>;
+
+export const ShareLinkSchema = z.object({
+  id: z.string().min(1),
+  access: ShareAccessSchema,
+  url: z.string().regex(/^kdesign:\/\/share\/[A-Za-z0-9._~-]+\/share_[a-z0-9]+$/),
+  createdAt: z.string().min(1)
+});
+export type ShareLink = z.infer<typeof ShareLinkSchema>;
+
+export const HandoffPackageSchema = z.object({
+  id: z.string().min(1),
+  target: z.union([AgentRuntimeSchema, z.literal("canva")]),
+  artifactId: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  includes: z.array(z.string().min(1)),
+  instructionsPath: z.string().refine((path) => (
+    path.startsWith("docs/prompts/") &&
+    path.endsWith(".md") &&
+    !path.includes("..") &&
+    !path.includes("://") &&
+    !path.startsWith("/")
+  ), "instructionsPath must be a safe repo-relative prompt markdown path"),
+  createdAt: z.string().min(1)
+});
+export type HandoffPackage = z.infer<typeof HandoffPackageSchema>;
+
 export const SanitizerChangeSchema = z.object({
   kind: z.enum(["removed-element", "removed-attribute", "blocked-url", "rewritten-style"]),
   path: z.string().min(1),
@@ -183,7 +229,10 @@ export const ProjectBundleSchema = z.object({
   versions: z.array(BundleVersionSchema).default([]),
   tweakValues: z.record(z.string(), z.unknown()).default({}),
   exportJobs: z.array(ExportJobSchema).default([]),
-  qualityIssues: z.array(QualityIssueSchema).default([])
+  qualityIssues: z.array(QualityIssueSchema).default([]),
+  designSystem: DesignSystemSchema.optional(),
+  shareLinks: z.array(ShareLinkSchema).default([]),
+  handoffPackages: z.array(HandoffPackageSchema).default([])
 });
 export type ProjectBundle = z.infer<typeof ProjectBundleSchema>;
 

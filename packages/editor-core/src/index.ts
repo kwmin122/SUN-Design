@@ -8,3 +8,4 @@ export * from "./fixtures.js";
 export * from "./patches.js";
 export * from "./generation.js";
 export * from "./export.js";
+export * from "./handoff.js";

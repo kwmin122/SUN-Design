@@ -44,6 +44,10 @@ import {
   createGeneratedProjectBundle,
   createMockContextAttachment,
   createExportJob,
+  createAgentHandoff,
+  createCanvaHandoff,
+  createShareLink,
+  learnDesignSystem,
   runKoreanQualityAudit,
   findNodeIdsByClass,
   normalizeHtml
@@ -407,6 +411,62 @@ export function EditorShell() {
       updatedAt: job.createdAt
     }), { trackUndo: true });
   }, [commitBundle, previewDevice]);
+
+  const applyDesignSystem = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+
+    const designSystem = learnDesignSystem(current);
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      designSystem,
+      updatedAt: designSystem.createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const addShareLink = useCallback((access: "view" | "comment" | "edit") => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+
+    const shareLink = createShareLink({ bundle: current, access });
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      shareLinks: [shareLink, ...current.shareLinks],
+      updatedAt: shareLink.createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const addCanvaHandoff = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+
+    const handoff = createCanvaHandoff({ bundle: current });
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      handoffPackages: [handoff, ...current.handoffPackages],
+      updatedAt: handoff.createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const addAgentHandoff = useCallback((target: "codex" | "claudeCode" | "cursor" | "localAgent" | "webAgent") => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+
+    const handoff = createAgentHandoff({ bundle: current, target });
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      handoffPackages: [handoff, ...current.handoffPackages],
+      updatedAt: handoff.createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
 
   const setFeedColumns = (feedColumns: FixtureTweaks["feedColumns"]) => {
     rebuildWithTweaks({ ...tweaks, feedColumns });
@@ -844,6 +904,44 @@ export function EditorShell() {
                   <strong>Quality</strong>
                   {projectBundle.qualityIssues.length === 0 ? <span>검사 전</span> : projectBundle.qualityIssues.slice(0, 5).map((issue) => (
                     <span key={issue.id}>{issue.code} · {issue.message}</span>
+                  ))}
+                </div>
+              </section>
+              <section className="tweak-card handoff-card" data-testid="handoff-panel">
+                <h2>Design System & Handoff</h2>
+                <button className="quality-button" type="button" onClick={applyDesignSystem}>
+                  디자인 시스템 학습
+                </button>
+                <div className="mini-list" data-testid="design-system-state">
+                  <strong>Design system</strong>
+                  {projectBundle.designSystem ? (
+                    <>
+                      <span>{projectBundle.designSystem.name}</span>
+                      <span>{Object.values(projectBundle.designSystem.colors).slice(0, 3).join(" · ")}</span>
+                    </>
+                  ) : <span>아직 없음</span>}
+                </div>
+                <div className="handoff-actions">
+                  <button type="button" onClick={() => addShareLink("view")}>View link</button>
+                  <button type="button" onClick={() => addShareLink("comment")}>Comment link</button>
+                  <button type="button" onClick={() => addShareLink("edit")}>Edit link</button>
+                  <button type="button" onClick={addCanvaHandoff}>Canva</button>
+                  <button type="button" onClick={() => addAgentHandoff("codex")}>Codex</button>
+                  <button type="button" onClick={() => addAgentHandoff("claudeCode")}>Claude Code</button>
+                  <button type="button" onClick={() => addAgentHandoff("cursor")}>Cursor</button>
+                  <button type="button" onClick={() => addAgentHandoff("localAgent")}>Local agent</button>
+                  <button type="button" onClick={() => addAgentHandoff("webAgent")}>Web agent</button>
+                </div>
+                <div className="mini-list" data-testid="share-links">
+                  <strong>Share</strong>
+                  {projectBundle.shareLinks.length === 0 ? <span>아직 없음</span> : projectBundle.shareLinks.slice(0, 3).map((link) => (
+                    <span key={link.id}>{link.access} · {link.url}</span>
+                  ))}
+                </div>
+                <div className="mini-list" data-testid="handoff-packages">
+                  <strong>Handoff</strong>
+                  {projectBundle.handoffPackages.length === 0 ? <span>아직 없음</span> : projectBundle.handoffPackages.slice(0, 8).map((handoff) => (
+                    <span key={handoff.id}>{handoff.target} · {handoff.instructionsPath}</span>
                   ))}
                 </div>
               </section>
