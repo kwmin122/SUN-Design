@@ -6,30 +6,30 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 1 |
-| Current phase | Phase 01: Safe HTML Document Foundation |
+| Current phase | Phase 02: Direct Editing, Comments, and Tweaks |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
 | Repository | https://github.com/kwmin122/SUN-Design |
 | Branch | main |
 | Roadmap status | created |
-| Phase 01 status | executed - awaiting verification |
+| Phase 01 status | complete |
 | Requirement coverage | 49/49 v1 requirements mapped exactly once |
-| Next action | `/sunco:verify 1` |
+| Next action | `/sunco:discuss 2` |
 
 ## Phase Queue
 
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
-| Phase 01 | Safe HTML Document Foundation | executed - awaiting verification | 9 |
-| Phase 02 | Direct Editing, Comments, and Tweaks | planned | 13 |
+| Phase 01 | Safe HTML Document Foundation | complete | 9 |
+| Phase 02 | Direct Editing, Comments, and Tweaks | current | 13 |
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | planned | 9 |
 | Phase 04 | Responsive Preview and Export Fidelity | planned | 9 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | planned | 9 |
 
 ## Active Phase
 
-Phase 01 has executed both planned waves and is ready for independent verification. It now proves that a single HTML artifact can be sanitized, normalized with stable editable IDs, rendered in a sandboxed iframe, persisted, reloaded, monitored for preview errors through a validated bridge, and shown inside the production-shaped agent-agnostic studio shell.
+Phase 02 is the active phase. It must make generated output directly editable as constrained PPT/Figma/Paper-style canvas objects while preserving the Phase 01 source-of-truth and sandbox boundaries.
 
 ## Key Decisions Carried Forward
 
@@ -70,10 +70,11 @@ Phase 01 has executed both planned waves and is ready for independent verificati
 - Agent-agnostic runtime portability was added as a hard v1 requirement; Claude Design remains a quality benchmark, not a runtime lock-in.
 - The four mandatory coding principles were recorded in `docs/guides/coding-principles.md` and linked from the canonical project files.
 - Verification gates already run during execution: `pnpm build:packages`, `pnpm --filter @kdesign/web typecheck`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm e2e`, and Playwright screenshot smoke. Formal SUNCO verification remains next.
+- Phase 01 formal verification passed in `.planning/phases/01-safe-html-document-foundation/01-VERIFICATION.md`.
 
 ---
-*Last updated: 2026-04-27 after Phase 01 execution*
-- **phase**: 1
-- **last_updated**: 2026-04-27T13:03:25.000Z
-- **status**: executed-awaiting-verification
-- **next_action**: Verify Phase 1: /sunco:verify 1
+*Last updated: 2026-04-27 after Phase 01 verification*
+- **phase**: 2
+- **last_updated**: 2026-04-27T13:19:26.000Z
+- **status**: phase-02-current
+- **next_action**: Discuss Phase 2: /sunco:discuss 2
