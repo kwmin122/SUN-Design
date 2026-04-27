@@ -14,10 +14,6 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
-    "baseUrl": ".",
-    "paths": {
-      "@kdesign/editor-core": ["packages/editor-core/src/index.ts"],
-      "@kdesign/preview-runtime": ["packages/preview-runtime/src/index.ts"]
-    }
+    "baseUrl": "."
   }
 }

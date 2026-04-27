@@ -1,0 +1,25 @@
+{
+  "name": "@kdesign/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @kdesign/editor-core build && pnpm --filter @kdesign/preview-runtime build && next dev --port 3107",
+    "build": "pnpm --filter @kdesign/editor-core build && pnpm --filter @kdesign/preview-runtime build && next build",
+    "start": "next start --port 3107",
+    "typecheck": "tsc -b ../../packages/editor-core ../../packages/preview-runtime --pretty false --force && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@kdesign/editor-core": "workspace:*",
+    "@kdesign/preview-runtime": "workspace:*",
+    "lucide-react": "1.11.0",
+    "next": "16.2.4",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "zustand": "5.0.12"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3"
+  }
+}

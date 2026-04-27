@@ -1,5 +1,5 @@
 {
-  "name": "@kdesign/editor-core",
+  "name": "@kdesign/preview-runtime",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,12 +12,10 @@
   },
   "scripts": {
     "build": "tsc -b tsconfig.json --pretty false --force",
-    "test": "vitest run src/**/*.test.ts",
+    "test": "pnpm --filter @kdesign/editor-core build && vitest run src/**/*.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "parse5": "8.0.1",
-    "postcss": "8.5.12",
-    "zod": "4.3.6"
+    "@kdesign/editor-core": "workspace:*"
   }
 }

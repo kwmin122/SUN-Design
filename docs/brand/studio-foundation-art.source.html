@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>K-Design Studio Foundation Art Source</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3efe6;
+        font-family: Inter, system-ui, sans-serif;
+      }
+
+      .art {
+        position: relative;
+        width: 1600px;
+        height: 1100px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.95) 0 9%, transparent 10%),
+          linear-gradient(135deg, #f7f1e4 0%, #fdfbf6 40%, #dbe7e0 100%);
+      }
+
+      .art::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.18;
+        background-image:
+          linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+          linear-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+        background-size: 42px 42px;
+      }
+
+      .art::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.13;
+        background:
+          repeating-radial-gradient(circle at 18% 36%, rgba(18, 18, 18, 0.34) 0 1px, transparent 1px 5px),
+          repeating-linear-gradient(112deg, rgba(255, 255, 255, 0.45) 0 1px, transparent 1px 6px);
+        mix-blend-mode: multiply;
+      }
+
+      .shape {
+        position: absolute;
+        border: 3px solid #171717;
+      }
+
+      .yellow {
+        left: 86px;
+        top: 86px;
+        width: 360px;
+        height: 390px;
+        background: #f5c84b;
+        transform: rotate(-7deg);
+      }
+
+      .red {
+        left: 1090px;
+        top: 92px;
+        width: 330px;
+        height: 330px;
+        background: #ef5a3c;
+        border-radius: 50%;
+      }
+
+      .teal {
+        left: 1056px;
+        top: 612px;
+        width: 420px;
+        height: 270px;
+        background: #2f9f8f;
+        transform: rotate(8deg);
+      }
+
+      .ink {
+        left: 134px;
+        top: 700px;
+        width: 310px;
+        height: 230px;
+        background: #171717;
+        transform: rotate(5deg);
+      }
+
+      .panel {
+        position: absolute;
+        left: 390px;
+        top: 190px;
+        width: 840px;
+        height: 610px;
+        border: 4px solid #171717;
+        border-radius: 34px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 36px 42px 0 rgba(23, 23, 23, 0.14);
+        overflow: hidden;
+      }
+
+      .panel-top {
+        height: 82px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 0 34px;
+        border-bottom: 4px solid #171717;
+        background: #f9faf7;
+      }
+
+      .dot {
+        width: 22px;
+        height: 22px;
+        border: 3px solid #171717;
+        border-radius: 50%;
+      }
+
+      .dot:nth-child(1) {
+        background: #ef5a3c;
+      }
+
+      .dot:nth-child(2) {
+        background: #f5c84b;
+      }
+
+      .dot:nth-child(3) {
+        background: #2f9f8f;
+      }
+
+      .canvas {
+        position: relative;
+        height: 528px;
+        padding: 52px 58px;
+        background:
+          linear-gradient(90deg, rgba(23, 23, 23, 0.06) 1px, transparent 1px),
+          linear-gradient(rgba(23, 23, 23, 0.05) 1px, transparent 1px),
+          #fffdfa;
+        background-size: 32px 32px;
+      }
+
+      .headline {
+        position: absolute;
+        left: 68px;
+        top: 72px;
+        width: 390px;
+        height: 34px;
+        border-radius: 18px;
+        background: #171717;
+      }
+
+      .subline {
+        position: absolute;
+        left: 68px;
+        top: 128px;
+        width: 320px;
+        height: 20px;
+        border-radius: 14px;
+        background: #6b7280;
+      }
+
+      .mock-image {
+        position: absolute;
+        right: 66px;
+        top: 78px;
+        width: 270px;
+        height: 210px;
+        border: 4px solid #171717;
+        border-radius: 24px;
+        background:
+          radial-gradient(circle at 34% 30%, #ffffff 0 11%, transparent 12%),
+          linear-gradient(135deg, #2f9f8f 0 46%, #f5c84b 47% 70%, #ef5a3c 71%);
+        box-shadow: 16px 18px 0 rgba(23, 23, 23, 0.15);
+      }
+
+      .selection {
+        position: absolute;
+        left: 80px;
+        top: 238px;
+        width: 440px;
+        height: 174px;
+        border: 4px dashed #1f6feb;
+        border-radius: 22px;
+        background: rgba(31, 111, 235, 0.08);
+      }
+
+      .selection::before,
+      .selection::after {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border: 3px solid #171717;
+        background: #f5c84b;
+      }
+
+      .selection::before {
+        left: -13px;
+        top: -13px;
+      }
+
+      .selection::after {
+        right: -13px;
+        bottom: -13px;
+      }
+
+      .layer-card {
+        position: absolute;
+        right: 78px;
+        bottom: 64px;
+        width: 256px;
+        height: 160px;
+        border: 4px solid #171717;
+        border-radius: 22px;
+        background: #f7f1e4;
+        box-shadow: 14px 16px 0 rgba(23, 23, 23, 0.15);
+      }
+
+      .layer-card span {
+        position: absolute;
+        left: 28px;
+        right: 28px;
+        height: 18px;
+        border-radius: 12px;
+        background: #171717;
+      }
+
+      .layer-card span:nth-child(1) {
+        top: 34px;
+      }
+
+      .layer-card span:nth-child(2) {
+        top: 72px;
+        right: 76px;
+        background: #2f9f8f;
+      }
+
+      .layer-card span:nth-child(3) {
+        top: 110px;
+        right: 116px;
+        background: #ef5a3c;
+      }
+
+      .cursor {
+        position: absolute;
+        left: 982px;
+        top: 486px;
+        width: 96px;
+        height: 126px;
+        clip-path: polygon(0 0, 88% 66%, 54% 72%, 72% 100%, 52% 100%, 35% 74%, 13% 94%);
+        background: #171717;
+        transform: rotate(-12deg);
+      }
+
+      .tag {
+        position: absolute;
+        left: 1068px;
+        top: 516px;
+        padding: 14px 22px;
+        border: 3px solid #171717;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #171717;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: 0;
+        box-shadow: 10px 12px 0 rgba(23, 23, 23, 0.14);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="art" aria-label="Generated brand artwork for K-Design Studio">
+      <div class="shape yellow"></div>
+      <div class="shape red"></div>
+      <div class="shape teal"></div>
+      <div class="shape ink"></div>
+      <div class="panel">
+        <div class="panel-top">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <div class="canvas">
+          <div class="headline"></div>
+          <div class="subline"></div>
+          <div class="mock-image"></div>
+          <div class="selection"></div>
+          <div class="layer-card"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+      <div class="cursor"></div>
+      <div class="tag">HTML → Design</div>
+    </div>
+  </body>
+</html>
