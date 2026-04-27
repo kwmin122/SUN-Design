@@ -28,8 +28,10 @@ import type {
   ContextAttachment,
   CreationMode,
   EditPatch,
+  ExportKind,
   FidelityTarget,
   KoreanPreset,
+  PreviewDevice,
   PreviewError,
   PreviewNodeRect,
   ProjectBundle
@@ -41,6 +43,8 @@ import {
   applyEditPatchesToBundle,
   createGeneratedProjectBundle,
   createMockContextAttachment,
+  createExportJob,
+  runKoreanQualityAudit,
   findNodeIdsByClass,
   normalizeHtml
 } from "@kdesign/editor-core";
@@ -116,6 +120,7 @@ export function EditorShell() {
   const [fidelityTarget, setFidelityTarget] = useState<FidelityTarget>("highFidelity");
   const [activePreset, setActivePreset] = useState<KoreanPreset>("saasLanding");
   const [contextAttachments, setContextAttachments] = useState<ContextAttachment[]>([]);
+  const [previewDevice, setPreviewDevice] = useState<PreviewDevice>("desktop");
   const [nodeRects, setNodeRects] = useState<Record<string, PreviewNodeRect>>({});
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
@@ -369,6 +374,40 @@ export function EditorShell() {
     setSelectedNodeId(null);
   }, [activePreset, commitBundle, contextAttachments, creationMode, fidelityTarget, prompt]);
 
+  const runQualityCheck = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+
+    const issues = runKoreanQualityAudit(current);
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      qualityIssues: issues,
+      updatedAt: new Date().toISOString()
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const createExport = useCallback((kind: ExportKind) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+
+    const job = createExportJob({
+      bundle: current,
+      kind,
+      viewport: previewDevice
+    });
+    const issues = current.qualityIssues.length > 0 ? current.qualityIssues : runKoreanQualityAudit(current);
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      exportJobs: [job, ...current.exportJobs],
+      qualityIssues: issues,
+      updatedAt: job.createdAt
+    }), { trackUndo: true });
+  }, [commitBundle, previewDevice]);
+
   const setFeedColumns = (feedColumns: FixtureTweaks["feedColumns"]) => {
     rebuildWithTweaks({ ...tweaks, feedColumns });
   };
@@ -575,6 +614,29 @@ export function EditorShell() {
             <button type="button" onClick={clearSavedState}><RotateCcw size={15} /></button>
           </div>
           <div className="tool-spacer" />
+          <div className="device-tools" aria-label="Preview devices">
+            <button
+              className={previewDevice === "desktop" ? "active" : ""}
+              type="button"
+              onClick={() => setPreviewDevice("desktop")}
+            >
+              Desktop
+            </button>
+            <button
+              className={previewDevice === "tablet" ? "active" : ""}
+              type="button"
+              onClick={() => setPreviewDevice("tablet")}
+            >
+              Tablet
+            </button>
+            <button
+              className={previewDevice === "mobile" ? "active" : ""}
+              type="button"
+              onClick={() => setPreviewDevice("mobile")}
+            >
+              Mobile
+            </button>
+          </div>
           <label className="toggle-control" data-testid="tweaks-toggle">
             Tweaks
             <input
@@ -622,6 +684,7 @@ export function EditorShell() {
               onNodeHovered={handleNodeHovered}
               selectedNode={selectedRect}
               hoveredNode={hoveredRect}
+              device={previewDevice}
             />
           </div>
 
@@ -756,6 +819,31 @@ export function EditorShell() {
                   <strong>Asset manifest</strong>
                   {projectBundle.assets.length === 0 ? <span>비어 있음</span> : projectBundle.assets.slice(0, 5).map((asset) => (
                     <span key={asset.id}>{asset.kind} · {asset.status}</span>
+                  ))}
+                </div>
+              </section>
+              <section className="tweak-card export-card" data-testid="export-panel">
+                <h2>Export</h2>
+                <div className="export-actions">
+                  <button type="button" onClick={() => createExport("html")}>HTML</button>
+                  <button type="button" onClick={() => createExport("png")}>PNG</button>
+                  <button type="button" onClick={() => createExport("pdf")}>PDF</button>
+                  <button type="button" onClick={() => createExport("zip")}>ZIP</button>
+                  <button type="button" onClick={() => createExport("pptx")}>PPTX</button>
+                </div>
+                <button className="quality-button" type="button" onClick={runQualityCheck}>
+                  디자인 리뷰
+                </button>
+                <div className="mini-list" data-testid="export-jobs">
+                  <strong>Jobs</strong>
+                  {projectBundle.exportJobs.length === 0 ? <span>아직 없음</span> : projectBundle.exportJobs.slice(0, 5).map((job) => (
+                    <span key={job.id}>{job.kind.toUpperCase()} · {job.viewport} · {job.status}</span>
+                  ))}
+                </div>
+                <div className="mini-list" data-testid="quality-issues">
+                  <strong>Quality</strong>
+                  {projectBundle.qualityIssues.length === 0 ? <span>검사 전</span> : projectBundle.qualityIssues.slice(0, 5).map((issue) => (
+                    <span key={issue.id}>{issue.code} · {issue.message}</span>
                   ))}
                 </div>
               </section>

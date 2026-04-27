@@ -7,11 +7,12 @@ test("creates a generated artifact from prompt, mode, fidelity, and context", as
   await page.getByRole("button", { name: "Slide deck" }).click();
   await page.getByRole("button", { name: "Wireframe 빠른 구조와 흐름" }).click();
   await page.getByRole("textbox", { name: "Prompt" }).fill("AI 회의록 제품을 투자자에게 설명하는 첫 화면");
-  await page.getByRole("button", { name: "Image" }).click();
-  await page.getByRole("button", { name: "PPTX" }).click();
-  await page.getByRole("button", { name: "DOCX" }).click();
-  await page.getByRole("button", { name: "XLSX" }).click();
-  await page.getByRole("button", { name: "Web" }).click();
+  const composer = page.locator(".prompt-composer");
+  await composer.getByRole("button", { name: "Image" }).click();
+  await composer.getByRole("button", { name: "PPTX" }).click();
+  await composer.getByRole("button", { name: "DOCX" }).click();
+  await composer.getByRole("button", { name: "XLSX" }).click();
+  await composer.getByRole("button", { name: "Web" }).click();
 
   await expect(page.getByTestId("context-attachments")).toContainText("제품 스크린샷.png");
   await expect(page.getByTestId("context-attachments")).toContainText("https://example.com · placeholder");

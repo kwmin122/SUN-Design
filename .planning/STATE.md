@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 1 |
-| Current phase | Phase 04: Responsive Preview and Export Fidelity |
+| Current phase | Phase 05: Design Systems, Sharing, and Agent-Agnostic Handoff |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -24,12 +24,12 @@
 | Phase 01 | Safe HTML Document Foundation | complete | 9 |
 | Phase 02 | Direct Editing, Comments, and Tweaks | complete | 13 |
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | complete | 9 |
-| Phase 04 | Responsive Preview and Export Fidelity | current | 9 |
-| Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | planned | 9 |
+| Phase 04 | Responsive Preview and Export Fidelity | complete | 9 |
+| Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | current | 9 |
 
 ## Active Phase
 
-Phase 04 is the active phase. It must add responsive preview modes, deterministic stored-state export surfaces, and Korean typography quality flags without treating transient iframe mutations as export source of truth.
+Phase 05 is the active phase. It must close the remaining v1 product surfaces: design-system setup/inheritance, share permissions, Canva handoff surface, and agent-agnostic portable handoff.
 
 ## Key Decisions Carried Forward
 
@@ -75,10 +75,12 @@ Phase 04 is the active phase. It must add responsive preview modes, deterministi
 - Phase 02 verification passed in `.planning/phases/02-direct-editing-comments-and-tweaks/02-VERIFICATION.md`. Computer Use remained blocked by macOS Apple event error `-1743`, so Playwright browser automation and screenshots were used as fallback visual verification.
 - Phase 03 completed deterministic local prompt creation with stateful creation modes, fidelity targets, context attachment metadata, asset manifest statuses, web-capture placeholders, and three Korean-first presets.
 - Phase 03 verification passed in `.planning/phases/03-prompt-creation-modes-assets-and-korean-presets/03-VERIFICATION.md`.
+- Phase 04 completed responsive preview modes, stored-state export job surfaces, clean HTML materialization, and Korean quality flags.
+- Phase 04 verification passed in `.planning/phases/04-responsive-preview-and-export-fidelity/04-VERIFICATION.md`.
 
 ---
-*Last updated: 2026-04-27 after Phase 03 verification*
-- **phase**: 4
-- **last_updated**: 2026-04-27T22:58:00.000+09:00
-- **status**: phase-04-current
-- **next_action**: Discuss Phase 4: /sunco:discuss 4
+*Last updated: 2026-04-27 after Phase 04 verification*
+- **phase**: 5
+- **last_updated**: 2026-04-27T23:06:00.000+09:00
+- **status**: phase-05-current
+- **next_action**: Discuss Phase 5: /sunco:discuss 5

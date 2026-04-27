@@ -22,6 +22,12 @@ export type FidelityTarget = z.infer<typeof FidelityTargetSchema>;
 export const KoreanPresetSchema = z.enum(["saasLanding", "pitchDeck", "mobileApp"]);
 export type KoreanPreset = z.infer<typeof KoreanPresetSchema>;
 
+export const PreviewDeviceSchema = z.enum(["desktop", "tablet", "mobile"]);
+export type PreviewDevice = z.infer<typeof PreviewDeviceSchema>;
+
+export const ExportKindSchema = z.enum(["html", "png", "pdf", "zip", "pptx"]);
+export type ExportKind = z.infer<typeof ExportKindSchema>;
+
 export const ContextAttachmentSchema = z.object({
   id: z.string().min(1),
   kind: z.enum(["image", "document", "slideDeck", "spreadsheet", "codebase", "webCapture", "designFile"]),
@@ -110,6 +116,28 @@ export const BundleVersionSchema = z.object({
 });
 export type BundleVersion = z.infer<typeof BundleVersionSchema>;
 
+export const ExportJobSchema = z.object({
+  id: z.string().min(1),
+  kind: ExportKindSchema,
+  status: z.enum(["ready", "failed"]),
+  sourceRevision: z.string().min(1),
+  viewport: PreviewDeviceSchema,
+  filename: z.string().min(1),
+  bytes: z.number().int().nonnegative(),
+  createdAt: z.string().min(1),
+  cleanHtml: z.string().optional()
+});
+export type ExportJob = z.infer<typeof ExportJobSchema>;
+
+export const QualityIssueSchema = z.object({
+  id: z.string().min(1),
+  severity: z.enum(["info", "warning", "error"]),
+  code: z.string().min(1),
+  message: z.string().min(1),
+  nodeId: z.string().optional()
+});
+export type QualityIssue = z.infer<typeof QualityIssueSchema>;
+
 export const SanitizerChangeSchema = z.object({
   kind: z.enum(["removed-element", "removed-attribute", "blocked-url", "rewritten-style"]),
   path: z.string().min(1),
@@ -153,7 +181,9 @@ export const ProjectBundleSchema = z.object({
   sanitizerReport: SanitizerReportSchema,
   comments: z.array(CanvasCommentSchema).default([]),
   versions: z.array(BundleVersionSchema).default([]),
-  tweakValues: z.record(z.string(), z.unknown()).default({})
+  tweakValues: z.record(z.string(), z.unknown()).default({}),
+  exportJobs: z.array(ExportJobSchema).default([]),
+  qualityIssues: z.array(QualityIssueSchema).default([])
 });
 export type ProjectBundle = z.infer<typeof ProjectBundleSchema>;
 
