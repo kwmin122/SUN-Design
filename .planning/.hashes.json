@@ -1,11 +1,15 @@
 {
-  ".planning/PROJECT.md": "59ad3a282be0f69a7afd14ed77506419dd54e5700ad37f53092ecbe4abd5f3aa",
-  ".planning/REQUIREMENTS.md": "c1eb183cc75c1d5ad277d9536180cc6050d0d688016744e1ac2a7988c5065c4c",
-  ".planning/ROADMAP.md": "2449039e3fc093d6b4a316150d414c759c85d077c8753f42450d453d3f723494",
-  ".planning/STATE.md": "365f154f1c2928c0402efb4d39e5f6d95a6aa1137d09b2274e4dabe91aa76791",
-  ".planning/phases/01-safe-html-document-foundation/01-01-PLAN.md": "9622bc95f236b770d4cf85ef9a89b6b9823d216b59c932fbfd2ba0b056241515",
-  ".planning/phases/01-safe-html-document-foundation/01-02-PLAN.md": "bf5a8bdb5298201000cd6273008ac366ca7f3e34fe2af2d57a552d055bcc7f22",
-  ".planning/phases/01-safe-html-document-foundation/01-CONTEXT.md": "2ae84ea42d00603c66337ac25b2771c8231376442df4b85174ae84389679bd10",
-  ".planning/phases/01-safe-html-document-foundation/01-DISCUSSION-LOG.md": "7d14e00bf2d9762e67263291a5f78e4ccfe1f710ef432e71de6fdbab9d023312",
-  ".planning/phases/01-safe-html-document-foundation/01-RESEARCH.md": "5dc584a18de3629cd20e4a723db679227a424dd82593efcd542c69d0be578f63"
+  ".planning/PROJECT.md": "d4b28da5b3b1c775ed4e7effc552c72ad25300d58a91e5bc697728198e85ebcb",
+  ".planning/REQUIREMENTS.md": "e62ae9679f282df755cc48e26a221d97310e12a811babd5a7cac82c0f9e2004e",
+  ".planning/ROADMAP.md": "179825bc33558310bae63daf2c238448500d6335303734e9f7e907b5a96e5bd0",
+  ".planning/STATE.md": "9eb5e8d154f45d59a97e932e65e900495488af6deb1574d27659a6127b710c0c",
+  ".planning/phases/01-safe-html-document-foundation/01-01-PLAN.md": "51176ca0d9f83cab9bada0375e6f8ec45476c7e283d88b880045dbafcdd691fc",
+  ".planning/phases/01-safe-html-document-foundation/01-01-SUMMARY.md": "f06ab28fa4d3aa063183aa5b8524bea2a65629714602b07f2cace94ca8de87b4",
+  ".planning/phases/01-safe-html-document-foundation/01-02-PLAN.md": "ee8e7d508e6b3160a3430758922e5de66a47dbe0edbb364fe09b498dbfb9564b",
+  ".planning/phases/01-safe-html-document-foundation/01-02-SUMMARY.md": "47459b56bb42ca2130ef5be65eb7650e1290ea2f5a61b6715748559ff79de0b2",
+  ".planning/phases/01-safe-html-document-foundation/01-CONTEXT.md": "6a0bcedb9f69e61bf3816f7860e40c9f9c81e66f37c094b2ef41307436a590ae",
+  ".planning/phases/01-safe-html-document-foundation/01-DISCUSSION-LOG.md": "4ba27ac7d2e638c497ffaf93ef74b712ce20beacbc5d1be3cf99286fda989484",
+  ".planning/phases/01-safe-html-document-foundation/01-RESEARCH.md": "5dc584a18de3629cd20e4a723db679227a424dd82593efcd542c69d0be578f63",
+  ".planning/phases/01-safe-html-document-foundation/checkpoint-wave-1.json": "c2cec81398a0d697ddf59417a7a64420018919271077efa21877afa6688ba175",
+  ".planning/phases/01-safe-html-document-foundation/checkpoint-wave-2.json": "cd58bd26d318012c58457bbcae002c0018e42a66c784f6c4c3ee5bd059795274"
 }

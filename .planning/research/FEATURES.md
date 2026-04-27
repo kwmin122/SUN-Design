@@ -4,21 +4,21 @@
 
 K-Design Studio is an HTML-first Korean AI design IDE:
 
-`Korean prompt -> generated HTML -> sandboxed iframe preview -> PPT/Figma-like direct edits -> right Tweaks panel -> export`
+`Korean prompt/context -> generated or imported HTML -> sandboxed iframe preview -> PPT/Figma-like direct edits -> right Tweaks panel -> export/handoff`
 
-The feature bar is not "can it generate a pretty page once?" The bar is "can the generated result stay editable, inspectable, tweakable, and exportable without source-code work?"
+The feature bar is not "can it generate a pretty page once?" The bar is "can the generated result stay editable, inspectable, tweakable, exportable, and portable across Codex, Claude Code, Cursor, local agents, and web agents without source-code work?"
 
 ## Reference Signals
 
 | Reference | Relevant feature lesson | Product implication |
 |---|---|---|
-| Claude Design | Prompt/import from documents, images, web capture, codebase/design files; inline comments, direct text edits, adjustment knobs; export to Canva/PDF/PPTX/HTML; handoff bundle to Claude Code. | The category expectation is a continuous create-refine-export loop, not a chatbot that drops a file. |
+| Claude Design | Prompt/import from documents, images, web capture, codebase/design files; inline comments, direct text edits, adjustment knobs; export to Canva/PDF/PPTX/HTML; agent handoff expectations. | The category expectation is a continuous create-refine-export loop, not a chatbot that drops a file. Claude Design is the product quality benchmark, not the runtime dependency. |
 | Open CoDesign | Local-first/BYOK, sandboxed iframe, built-in design skills, AI-emitted sliders, responsive previews, pin comments that rewrite only a region, on-device HTML/PDF/PPTX/ZIP exports. | Strong model for a solo-builder-friendly, non-cloud-locked design workbench. |
 | Figma Make / Figma | Prompt-to-code from existing frames, point-and-edit, direct preview/code edits, version history, design-library context, right-side properties panel, auto layout/responsive concepts. | Use Figma's interaction patterns, but do not chase full Figma parity in v1. |
 | Canva | AI design inside the editor, Canva Code for interactive widgets, Magic Layers turning static outputs into editable layered designs. | Users now expect AI outputs to become editable working files, not flat screenshots. |
 | Webflow | Right Style panel for layout, spacing, size, position, typography, background, borders, effects, classes, states, breakpoints. | The right panel should feel like safe CSS controls for selected HTML, not a generic form dump. |
 | Framer | AI Wireframer, AI component Workshop, visual responsive layouts, effects/interactions, generated components with property controls and style matching. | Use generated component/tweak controls for focused customization; defer publishing/CMS. |
-| Claude Code Skills | Reusable `SKILL.md` workflows, supporting files, templates, examples, scripts, project/personal scope, model-invoked or slash-invoked behavior. | Later differentiator: project-level design skills for Korean style rules, artifact recipes, export QA, and brand rules. |
+| Portable agent skills | Reusable workflow files, supporting files, templates, examples, scripts, project/personal scope, and model-invoked or command-invoked behavior across tools such as Claude Code, Cursor, Codex CLI, and similar agents. | Later differentiator: project-level design skills for Korean style rules, artifact recipes, export QA, and brand rules without Claude Code-only lock-in. |
 
 ## Table Stakes
 
@@ -46,9 +46,9 @@ The feature bar is not "can it generate a pretty page once?" The bar is "can the
 | Editable HTML as the native artifact | Normalize generated HTML into `EditGraph + patch log + tweak schema`. | Avoids Canva-style "flat output then recover layers"; editability is built in from generation. |
 | Tweaks that do not re-prompt for every nudge | Model emits meaningful controls; user drags sliders/color pickers locally. | Faster than chat-only refinement and closer to Claude Design/Open CoDesign knobs. |
 | Region-level prompt edits | Select a section, button, or card and ask for a targeted rewrite/restyle. | Prevents whole-page drift and makes AI feel controllable. |
-| Design intent handoff | Export `index.html` plus `project.cdx.json` with tweak values, patch history, and design notes. | Useful for Codex/Claude Code continuation, not just static publishing. |
-| Project-level design skills | Later: `.kdesign/skills/<skill>/SKILL.md` for landing pages, dashboards, pitch decks, Korean typography QA, export QA. | Borrow Claude Code's durable workflow pattern for design consistency. |
-| Local-first / BYOK option | Save artifacts locally; optionally import Codex/Claude provider settings later. | Strong wedge for builders who dislike cloud lock-in or token opacity. |
+| Design intent handoff | Export `index.html` plus `project.cdx.json` with tweak values, patch history, design notes, source notes, and agent instructions. | Useful for Codex, Claude Code, Cursor, local agents, and web agents to continue the same artifact, not just static publishing. |
+| Project-level design skills | Later: `.kdesign/skills/<skill>/SKILL.md` for landing pages, dashboards, pitch decks, Korean typography QA, export QA. | Borrow durable skill-style workflow patterns for design consistency without copying restricted prompts or files. |
+| Local-first / BYOK option | Save artifacts locally; optionally import runtime-family/provider settings later. | Strong wedge for builders who dislike cloud lock-in or token opacity. |
 | Design QA as a first-class pass | Detect generic AI visuals, weak Hangul typography, contrast issues, overflow, export mismatch. | Turns "AI made a draft" into "AI helped polish a deliverable." |
 
 ## Anti-Features
@@ -63,7 +63,7 @@ The feature bar is not "can it generate a pretty page once?" The bar is "can the
 | Provider/API-key chooser as the first UX | The user wants a design IDE, not a model settings page. Hide providers behind sensible defaults. |
 | Marketplace/public gallery in v1 | Distribution is not the proof. Editing/export reliability is. |
 | Collaboration in v1 | Valuable later, but it multiplies state, permissions, and conflict complexity too early. |
-| Editable PPTX/Figma export in v1 | Nice later; hard to do well. HTML, PNG, and PDF prove the core loop first. |
+| Fully editable semantic PPTX/Figma round-trip in v1 | Nice later; hard to do well. HTML, ZIP, PNG, PDF, raster PPTX, and portable agent handoff prove the core loop first. |
 | Leaked/private Claude Design prompt cloning | Legal, ethical, and product-risky. Compete through workflow and Korean-first execution. |
 
 ## Recommended v1 Feature Cut
@@ -76,10 +76,10 @@ Build the first vertical slice around one artifact:
 4. User edits text and 5-8 safe style properties.
 5. Right Tweaks panel updates global design variables.
 6. Patch log persists edits with undo/redo.
-7. User exports clean HTML and PNG/PDF.
+7. User exports clean HTML, ZIP, PNG/PDF, raster PPTX, and a portable agent handoff package.
 8. Korean typography and content defaults are visible in the generated result.
 
-Defer: multiplayer, public sharing, template marketplace, full layer tree, advanced drag layout, Figma/PPTX export, CMS, publishing, and complex code editing.
+Defer: multiplayer, public marketplace, full layer tree, advanced drag layout, semantic editable Figma/PPTX round-trip, CMS, publishing, and complex code editing.
 
 ## Open Questions for Planning
 

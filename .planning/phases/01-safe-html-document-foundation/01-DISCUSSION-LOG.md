@@ -135,4 +135,4 @@
 ## Deferred Ideas
 
 - AI prompt generation, direct editing, Tweaks, responsive preview, and export remain in later phases per roadmap.
-- Full production hardening for auth, hosted storage, export queues, quota/rate limits, deployment isolation, and observability remains after the core Phase 01-04 loop.
+- Full production hardening for auth, hosted storage, export queues, quota/rate limits, deployment isolation, and observability remains after the core Phase 01-05 loop.

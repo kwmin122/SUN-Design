@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-K-Design Studio is a Korean-first AI design workspace. Users enter a prompt, generate or import an HTML design artifact, preview it in a sandboxed iframe, edit visible elements through a PPT/Figma-like overlay, adjust a right-side Tweaks panel, and export the result.
+K-Design Studio is a Korean-first AI design workspace. Users create prototypes, slide decks, template-based artifacts, and other design outputs from prompt plus context, preview the live HTML artifact in a sandboxed canvas, edit visible elements through a PPT/Figma-like overlay, use inline comments and right-side Tweaks, manage versions, share, and export or hand off the result to Codex, Claude Code, Cursor, local agents, or web agents.
 
 Core value: turn generated HTML designs into something a user can inspect, tweak, edit, and export without dropping into source code.
 
@@ -10,9 +10,13 @@ Product quality bar: the target is production-complete, Claude Design-level qual
 
 Core design implementation prompt: `docs/prompts/context-driven-design-agent-prompt.md`. This prompt is for the AI that produces or implements design artifacts with HTML/CSS/JS. Pass it to design-producing agents before they create screens, prototypes, slides, landing pages, animations, infographics, or design reviews.
 
+Canonical product intent: `.planning/PRODUCT-NORTH-STAR.md`. Claude Design is the quality benchmark, not a runtime lock-in. Prompts, project files, artifact packages, and handoff flows must stay portable across Codex, Claude Code, Cursor, and similar agents. If another frequently-read planning file disagrees with that north star, update the other file before continuing.
+
+Mandatory coding principles: `docs/guides/coding-principles.md`. Every coding agent must think before coding, prefer simplicity, make surgical changes, and execute against verifiable success criteria.
+
 Current phase: Phase 01 — Safe HTML Document Foundation
-Phase status: planned
-Next SUNCO action: `/sunco:execute 1`
+Phase status: executed - awaiting verification
+Next SUNCO action: `/sunco:verify 1`
 
 ## Planned Stack
 
@@ -24,7 +28,7 @@ Next SUNCO action: `/sunco:execute 1`
 - Preview runtime: sandboxed iframe plus validated postMessage bridge
 - Visual editing: parent-owned overlay; `react-moveable` later for drag/resize
 - Persistence: Postgres/Drizzle plus object storage for assets and export artifacts
-- Export: Playwright worker for HTML/PNG/PDF first; PPTX/MP4 later
+- Export: Playwright worker for HTML/ZIP/PNG/PDF/PPTX first; Canva and agent handoff surfaces in v1; MP4 later
 
 ## Key Architecture Decisions
 
@@ -38,6 +42,9 @@ Next SUNCO action: `/sunco:execute 1`
 | Korean-first defaults | Hangul typography and Korean design contexts are part of the product wedge. |
 | Claude Design-level product bar | The final product should compete at the same quality level; every phase should avoid shortcuts that block that bar. |
 | Context-driven design agent prompt | Design-producing AI must use `docs/prompts/context-driven-design-agent-prompt.md` before creating visual artifacts. |
+| Claude Design capability parity | The product baseline includes Chat/Comments, canvas, top Share/Export/tool controls, right Tweaks, context attachments, inline comments, live knobs/sliders, versions, design systems, sharing permissions, Canva handoff, and agent handoff. |
+| Agent-agnostic runtime | Prompts, project files, artifact packages, and handoff flows must work across Codex, Claude Code, Cursor, and similar agents instead of assuming Claude Code-only tooling. |
+| Coding principles | All implementation must follow `docs/guides/coding-principles.md`: think first, keep it simple, change surgically, and verify against concrete success criteria. |
 
 ## File Conventions
 
@@ -69,9 +76,9 @@ Core model code belongs in `packages/editor-core`, not inside React components. 
 This project is managed with SUNCO. Before substantial work:
 
 1. Check state with `/sunco:status`.
-2. Continue Phase 01 through `/sunco:plan 1`.
-3. Generate a plan before implementation.
-4. Verify against `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md`.
+2. Continue the current phase from `.planning/STATE.md`.
+3. Generate or update a plan before implementation unless the phase is already executing.
+4. Verify against `.planning/PRODUCT-NORTH-STAR.md`, `.planning/REQUIREMENTS.md`, and `.planning/ROADMAP.md`.
 
 Do not make broad implementation edits outside a SUNCO workflow unless explicitly bypassing it.
 

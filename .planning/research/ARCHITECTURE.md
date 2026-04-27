@@ -2,9 +2,9 @@
 
 ## Product Shape
 
-Pipeline: prompt -> generated HTML -> sandboxed iframe preview -> direct visual editing -> right Tweaks panel -> export.
+Pipeline: prompt/context -> generated or imported HTML -> sandboxed iframe preview -> direct visual editing -> right Tweaks panel -> export/handoff.
 
-The hard problem is not rendering HTML. It is preserving editable intent while the preview remains isolated, generated markup stays arbitrary enough to feel useful, and exports remain deterministic.
+The hard problem is not rendering HTML. It is preserving editable intent while the preview remains isolated, generated markup stays arbitrary enough to feel useful, exports remain deterministic, and the same artifact package can be continued from Codex, Claude Code, Cursor, local agents, or web agents.
 
 ## Recommended Pattern
 
@@ -14,7 +14,7 @@ Use a hybrid architecture:
 2. Normalize it into an `EditGraph` with stable `data-cdx-id` attributes and node metadata.
 3. Persist all user edits as schema-validated patches against that graph.
 4. Render the result in a sandboxed iframe through a small injected preview bridge.
-5. Export by materializing `base bundle + patch log + assets` into clean standalone output.
+5. Export or hand off by materializing `base bundle + patch log + assets + tweak values` into clean standalone output and portable project files.
 
 This keeps the product flexible like "edit any generated page" without letting live iframe DOM mutations become the source of truth.
 
@@ -29,7 +29,7 @@ This keeps the product flexible like "edit any generated page" without letting l
 | Preview Sandbox | Isolated render, hit testing, layout snapshots, patch application | Parent app secrets or storage |
 | Canvas Overlay | Selection boxes, drag/resize handles, guides | Reading iframe DOM directly |
 | Tweaks Panel | Property editors, validated patch creation | Free-form DOM writes |
-| Exporter | Materialized HTML/CSS/assets, zip, screenshot/PDF jobs | Editor-only bridge scripts |
+| Exporter | Materialized HTML/CSS/assets, zip, screenshot/PDF/raster PPTX jobs, agent handoff package | Editor-only bridge scripts |
 
 ## Core Data Model
 
@@ -42,6 +42,7 @@ type ProjectBundle = {
   mediaAssets: Asset[];
   editGraph: EditGraph;
   patches: EditPatch[];
+  tweakValues?: Record<string, unknown>;
 };
 
 type EditNode = {
@@ -59,7 +60,7 @@ type EditPatch = {
   nodeId: string;
   op: "setStyle" | "setText" | "replaceAsset" | "setAttr" | "move" | "resize";
   value: unknown;
-  source: "canvas" | "tweaks" | "agent";
+  source: "system" | "canvas" | "tweaks" | "agent";
   baseRevision: string;
 };
 ```
@@ -75,7 +76,7 @@ Prompt
   -> Preview Sandbox iframe { render normalized html + bridge }
   -> Bridge emits layout snapshot + selectable nodes
   -> Canvas Overlay / Tweaks Panel create EditPatch
-  -> Project Store appends patch + updates undo stack
+  -> Project Store appends patch or tweak value + updates undo stack
   -> Preview Sandbox applies patch and re-emits affected layout
   -> Exporter materializes clean artifact
 ```
@@ -141,7 +142,8 @@ Exporter contract:
    - `index.html`
    - `assets/*`
    - optional `project.cdx.json` for re-import/edit continuation
-   - optional thumbnail/screenshot/PDF from a headless render job of the materialized stored state
+   - optional thumbnail/screenshot/PDF/raster PPTX from a headless render job of the materialized stored state
+   - optional agent handoff package with source notes and design-agent prompt files
 
 The exported HTML and any screenshot/PDF capture input must be produced from stored state. A browser may render that materialized output for capture, but the exporter must not serialize or copy ad-hoc live iframe DOM mutations.
 

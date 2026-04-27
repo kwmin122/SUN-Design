@@ -10,7 +10,7 @@
 
 Phase 01 delivers the safe foundation for one HTML design artifact. It must prove that an imported or fixture HTML document can be sanitized, normalized into a stable editable artifact model, rendered inside a sandboxed iframe, persisted, reloaded, and monitored through a validated bridge.
 
-This phase does **not** implement AI prompt generation, direct visual editing, Tweaks controls, responsive preview modes, or export. It creates the contract those later phases depend on.
+This phase does **not** implement real AI prompt generation, semantic direct visual editing, full Tweaks semantics, responsive preview modes, or export jobs. It creates the contract those later phases depend on while showing the production-shaped product shell those features will inhabit.
 
 </domain>
 
@@ -78,9 +78,15 @@ This phase does **not** implement AI prompt generation, direct visual editing, T
 - **Reason:** The product goal is an eventual deployed app. The first foundation must not encode shortcuts that block auth, server persistence, asset storage, export workers, observability, or stricter isolation later.
 - **Impact:** Planner should require real schemas, deterministic fixtures, sanitizer/bridge negative tests, reloadable state, and clear module boundaries. Full account/project permissions, hosted storage, queues, billing, quota, and production observability remain outside Phase 01 unless needed as interfaces or seams.
 
-### Claude's Discretion
+### Product Shell Boundary
 
-Claude/planner may choose the exact local persistence mechanism and sanitizer library during planning, as long as the stored-state contract, static-first policy, and bridge validation requirements above are preserved.
+- **D-11:** Phase 01 must already look like the product direction: left Chat/Comments, central canvas, top file/tool/share/export controls, right Tweaks/diagnostics, creation modes, recent work, examples, design systems, and search.
+- **Reason:** The product target is Claude Design-level completeness with agent-agnostic portability. A plain preview demo would hide layout, state, and diagnostics decisions that later phases depend on.
+- **Impact:** Phase 01 may include non-AI, fixture-only controls that rebuild the stored `ProjectBundle` through the safe source-of-truth path. This is not the full Phase 02 Tweaks/direct-editing system and must not persist live iframe DOM mutations.
+
+### Agent's Discretion
+
+The planning or implementation agent may choose the exact local persistence mechanism and sanitizer library during planning, as long as the stored-state contract, static-first policy, bridge validation requirements, product shell boundary, and agent-agnostic portability requirements above are preserved.
 
 </decisions>
 
@@ -88,7 +94,8 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 
 ## Constraints
 
-- Do not implement real AI prompt generation, direct editing, Tweaks, responsive preview, or export in Phase 01.
+- Do not implement real AI prompt generation, semantic direct editing, full Tweaks semantics, responsive preview, or export jobs in Phase 01.
+- Do not treat fixture-only shell controls as proof that the later direct-editing, Tweaks, export, sharing, or generation requirements are complete.
 - Do not persist or export the live iframe DOM as the source of truth.
 - Do not render untrusted generated/imported HTML directly into the app DOM.
 - Do not use same-origin iframe access as the core editor architecture.
@@ -107,9 +114,11 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 
 - `CLAUDE.md` — Project guide, stack direction, security rules, SUNCO workflow, current phase.
 - `.planning/PROJECT.md` — Product vision, core value, out-of-scope boundaries, and key decisions.
-- `.planning/REQUIREMENTS.md` — Phase 01 requirement IDs: CORE-02, CORE-03, CORE-04, PREV-01, PREV-03, SEC-01, SEC-02, SEC-03.
+- `.planning/PRODUCT-NORTH-STAR.md` — Canonical product intent: Claude Design-level quality benchmark, agent-agnostic runtime, durable source-of-truth, and Phase 01 boundary.
+- `.planning/REQUIREMENTS.md` — Phase 01 requirement IDs: CORE-02, CORE-03, CORE-04, CORE-05, PREV-01, PREV-03, SEC-01, SEC-02, SEC-03.
 - `.planning/ROADMAP.md` — Phase boundary, success criteria, UI hint, and phase sequencing.
 - `docs/superpowers/specs/2026-04-27-k-design-studio-design.md` — Product-level design spec and scope rationale.
+- `docs/guides/coding-principles.md` — Mandatory coding agent rules: think first, keep it simple, change surgically, and verify concrete success criteria.
 
 ### Research Inputs
 
@@ -127,8 +136,9 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 
 ### Reusable Assets
 
-- No implementation code exists yet. This is a greenfield planning repository.
-- Existing reusable assets are planning artifacts only: project spec, requirements, roadmap, research files, and `CLAUDE.md`.
+- Phase 01 Wave 1 now provides `packages/editor-core` with schemas, sanitizer/normalizer, stable `data-cdx-id`, fixture HTML, and local persistence helpers.
+- Phase 01 Wave 2 builds on those contracts with `packages/preview-runtime` and `apps/web`.
+- Existing reusable assets are planning artifacts, the core package, preview runtime, web shell, and `CLAUDE.md`.
 
 ### Established Patterns
 
@@ -138,8 +148,8 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 
 ### Integration Points
 
-- Phase 01 should create the first implementation structure later, likely under `packages/editor-core`, `packages/preview-runtime`, and `apps/web` as described in `CLAUDE.md`.
-- No codebase map exists because there is no implementation code yet.
+- Phase 01 implementation structure lives under `packages/editor-core`, `packages/preview-runtime`, and `apps/web` as described in `CLAUDE.md`.
+- No codebase map exists yet; the implementation surface is still intentionally small.
 
 </code_context>
 
@@ -151,6 +161,8 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 - The user wants the project to reach real deployment quality, so Phase 01 must avoid demo-only shortcuts even though the first slice remains narrow.
 - The preview/editing mental model is "PPT/Figma-like direct manipulation," but Phase 01 only lays the safe document/runtime foundation.
 - The app should avoid copying leaked Claude Design prompts or restricted Huashu Design templates.
+- Claude Design is the UX/quality benchmark, not the runtime dependency. The same project package must remain usable from Codex, Claude Code, Cursor, local agents, and web agents.
+- Coding agents must keep Phase 01 changes simple and surgical: no speculative features, no unrelated refactors, and no completion claim without tests or browser verification.
 - The product wedge remains Korean-first design behavior, but Korean presets and typography QA start in Phase 03/04, not Phase 01.
 
 </specifics>
@@ -159,10 +171,9 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 
 ## Assumptions
 
-- This is still a greenfield planning repository with no implementation code, package manifest, or codebase map.
 - Phase 01 fixtures can stand in for future AI-generated HTML as long as they enter the same sanitize, normalize, persist, preview, and diagnostics pipeline.
 - Local-first persistence is acceptable for Phase 01 only if the serialized model is portable to later hosted storage.
-- Production hardening for accounts, permissions, quotas, worker queues, deployment environments, and observability should be planned after the core Phase 01-04 product loop is proven.
+- Production hardening for accounts, permissions, quotas, worker queues, deployment environments, and observability should be planned after the core Phase 01-05 product loop is proven.
 
 </assumptions>
 
@@ -171,11 +182,11 @@ Claude/planner may choose the exact local persistence mechanism and sanitizer li
 ## Deferred Ideas
 
 - Real prompt-to-HTML generation — Phase 03.
-- Direct text/style editing and Tweaks panel — Phase 02.
+- Semantic direct text/style editing and full Tweaks panel behavior — Phase 02.
 - Responsive preview modes and export — Phase 04.
 - Interactive generated JavaScript preview mode — future phase after static sandbox is reliable.
-- Production hardening for auth, project permissions, hosted storage, export worker queues, quota/rate limits, deployment isolation, and observability — after the core Phase 01-04 loop is proven.
-- Full Figma/PPT parity, collaboration, template marketplace, native app packaging, editable PPTX/Figma export — out of v1.
+- Production hardening for auth, project permissions, hosted storage, export worker queues, quota/rate limits, deployment isolation, and observability — after the core Phase 01-05 loop is proven.
+- Full Figma parity, realtime multiplayer, template marketplace, native app packaging, full native PowerPoint authoring, and semantic editable Figma/PPTX round-trip — out of v1. Raster PPTX export/handoff and portable agent handoff remain v1 requirements.
 
 </deferred>
 

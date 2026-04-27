@@ -21,7 +21,7 @@ Assumed phase ladder:
 | 2 | Generated HTML is not safely mutable | 5 | 4 | 20 | One-shot AI HTML looks good but has no stable IDs, semantic nodes, editable regions, asset manifest, or round-trip contract. Every later edit becomes brittle string surgery. | P1: store a project manifest, AST/DOM snapshot, stable node IDs, asset references, and original source. P2: edits operate on structured nodes, not raw text replacement. Add round-trip fixtures. |
 | 3 | Arbitrary HTML security | 4 | 5 | 20 | A design editor must render user/AI HTML, which can include scripts, event handlers, external URLs, iframes, CSS exfiltration patterns, and unsafe DOM sinks. | P0: threat model untrusted HTML. P1: render documents on a separate origin in a sandboxed iframe. P1-P2: sanitize imported HTML with an allowlist. P3: treat LLM output as untrusted. P4: security regression corpus. |
 | 4 | Iframe editing traps | 4 | 4 | 16 | Direct iframe/contenteditable editing creates selection, undo/redo, focus, cross-origin, paste, and DOM mutation edge cases. `execCommand` is deprecated but still tempting because it preserves browser undo. | P1: iframe is preview/runtime, not source of truth. P2: parent app owns selection overlays and sends typed edit commands through `postMessage`. Avoid rich in-frame editing except text islands. |
-| 5 | Export fidelity mismatch | 4 | 4 | 16 | Browser preview, PNG, PDF, PPTX, SVG, and Figma import do not share one rendering model. Fonts, CORS images, animations, fractional pixels, media timing, and platform differences break trust. | P1: choose one primary export, likely PNG/PDF screenshot. P4: add deterministic render environment, bundled fonts/assets, golden fixtures, and screenshot comparison. Defer PPTX/Figma until preview fidelity is stable. |
+| 5 | Export fidelity mismatch | 4 | 4 | 16 | Browser preview, PNG, PDF, PPTX, SVG, and Figma import do not share one rendering model. Fonts, CORS images, animations, fractional pixels, media timing, and platform differences break trust. | P1: choose one primary export, likely browser-rendered PNG/PDF screenshot. P4: add deterministic render environment, bundled fonts/assets, golden fixtures, and screenshot comparison. Keep v1 PPTX rasterized from stored state; defer semantic editable PPTX/Figma round-trip until preview fidelity is stable. |
 | 6 | AI hallucinated or unlicensed assets | 4 | 4 | 16 | Models invent logos, image URLs, product shots, icon sets, fonts, data, and brand colors. Broken links and rights problems show up late during export or public use. | P3: asset resolver verifies existence, downloads/caches assets, records source/license, and marks unknown assets as placeholders. Require user upload or verified official source for brand work. |
 | 7 | Claude Design prompt / huashu-design contamination | 3 | 5 | 15 | Building from leaked Claude Design prompts or huashu-design internals can create IP/licensing exposure. Huashu explicitly restricts company/team/commercial use without authorization, and its README says a core protocol was derived from circulated Claude Design prompts. | P0: clean-room rule. Do not copy leaked prompts, command structure, text, templates, or proprietary workflow names. Capture only independently stated product requirements and public behavioral observations. Keep source log. |
 | 8 | Solo-builder overreach | 5 | 3 | 15 | The editor, AI agent, renderer, asset system, export stack, and security sandbox are each separate products. Building all at once yields a demo with no dependable path to editing. | P0: one-month proof is "generate or import HTML, select/edit constrained parts, export trusted image/PDF." P1-P4: one vertical slice. P5: park collaboration, plugin ecosystem, vector drawing, Figma round-trip, and full design-system authoring. |
@@ -38,7 +38,7 @@ The product should be HTML-native, not a general vector design suite. The early 
 - Plugin runtime
 - Full constraints/responsive design authoring
 - Component variants and design-token governance
-- Figma/PPTX round-trip editing
+- Semantic editable Figma/PPTX round-trip editing
 
 ### 2. HTML mutability must be designed before AI generation
 
@@ -84,7 +84,7 @@ Define an export matrix in P1:
 | PNG | Primary, browser-rendered screenshot from fixed viewport |
 | PDF | Primary or secondary, fixed viewport/pages only |
 | SVG | Only for simple static vector-ish scenes |
-| PPTX | Defer unless it is a narrow deck-only mode |
+| PPTX | v1 raster slide export only; defer semantic editability unless it is a strict subset |
 | Figma | Defer; export image or HTML package first |
 | MP4/GIF | Defer unless animation is the core product |
 
@@ -123,7 +123,7 @@ Do not copy leaked prompt text, internal command structures, hidden tool policy,
 | P2 | Constrained edit commands, parent-owned undo/redo, DOM round-trip tests, text/style/image edits only |
 | P3 | LLM output validator, asset resolver/cache, source/license metadata, placeholder fallback |
 | P4 | Deterministic renderer, screenshot/golden export tests, security corpus, broken asset tests |
-| P5 | Only then consider advanced layout, variants, animation export, Figma/PPTX bridge, collaboration |
+| P5 | Only then consider advanced layout, variants, animation export, semantic Figma/PPTX bridge, collaboration |
 
 ## Sources Checked
 

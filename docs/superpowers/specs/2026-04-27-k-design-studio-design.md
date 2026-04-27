@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-K-Design Studio is a browser-based AI design workspace for builders who want Claude Design-level output without being locked into Claude Design itself. A user writes a prompt, receives a high-fidelity HTML artifact, previews it in an iframe, edits the rendered result directly like a lightweight slide or Figma canvas, adjusts meaningful design variables in a right-side Tweaks panel, and exports the result.
+K-Design Studio is a browser-based AI design workspace for builders who want Claude Design-level output without being locked into Claude Design itself. A user writes a prompt, receives a high-fidelity HTML artifact, previews it in an iframe, edits the rendered result directly like a lightweight slide or Figma canvas, adjusts meaningful design variables in a right-side Tweaks panel, exports the result, and can hand off the same artifact package to Codex, Claude Code, Cursor, local agents, or web agents.
 
 The first product is not a full Figma clone. It is a controllable HTML design workbench where the generated artifact remains the source of truth and the visual editor makes common edits safe.
 
@@ -26,7 +26,7 @@ The v1 slice is one local web app that can:
 4. Select visible text and block elements through an overlay.
 5. Edit text, common style properties, and structured tweak variables.
 6. Persist the edited artifact.
-7. Export HTML and PNG/PDF.
+7. Export HTML, ZIP, PNG/PDF, raster PPTX, and a portable agent handoff package.
 
 This proves the hard product loop before attempting collaboration, marketplace features, full layer editing, or native Figma parity.
 
@@ -42,7 +42,7 @@ This proves the hard product loop before attempting collaboration, marketplace f
 
 Use an HTML-first visual editor shell:
 
-- The prompt composer calls a provider abstraction.
+- The prompt composer calls a provider/runtime abstraction rather than a Claude-only backend.
 - The generated output is stored as an artifact record: HTML, extracted editable nodes, tweak schema, assets, and revision history.
 - The preview iframe is sandboxed.
 - An overlay controller maps screen coordinates to editable DOM nodes.
@@ -72,14 +72,14 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 
 ## Components
 
-- `PromptComposer`: prompt entry, model/provider selection later, generation status.
+- `PromptComposer`: prompt entry, runtime-family/provider selection later, generation status.
 - `ArtifactStore`: saves versions, current HTML, assets, tweak schema, patch history.
 - `PreviewFrame`: sandboxed iframe with postMessage bridge.
 - `InspectorBridge`: script injected into preview HTML to report selectable nodes and apply safe patches.
 - `SelectionOverlay`: visual selection rectangles, hover outlines, click-to-select behavior.
 - `RightPanel`: property inspector and Tweaks panel.
 - `PatchEngine`: normalizes edits into patch records and updates HTML safely.
-- `ExportService`: HTML download, PNG screenshot, PDF print export, later PPTX/MP4.
+- `ExportService`: HTML/ZIP download, PNG screenshot, PDF print export, raster PPTX export, agent handoff package, later MP4 and semantic editable PPTX.
 - `VerificationHarness`: Playwright screenshot and console-error checks.
 
 ## Data Flow
@@ -117,7 +117,7 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 - Real-time multiplayer cursors.
 - Native desktop app packaging.
 - Automatic Figma export.
-- Full PPTX layer-perfect round trip.
+- Full PPTX layer-perfect round trip and semantic editable Figma/PPTX round-trip.
 - Running leaked Claude Design prompts verbatim.
 
 ## Risks and Assumptions
@@ -125,7 +125,7 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 - Generated HTML is not naturally structured for visual editing. v1 assumes generated artifacts include stable node IDs and a tweak schema.
 - Direct DOM editing can diverge from source. v1 records patches and regenerates source through controlled transforms.
 - Arbitrary HTML is a security risk. v1 renders in sandboxed iframe with a minimal postMessage bridge.
-- Export fidelity is harder than preview fidelity. v1 starts with HTML, PNG, and PDF before editable PPTX or MP4.
+- Export fidelity is harder than preview fidelity. v1 starts with HTML, ZIP, PNG, PDF, raster PPTX, and portable agent handoff before semantic editable PPTX/Figma or MP4.
 - Korean typography quality needs explicit design rules, not just translated UI text.
 
 ## Success Criteria
@@ -133,7 +133,7 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 1. A user can generate a visible HTML artifact from a prompt or local mock provider.
 2. A user can select a text element in the preview and edit its copy without touching code.
 3. A user can change at least three meaningful style or tweak controls and see the iframe update.
-4. A user can export the final artifact as HTML and PNG/PDF.
+4. A user can export the final artifact as HTML, ZIP, PNG/PDF, raster PPTX, or a portable agent handoff package.
 5. The app blocks or safely contains arbitrary generated HTML scripts.
 6. Playwright verifies the core loop without console errors.
 
@@ -146,6 +146,7 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 | PPT/Figma-like direct editing | user directive / office-hours |
 | right-side Tweaks panel | user directive / office-hours |
 | export | user directive / office-hours |
+| runtime-agnostic handoff | user directive / Huashu-style portability reference |
 | Korean-first design behavior | user directive / brainstorming |
 | avoid full Figma clone in v1 | brainstorming scope control |
 

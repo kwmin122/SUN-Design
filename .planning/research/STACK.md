@@ -1,7 +1,7 @@
 # STACK Research
 
 Date: 2026-04-27  
-Product: Claude Design-grade Korean design IDE. Prompt -> generated HTML -> iframe preview -> direct rendered editing -> right Tweaks panel -> export to HTML/PDF/PPTX/PNG/MP4 eventually.
+Product: Claude Design-grade, agent-agnostic Korean design IDE. Prompt/context -> generated or imported HTML -> iframe preview -> direct rendered editing -> right Tweaks panel -> export/handoff to HTML/ZIP/PDF/PPTX/PNG/Canva/agents, with MP4 later.
 
 ## Executive Recommendation
 
@@ -68,16 +68,17 @@ Reasoning:
 
 Confidence: high.
 
-## AI Generation Stack
+## AI and Runtime Adapter Stack
 
 Use an internal model adapter, not model calls scattered through UI code.
 
 Recommended:
 
-- Primary generation path: `apps/web` route handler -> `packages/ai` service -> Vercel AI SDK or direct Anthropic SDK.
-- Default model class: Claude Sonnet-class for design generation, with fallback provider slots.
+- Primary generation path: `apps/web` route handler -> `packages/ai` service -> provider/runtime adapter.
+- Default runtime should follow the user's active agent family where possible: Codex-family inside Codex workflows, Claude-family inside Claude workflows, and portable fallback adapters elsewhere. The user experience must not start as an API-key/provider chooser.
 - Output contract: model must return `GeneratedArtifact`, `EditPatch[]`, or `BaseRevisionProposal` plus sanitized HTML/CSS, not arbitrary final HTML only.
 - Require structured output and repair loops: `generate -> parse -> sanitize -> render -> visual smoke -> fix`.
+- Agent handoff contract: export plain project files (`index.html`, `project.cdx.json`, assets, source notes, and design-agent prompt files) that Codex, Claude Code, Cursor, local agents, and web agents can read.
 
 Do not make provider/API key choice visible as the main UX. Users type natural Korean prompts; the stack handles model routing.
 

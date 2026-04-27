@@ -7,8 +7,8 @@
 - HTML/CSS handling: sanitize and normalize generated HTML with stable `data-cdx-id` attributes; use `parse5` plus PostCSS or similar AST tooling.
 - Overlay/editing: parent-side selection overlay and `react-moveable` for later drag/resize/rotate; Tweaks panel emits typed patches, not DOM/string edits.
 - Persistence: Postgres plus Drizzle, object storage for assets/exports/snapshots, operation log plus periodic snapshots; keep future CRDT optional.
-- Export: standalone HTML first; PNG/PDF via Playwright in a separate worker container with bundled Korean fonts and deterministic viewport; defer semantic PPTX/MP4.
-- AI boundary: one `AgentAdapter` behind the app API; model output must validate into `GeneratedArtifact`, `EditPatch[]`, or `BaseRevisionProposal`.
+- Export: standalone HTML/ZIP first; PNG/PDF via Playwright in a separate worker container with bundled Korean fonts and deterministic viewport; raster PPTX and portable agent handoff in v1; defer semantic editable PPTX/Figma round-trip and MP4.
+- AI/runtime boundary: one provider/runtime adapter behind the app API; model output must validate into `GeneratedArtifact`, `EditPatch[]`, or `BaseRevisionProposal`. The artifact package, not Claude Code-specific state, is the durable cross-agent contract.
 
 ## Table stakes v1
 
@@ -41,7 +41,7 @@
 
 ## Top risks and mitigations
 
-- Figma-clone scope creep: define non-goals in P0; exclude vector tools, full auto layout, multiplayer, plugins, variants, Figma/PPTX round-trip, and advanced layout authoring from v1.
+- Figma-clone scope creep: define non-goals in P0; exclude vector tools, full auto layout, multiplayer, plugins, variants, semantic editable Figma/PPTX round-trip, and advanced layout authoring from v1.
 - Generated HTML is not safely mutable: require stable IDs, node classification, asset manifest, editable prop schema, patch log, and round-trip fixtures before expanding AI generation.
 - Arbitrary HTML security: treat all model/user HTML as untrusted; sanitize with an allowlist, strip scripts/event handlers/dangerous URLs, use sandboxed iframe without same-origin access, validate bridge messages by source/nonce/schema.
 - Iframe editing traps: iframe reports geometry and hosts limited text islands only; parent owns selection, undo/redo, inspector state, persistence, and export orchestration.

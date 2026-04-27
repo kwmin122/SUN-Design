@@ -2,7 +2,7 @@
 
 ## What This Is
 
-K-Design Studio is a Korean-first, browser-based AI design workspace. It lets a user enter a prompt, generate a high-fidelity HTML design, preview it in a sandboxed iframe, directly edit visible text and layout/style properties like a lightweight PPT/Figma canvas, adjust a right-side Tweaks panel, and export the result. The first version is an HTML-first design editor, not a full Figma clone.
+K-Design Studio is a Korean-first, browser-based AI design workspace. It lets a user create prototypes, slide decks, template-based artifacts, and other design outputs from prompt plus context, preview the live HTML artifact in a sandboxed canvas, directly edit visible text and layout/style properties, use inline comments and right-side Tweaks, manage versions, share, and export or hand off the result to Codex, Claude Code, Cursor, local agents, or web agents. The first version is an HTML-first design editor, not a full Figma clone.
 
 ## Core Value
 
@@ -14,6 +14,10 @@ The target is product completeness 100: Claude Design-level quality, not a light
 
 Design-producing agents must use `docs/prompts/context-driven-design-agent-prompt.md` before creating screens, prototypes, slides, landing pages, animations, infographics, or design reviews. That prompt defines the product's design execution standard: fact-check first, collect source notes and design context, use real assets, avoid generic AI visuals, stage work, and verify in browser before completion.
 
+The canonical product intent is `.planning/PRODUCT-NORTH-STAR.md`. Claude Design is the quality and UX benchmark, but the runtime must be agent-agnostic. Prompts, project files, artifact packages, and handoff flows must remain portable across Codex, Claude Code, Cursor, and similar agents. If a planning, research, or phase file differs from this north star, the differing file is stale.
+
+Coding agents must follow `docs/guides/coding-principles.md`: think before coding, keep the solution simple, make surgical changes, and execute against verifiable success criteria.
+
 ## Requirements
 
 ### Validated
@@ -23,12 +27,16 @@ Design-producing agents must use `docs/prompts/context-driven-design-agent-promp
 ### Active
 
 - [ ] User can submit a prompt and receive a generated or mock-generated HTML artifact.
+- [ ] User can start from a Claude Design-level, agent-agnostic workspace with left Chat/Comments, central canvas, top tool/export/share controls, and right Tweaks.
+- [ ] User can choose prototype, slide deck, template-based, or other artifact creation modes.
+- [ ] User can attach screenshots, images, documents, codebase references, existing design files, and web captures as context.
 - [ ] User can preview the artifact in a sandboxed iframe.
 - [ ] User can select visible editable elements in the preview.
 - [ ] User can edit text and common style properties without touching code.
-- [ ] User can adjust meaningful tweak controls in a right-side panel.
+- [ ] User can adjust meaningful tweak controls in a right-side panel and see changes apply immediately.
 - [ ] User can persist changes as artifact revisions.
-- [ ] User can export the result as HTML and image/PDF in v1.
+- [ ] User can export the result as HTML, ZIP, image/PDF, and PPTX in v1, with Canva and agent-agnostic handoff surfaces planned in v1.
+- [ ] User can continue work from Codex, Claude Code, Cursor, local agents, or web agents without changing the core artifact model.
 - [ ] The product uses Korean-first typography and design defaults.
 
 ### Out of Scope
@@ -36,7 +44,7 @@ Design-producing agents must use `docs/prompts/context-driven-design-agent-promp
 - Full Figma vector editor parity - too broad before proving the HTML editing loop.
 - Multi-user collaboration - valuable later, not needed for first proof.
 - Marketplace or public sharing platform - distribution layer deferred.
-- Editable PPTX round trip - export target can come after HTML/PNG/PDF are reliable.
+- Full editable PPTX round trip - v1 supports PPTX export/handoff first; full native PowerPoint authoring is later.
 - Verbatim use of leaked Claude Design prompts - legal and ethical risk.
 
 ## Key Decisions
@@ -50,6 +58,9 @@ Design-producing agents must use `docs/prompts/context-driven-design-agent-promp
 | Korean-first design system | The user's wedge is not just "Claude Design clone"; it is a Korean product/design sensibility. | Accepted |
 | Claude Design-level quality bar | The product must reach the same class of completeness and polish; phase scope may be narrow, but foundations cannot be throwaway shortcuts. | Accepted |
 | Context-driven design agent prompt | Visual artifact generation must be driven by `docs/prompts/context-driven-design-agent-prompt.md`, not ad-hoc generic web design behavior. | Accepted |
+| Claude Design capability parity | Official and Korean reference checks define v1 parity surfaces: Chat/Comments, canvas, top tools, Tweaks, context attachments, inline comments, live knobs, versioning, design systems, sharing, exports, Canva, and agent handoff. | Accepted |
+| Agent-agnostic runtime | Huashu Design shows the value of skill-style portability. K-Design Studio should provide a product UI while keeping prompts, artifact packages, and handoffs portable across Codex, Claude Code, Cursor, and similar agents. | Accepted |
+| Coding principles | Implementation agents must follow `docs/guides/coding-principles.md` so changes stay thoughtful, simple, surgical, and verifiable. | Accepted |
 
 ## Context
 
@@ -93,4 +104,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-27 after adding core design agent prompt*
+*Last updated: 2026-04-27 after agent-agnostic north star sync*

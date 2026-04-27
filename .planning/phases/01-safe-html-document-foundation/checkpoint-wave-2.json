@@ -1,0 +1,48 @@
+{
+  "schema": "sunco-checkpoint-v1",
+  "phase": "01",
+  "phase_name": "Safe Html Document Foundation",
+  "phase_slug": "01-safe-html-document-foundation",
+  "wave_completed": 2,
+  "timestamp": "2026-04-27T13:03:25Z",
+  "plans_completed": [
+    {
+      "id": "01-01",
+      "title": "Create workspace and editor-core document foundation",
+      "status": "completed",
+      "lint_status": "PASS",
+      "summary_path": ".planning/phases/01-safe-html-document-foundation/01-01-SUMMARY.md",
+      "last_commit": "7cb6b08",
+      "files_written": [
+        "packages/editor-core/src/schemas.ts",
+        "packages/editor-core/src/normalize.ts",
+        "packages/editor-core/src/persistence.ts"
+      ]
+    },
+    {
+      "id": "01-02",
+      "title": "Build sandboxed preview runtime and reloadable diagnostics UI",
+      "status": "completed",
+      "lint_status": "PASS",
+      "summary_path": ".planning/phases/01-safe-html-document-foundation/01-02-SUMMARY.md",
+      "last_commit": "77a40c4",
+      "files_written": [
+        "packages/preview-runtime/src/bridge.ts",
+        "packages/preview-runtime/src/validation.ts",
+        "apps/web/components/editor-shell.tsx",
+        "apps/web/tests/phase-01.spec.ts"
+      ]
+    }
+  ],
+  "plans_pending": [],
+  "blast_radius": {
+    "risk": "HIGH",
+    "files_in_scope": 74,
+    "files_transitively_affected": 0
+  },
+  "lint_gate_overrides": [],
+  "branch": "main",
+  "interrupted": false,
+  "next_wave": null,
+  "next_action": "/sunco:verify 1"
+}
