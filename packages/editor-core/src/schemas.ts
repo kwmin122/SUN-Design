@@ -13,6 +13,26 @@ export const AssetRefSchema = z.object({
 });
 export type AssetRef = z.infer<typeof AssetRefSchema>;
 
+export const CreationModeSchema = z.enum(["prototype", "slideDeck", "template", "other"]);
+export type CreationMode = z.infer<typeof CreationModeSchema>;
+
+export const FidelityTargetSchema = z.enum(["wireframe", "highFidelity"]);
+export type FidelityTarget = z.infer<typeof FidelityTargetSchema>;
+
+export const KoreanPresetSchema = z.enum(["saasLanding", "pitchDeck", "mobileApp"]);
+export type KoreanPreset = z.infer<typeof KoreanPresetSchema>;
+
+export const ContextAttachmentSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["image", "document", "slideDeck", "spreadsheet", "codebase", "webCapture", "designFile"]),
+  name: z.string().min(1),
+  status: z.enum(["verified", "cached", "placeholder", "blocked", "unknown"]),
+  sourceUrl: z.string().optional(),
+  mimeType: z.string().optional(),
+  note: z.string().optional()
+});
+export type ContextAttachment = z.infer<typeof ContextAttachmentSchema>;
+
 export const EditNodeKindSchema = z.enum([
   "frame",
   "block",
@@ -114,8 +134,13 @@ export const ProjectBundleSchema = z.object({
   createdAt: z.string().min(1),
   updatedAt: z.string().min(1),
   source: z.object({
-    kind: z.enum(["fixture", "imported"]),
-    filename: z.string().optional()
+    kind: z.enum(["fixture", "imported", "generated"]),
+    filename: z.string().optional(),
+    prompt: z.string().optional(),
+    mode: CreationModeSchema.optional(),
+    fidelity: FidelityTargetSchema.optional(),
+    preset: KoreanPresetSchema.optional(),
+    contextAttachments: z.array(ContextAttachmentSchema).optional()
   }),
   html: z.object({
     raw: z.string(),

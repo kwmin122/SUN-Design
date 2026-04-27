@@ -301,6 +301,30 @@ button {
   font-weight: 700;
 }
 
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.preset-grid button {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #ffffff;
+  color: var(--muted);
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.preset-grid button.active {
+  border-color: #7c91b7;
+  color: var(--text);
+  box-shadow: 0 0 0 2px rgba(82, 119, 174, 0.15);
+}
+
 .prompt-composer textarea {
   width: 100%;
   min-height: 110px;
@@ -316,6 +340,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   padding: 10px;
 }
 
@@ -343,6 +368,27 @@ button {
   border-color: #d8b1a1;
   background: #e5c3b5;
   color: #ffffff;
+}
+
+.context-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 10px 10px;
+}
+
+.context-chips span,
+.source-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f8f6f1;
+  color: var(--muted);
+  padding: 0 9px;
+  font-size: 11px;
+  font-weight: 820;
 }
 
 .design-workspace {
@@ -746,6 +792,22 @@ button {
   font-size: 12px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.asset-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.asset-card h2 {
+  margin-bottom: 0;
+}
+
+.source-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .tweak-group {

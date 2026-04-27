@@ -6,3 +6,4 @@ export * from "./normalize.js";
 export * from "./persistence.js";
 export * from "./fixtures.js";
 export * from "./patches.js";
+export * from "./generation.js";

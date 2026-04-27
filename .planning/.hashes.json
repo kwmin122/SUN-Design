@@ -2,7 +2,7 @@
   ".planning/PROJECT.md": "b2d545e4cbbc6491e14ca13a6c73e3c74edcea78cdabc149ffae7783a4034f98",
   ".planning/REQUIREMENTS.md": "9f1b42368751a51e6e6378a53a446a3bd13052851ff545192323d24be43909f9",
   ".planning/ROADMAP.md": "b7b04aaf823f3a04b7f07faceda4d0724404c20a3a2ba9d83c53d2c27c30dd48",
-  ".planning/STATE.md": "7ab68e6a8ba6e944bd39384203508496972d86e0be05c6afddb0263a7a47c055",
+  ".planning/STATE.md": "16f1d092a8e902ea0d5571c1886cc48c1d02df57adc48fa12b3f030517617daf",
   ".planning/phases/01-safe-html-document-foundation/01-01-PLAN.md": "51176ca0d9f83cab9bada0375e6f8ec45476c7e283d88b880045dbafcdd691fc",
   ".planning/phases/01-safe-html-document-foundation/01-01-SUMMARY.md": "f06ab28fa4d3aa063183aa5b8524bea2a65629714602b07f2cace94ca8de87b4",
   ".planning/phases/01-safe-html-document-foundation/01-02-PLAN.md": "ee8e7d508e6b3160a3430758922e5de66a47dbe0edbb364fe09b498dbfb9564b",
@@ -16,5 +16,9 @@
   ".planning/phases/02-direct-editing-comments-and-tweaks/02-01-PLAN.md": "c205812d4463ede19cb38c94317e55bdfeeae640d65bc08d7c25a8953105c1da",
   ".planning/phases/02-direct-editing-comments-and-tweaks/02-01-SUMMARY.md": "daff338dfbf1838d2d9233dd7dbbbdb01f4cc712ff77b0f9e0018939d9d64418",
   ".planning/phases/02-direct-editing-comments-and-tweaks/02-CONTEXT.md": "33e0cfaa5082ea52f123ee7c9a74717d23d187d50ac2f448ea03c0be3a4dfb9a",
-  ".planning/phases/02-direct-editing-comments-and-tweaks/02-VERIFICATION.md": "cca08c32a4d77ffb2e10d14fe45f54811f333be4d23222426c63bf98543a2f27"
+  ".planning/phases/02-direct-editing-comments-and-tweaks/02-VERIFICATION.md": "cca08c32a4d77ffb2e10d14fe45f54811f333be4d23222426c63bf98543a2f27",
+  ".planning/phases/03-prompt-creation-modes-assets-and-korean-presets/03-01-PLAN.md": "d286bf372f45be3f7a475c9c01a11f70301332e8871a17d083ba5241934a3a63",
+  ".planning/phases/03-prompt-creation-modes-assets-and-korean-presets/03-01-SUMMARY.md": "f513044ae389fadf2cc9977a2596eccca724428e515bf881f1e0c138c245b596",
+  ".planning/phases/03-prompt-creation-modes-assets-and-korean-presets/03-CONTEXT.md": "bc93aa43db7768b7a8d432d5281a447aae4d3625dbdbef934860fe0dbb2ac856",
+  ".planning/phases/03-prompt-creation-modes-assets-and-korean-presets/03-VERIFICATION.md": "b585ac21d02a97c09d1348ec6e6928c4357f94eb70f8cf734216974bb163ebda"
 }

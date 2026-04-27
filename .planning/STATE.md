@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 1 |
-| Current phase | Phase 03: Prompt, Creation Modes, Assets, and Korean Presets |
+| Current phase | Phase 04: Responsive Preview and Export Fidelity |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -23,13 +23,13 @@
 |-------|------|--------|--------------|
 | Phase 01 | Safe HTML Document Foundation | complete | 9 |
 | Phase 02 | Direct Editing, Comments, and Tweaks | complete | 13 |
-| Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | current | 9 |
-| Phase 04 | Responsive Preview and Export Fidelity | planned | 9 |
+| Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | complete | 9 |
+| Phase 04 | Responsive Preview and Export Fidelity | current | 9 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | planned | 9 |
 
 ## Active Phase
 
-Phase 03 is the active phase. It must connect prompt creation modes, fidelity targets, context attachments, and asset handling to the same safe artifact pipeline without introducing real AI provider dependence in this milestone slice.
+Phase 04 is the active phase. It must add responsive preview modes, deterministic stored-state export surfaces, and Korean typography quality flags without treating transient iframe mutations as export source of truth.
 
 ## Key Decisions Carried Forward
 
@@ -73,10 +73,12 @@ Phase 03 is the active phase. It must connect prompt creation modes, fidelity ta
 - Phase 01 formal verification passed in `.planning/phases/01-safe-html-document-foundation/01-VERIFICATION.md`.
 - Phase 02 completed the parent-owned direct editing loop in `apps/web` and `packages/*`: iframe node registry/selection bridge, overlay, inspector, text/style/layout patches, comments, versions, undo/redo, persisted Tweaks, and browser path tests.
 - Phase 02 verification passed in `.planning/phases/02-direct-editing-comments-and-tweaks/02-VERIFICATION.md`. Computer Use remained blocked by macOS Apple event error `-1743`, so Playwright browser automation and screenshots were used as fallback visual verification.
+- Phase 03 completed deterministic local prompt creation with stateful creation modes, fidelity targets, context attachment metadata, asset manifest statuses, web-capture placeholders, and three Korean-first presets.
+- Phase 03 verification passed in `.planning/phases/03-prompt-creation-modes-assets-and-korean-presets/03-VERIFICATION.md`.
 
 ---
-*Last updated: 2026-04-27 after Phase 02 verification*
-- **phase**: 3
-- **last_updated**: 2026-04-27T22:48:00.000+09:00
-- **status**: phase-03-current
-- **next_action**: Discuss Phase 3: /sunco:discuss 3
+*Last updated: 2026-04-27 after Phase 03 verification*
+- **phase**: 4
+- **last_updated**: 2026-04-27T22:58:00.000+09:00
+- **status**: phase-04-current
+- **next_action**: Discuss Phase 4: /sunco:discuss 4

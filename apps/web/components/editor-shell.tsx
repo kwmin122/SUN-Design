@@ -25,7 +25,11 @@ import {
 import type {
   BundleVersion,
   CanvasComment,
+  ContextAttachment,
+  CreationMode,
   EditPatch,
+  FidelityTarget,
+  KoreanPreset,
   PreviewError,
   PreviewNodeRect,
   ProjectBundle
@@ -35,6 +39,8 @@ import {
   ProjectBundleSchema,
   applyEditPatchToBundle,
   applyEditPatchesToBundle,
+  createGeneratedProjectBundle,
+  createMockContextAttachment,
   findNodeIdsByClass,
   normalizeHtml
 } from "@kdesign/editor-core";
@@ -105,7 +111,11 @@ export function EditorShell() {
   const [tweaksEnabled, setTweaksEnabled] = useState(true);
   const [toolMode, setToolMode] = useState<"comment" | "edit" | "draw">("edit");
   const [tweaks, setTweaks] = useState<FixtureTweaks>(DEFAULT_TWEAKS);
-  const [prompt, setPrompt] = useState("Describe what you want to create...");
+  const [prompt, setPrompt] = useState("한국어 SaaS 제품 랜딩 페이지를 high fidelity로 만들어줘");
+  const [creationMode, setCreationMode] = useState<CreationMode>("prototype");
+  const [fidelityTarget, setFidelityTarget] = useState<FidelityTarget>("highFidelity");
+  const [activePreset, setActivePreset] = useState<KoreanPreset>("saasLanding");
+  const [contextAttachments, setContextAttachments] = useState<ContextAttachment[]>([]);
   const [nodeRects, setNodeRects] = useState<Record<string, PreviewNodeRect>>({});
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
@@ -332,6 +342,33 @@ export function EditorShell() {
     resetRuntime();
   }, [redoStack, resetRuntime]);
 
+  const addContextAttachment = useCallback((kind: ContextAttachment["kind"], name: string) => {
+    setContextAttachments((current) => {
+      const attachment = createMockContextAttachment(kind, name);
+      if (current.some((item) => item.id === attachment.id)) {
+        return current;
+      }
+      return [...current, attachment];
+    });
+  }, []);
+
+  const createFromPrompt = useCallback((presetOverride?: KoreanPreset) => {
+    const preset = presetOverride ?? activePreset;
+    const mode = preset === "pitchDeck" ? "slideDeck" : creationMode;
+    const bundle = createGeneratedProjectBundle({
+      id: `generated-${preset}`,
+      prompt,
+      mode,
+      fidelity: fidelityTarget,
+      preset,
+      contextAttachments
+    });
+    setActivePreset(preset);
+    setCreationMode(mode);
+    commitBundle(bundle, { trackUndo: true });
+    setSelectedNodeId(null);
+  }, [activePreset, commitBundle, contextAttachments, creationMode, fidelityTarget, prompt]);
+
   const setFeedColumns = (feedColumns: FixtureTweaks["feedColumns"]) => {
     rebuildWithTweaks({ ...tweaks, feedColumns });
   };
@@ -381,17 +418,49 @@ export function EditorShell() {
             </div>
           </div>
           <div className="creation-tabs" aria-label="Creation modes">
-            <button className="active" type="button">Prototype</button>
-            <button type="button"><Presentation size={14} /> Slide deck</button>
-            <button type="button">From template</button>
-            <button type="button">Other</button>
+            <button
+              className={creationMode === "prototype" ? "active" : ""}
+              type="button"
+              onClick={() => setCreationMode("prototype")}
+            >
+              Prototype
+            </button>
+            <button
+              className={creationMode === "slideDeck" ? "active" : ""}
+              type="button"
+              onClick={() => setCreationMode("slideDeck")}
+            >
+              <Presentation size={14} /> Slide deck
+            </button>
+            <button
+              className={creationMode === "template" ? "active" : ""}
+              type="button"
+              onClick={() => setCreationMode("template")}
+            >
+              From template
+            </button>
+            <button
+              className={creationMode === "other" ? "active" : ""}
+              type="button"
+              onClick={() => setCreationMode("other")}
+            >
+              Other
+            </button>
           </div>
           <div className="fidelity-grid" aria-label="Fidelity target">
-            <button type="button">
+            <button
+              className={fidelityTarget === "wireframe" ? "active" : ""}
+              type="button"
+              onClick={() => setFidelityTarget("wireframe")}
+            >
               <span>Wireframe</span>
               <small>빠른 구조와 흐름</small>
             </button>
-            <button className="active" type="button">
+            <button
+              className={fidelityTarget === "highFidelity" ? "active" : ""}
+              type="button"
+              onClick={() => setFidelityTarget("highFidelity")}
+            >
               <span>High fidelity</span>
               <small>실제 자산과 완성도</small>
             </button>
@@ -429,6 +498,29 @@ export function EditorShell() {
             <Search size={14} />
             <span>Search...</span>
           </div>
+          <div className="preset-grid" aria-label="Korean presets">
+            <button
+              className={activePreset === "saasLanding" ? "active" : ""}
+              type="button"
+              onClick={() => createFromPrompt("saasLanding")}
+            >
+              SaaS 랜딩
+            </button>
+            <button
+              className={activePreset === "pitchDeck" ? "active" : ""}
+              type="button"
+              onClick={() => createFromPrompt("pitchDeck")}
+            >
+              피치덱
+            </button>
+            <button
+              className={activePreset === "mobileApp" ? "active" : ""}
+              type="button"
+              onClick={() => createFromPrompt("mobileApp")}
+            >
+              모바일 앱
+            </button>
+          </div>
         </section>
 
         <section className="prompt-composer" aria-label="Design prompt composer">
@@ -438,10 +530,26 @@ export function EditorShell() {
             aria-label="Prompt"
           />
           <div className="composer-actions">
-            <button type="button" aria-label="Attach asset"><Paperclip size={15} /></button>
+            <button
+              type="button"
+              aria-label="Attach image context"
+              onClick={() => addContextAttachment("image", "제품 스크린샷.png")}
+            >
+              <Paperclip size={15} /> Image
+            </button>
             <button type="button" aria-label="Voice prompt"><Mic size={15} /></button>
-            <button type="button"><Import size={15} /> Import</button>
-            <button className="send-button" type="button"><Send size={15} /> Send</button>
+            <button type="button" onClick={() => addContextAttachment("slideDeck", "기존 발표자료.pptx")}><Import size={15} /> PPTX</button>
+            <button type="button" onClick={() => addContextAttachment("document", "제품 요구사항.docx")}>DOCX</button>
+            <button type="button" onClick={() => addContextAttachment("spreadsheet", "시장 데이터.xlsx")}>XLSX</button>
+            <button type="button" onClick={() => addContextAttachment("webCapture", "https://example.com")}>Web</button>
+            <button className="send-button" type="button" onClick={() => createFromPrompt()}><Send size={15} /> Send</button>
+          </div>
+          <div className="context-chips" data-testid="context-attachments">
+            {contextAttachments.length === 0 ? (
+              <span>첨부 컨텍스트 없음</span>
+            ) : contextAttachments.map((attachment) => (
+              <span key={attachment.id}>{attachment.name} · {attachment.status}</span>
+            ))}
           </div>
         </section>
       </aside>
@@ -629,6 +737,27 @@ export function EditorShell() {
                     { label: "블루", active: tweaks.pointColor === "blue", onClick: () => setPointColor("blue") }
                   ]}
                 />
+              </section>
+              <section className="tweak-card asset-card" data-testid="asset-manifest">
+                <h2>Context & Assets</h2>
+                <div className="source-meta">
+                  <span>{projectBundle.source.kind}</span>
+                  {projectBundle.source.mode ? <span>{projectBundle.source.mode}</span> : null}
+                  {projectBundle.source.fidelity ? <span>{projectBundle.source.fidelity}</span> : null}
+                  {projectBundle.source.preset ? <span>{projectBundle.source.preset}</span> : null}
+                </div>
+                <div className="mini-list">
+                  <strong>Attached context</strong>
+                  {(projectBundle.source.contextAttachments ?? []).length === 0 ? <span>아직 없음</span> : projectBundle.source.contextAttachments?.map((attachment) => (
+                    <span key={attachment.id}>{attachment.name} · {attachment.status}</span>
+                  ))}
+                </div>
+                <div className="mini-list">
+                  <strong>Asset manifest</strong>
+                  {projectBundle.assets.length === 0 ? <span>비어 있음</span> : projectBundle.assets.slice(0, 5).map((asset) => (
+                    <span key={asset.id}>{asset.kind} · {asset.status}</span>
+                  ))}
+                </div>
               </section>
               <DiagnosticsPanel
                 bundle={projectBundle}
