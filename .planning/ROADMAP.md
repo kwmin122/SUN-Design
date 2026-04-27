@@ -6,12 +6,12 @@ K-Design Studio v1 is planned as one milestone with four standard-granularity ph
 
 | Phase | Name | Milestone | Complexity | v1 Requirements |
 |-------|------|-----------|------------|-----------------|
-| Phase 1 | Safe HTML Document Foundation | 1 | High | CORE-02, CORE-03, CORE-04, PREV-01, PREV-03, SEC-01, SEC-02, SEC-03 |
-| Phase 2 | Direct Editing and Tweaks | 1 | High | EDIT-01, EDIT-02, EDIT-03, EDIT-04, EDIT-05, TWK-01, TWK-02, TWK-03 |
-| Phase 3 | Prompt, Assets, and Korean Presets | 1 | Medium | CORE-01, SEC-04, KOR-01, KOR-02 |
-| Phase 4 | Responsive Preview and Export Fidelity | 1 | High | PREV-02, EXP-01, EXP-02, EXP-03, EXP-04, KOR-03 |
+| Phase 01 | Safe HTML Document Foundation | 1 | High | CORE-02, CORE-03, CORE-04, PREV-01, PREV-03, SEC-01, SEC-02, SEC-03 |
+| Phase 02 | Direct Editing and Tweaks | 1 | High | EDIT-01, EDIT-02, EDIT-03, EDIT-04, EDIT-05, TWK-01, TWK-02, TWK-03 |
+| Phase 03 | Prompt, Assets, and Korean Presets | 1 | Medium | CORE-01, SEC-04, KOR-01, KOR-02 |
+| Phase 04 | Responsive Preview and Export Fidelity | 1 | High | PREV-02, EXP-01, EXP-02, EXP-03, EXP-04, KOR-03 |
 
-## Phase 1: Safe HTML Document Foundation
+## Phase 01 — Safe HTML Document Foundation
 
 **Goal:** Build the core document model and sandboxed preview path for a single imported or mock-generated HTML artifact, including normalization, persistence, bridge validation, and error reporting.
 
@@ -31,7 +31,7 @@ K-Design Studio v1 is planned as one milestone with four standard-granularity ph
 
 **UI hint:** Main shell with a document/import entry point, central sandboxed iframe preview, and a compact preview diagnostics area.
 
-## Phase 2: Direct Editing and Tweaks
+## Phase 02 — Direct Editing and Tweaks
 
 **Goal:** Add the parent-owned visual editing loop: hover/select editable nodes, apply text/style/tweak patches, keep selection overlays aligned, and support undo/redo through a patch log.
 
@@ -52,7 +52,7 @@ K-Design Studio v1 is planned as one milestone with four standard-granularity ph
 
 **UI hint:** Parent-owned selection overlay, right-side Tweaks and inspector panel, and toolbar undo/redo controls.
 
-## Phase 3: Prompt, Assets, and Korean Presets
+## Phase 03 — Prompt, Assets, and Korean Presets
 
 **Goal:** Connect document creation to Korean or English prompts, route generated or mock-generated output into the same safe artifact pipeline, and establish Korean-first defaults, presets, and asset manifest handling.
 
@@ -72,7 +72,7 @@ K-Design Studio v1 is planned as one milestone with four standard-granularity ph
 
 **UI hint:** Prompt composer with Korean-first presets, asset status indicators, and preset cards for the three initial product contexts.
 
-## Phase 4: Responsive Preview and Export Fidelity
+## Phase 04 — Responsive Preview and Export Fidelity
 
 **Goal:** Finish the v1 output contract with deterministic desktop/tablet/mobile preview modes, clean standalone HTML export, PNG/PDF export from stored state, and Korean typography quality flags.
 
@@ -96,32 +96,32 @@ K-Design Studio v1 is planned as one milestone with four standard-granularity ph
 
 | REQ-ID | Phase |
 |--------|-------|
-| CORE-01 | Phase 3 |
-| CORE-02 | Phase 1 |
-| CORE-03 | Phase 1 |
-| CORE-04 | Phase 1 |
-| PREV-01 | Phase 1 |
-| PREV-02 | Phase 4 |
-| PREV-03 | Phase 1 |
-| EDIT-01 | Phase 2 |
-| EDIT-02 | Phase 2 |
-| EDIT-03 | Phase 2 |
-| EDIT-04 | Phase 2 |
-| EDIT-05 | Phase 2 |
-| TWK-01 | Phase 2 |
-| TWK-02 | Phase 2 |
-| TWK-03 | Phase 2 |
-| EXP-01 | Phase 4 |
-| EXP-02 | Phase 4 |
-| EXP-03 | Phase 4 |
-| EXP-04 | Phase 4 |
-| SEC-01 | Phase 1 |
-| SEC-02 | Phase 1 |
-| SEC-03 | Phase 1 |
-| SEC-04 | Phase 3 |
-| KOR-01 | Phase 3 |
-| KOR-02 | Phase 3 |
-| KOR-03 | Phase 4 |
+| CORE-01 | Phase 03 |
+| CORE-02 | Phase 01 |
+| CORE-03 | Phase 01 |
+| CORE-04 | Phase 01 |
+| PREV-01 | Phase 01 |
+| PREV-02 | Phase 04 |
+| PREV-03 | Phase 01 |
+| EDIT-01 | Phase 02 |
+| EDIT-02 | Phase 02 |
+| EDIT-03 | Phase 02 |
+| EDIT-04 | Phase 02 |
+| EDIT-05 | Phase 02 |
+| TWK-01 | Phase 02 |
+| TWK-02 | Phase 02 |
+| TWK-03 | Phase 02 |
+| EXP-01 | Phase 04 |
+| EXP-02 | Phase 04 |
+| EXP-03 | Phase 04 |
+| EXP-04 | Phase 04 |
+| SEC-01 | Phase 01 |
+| SEC-02 | Phase 01 |
+| SEC-03 | Phase 01 |
+| SEC-04 | Phase 03 |
+| KOR-01 | Phase 03 |
+| KOR-02 | Phase 03 |
+| KOR-03 | Phase 04 |
 
 All 26 v1 requirements map to exactly one phase. v2 requirements and out-of-scope items are intentionally excluded from Milestone 1.
 

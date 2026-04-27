@@ -6,28 +6,29 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 1 |
-| Current phase | Phase 1: Safe HTML Document Foundation |
+| Current phase | Phase 01: Safe HTML Document Foundation |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
 | Repository | https://github.com/kwmin122/SUN-Design |
 | Branch | main |
 | Roadmap status | created |
+| Phase 01 status | context_ready |
 | Requirement coverage | 26/26 v1 requirements mapped exactly once |
-| Next action | `/sunco:discuss 1` |
+| Next action | `/sunco:plan 1` |
 
 ## Phase Queue
 
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
-| Phase 1 | Safe HTML Document Foundation | current | 8 |
-| Phase 2 | Direct Editing and Tweaks | planned | 8 |
-| Phase 3 | Prompt, Assets, and Korean Presets | planned | 4 |
-| Phase 4 | Responsive Preview and Export Fidelity | planned | 6 |
+| Phase 01 | Safe HTML Document Foundation | context_ready | 8 |
+| Phase 02 | Direct Editing and Tweaks | planned | 8 |
+| Phase 03 | Prompt, Assets, and Korean Presets | planned | 4 |
+| Phase 04 | Responsive Preview and Export Fidelity | planned | 6 |
 
 ## Active Phase
 
-Phase 1 proves the safe artifact foundation before any richer editing surface depends on it. The phase should close only when a single HTML artifact can be sanitized, normalized with stable editable IDs, rendered in a sandboxed iframe, persisted, reloaded, and monitored for preview errors through a validated bridge.
+Phase 01 proves the safe artifact foundation before any richer editing surface depends on it. The phase should close only when a single HTML artifact can be sanitized, normalized with stable editable IDs, rendered in a sandboxed iframe, persisted, reloaded, and monitored for preview errors through a validated bridge.
 
 ## Key Decisions Carried Forward
 
@@ -48,6 +49,7 @@ Phase 1 proves the safe artifact foundation before any richer editing surface de
 - `.planning/ROADMAP.md` mirrors that mapping and keeps v2 requirements outside Milestone 1.
 - Research summary risks were incorporated into phase ordering: security and normalization first, direct editing second, prompt and asset handling third, export fidelity last.
 - The local workspace is initialized as a git repository on `main` and connected to `origin` at `https://github.com/kwmin122/SUN-Design`.
+- Phase 01 context was captured in `.planning/phases/01-safe-html-document-foundation/01-CONTEXT.md`; next step is `/sunco:plan 1`.
 
 ---
-*Last updated: 2026-04-27 after roadmap creation*
+*Last updated: 2026-04-27 after Phase 01 context capture*

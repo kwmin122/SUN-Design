@@ -6,8 +6,9 @@ K-Design Studio is a Korean-first AI design workspace. Users enter a prompt, gen
 
 Core value: turn generated HTML designs into something a user can inspect, tweak, edit, and export without dropping into source code.
 
-Current phase: Phase 1 - Safe HTML Document Foundation  
-Next SUNCO action: `/sunco:discuss 1`
+Current phase: Phase 01 — Safe HTML Document Foundation  
+Phase status: context_ready  
+Next SUNCO action: `/sunco:plan 1`
 
 ## Planned Stack
 
@@ -62,7 +63,7 @@ Core model code belongs in `packages/editor-core`, not inside React components. 
 This project is managed with SUNCO. Before substantial work:
 
 1. Check state with `/sunco:status`.
-2. Start Phase 1 through `/sunco:discuss 1`.
+2. Continue Phase 01 through `/sunco:plan 1`.
 3. Generate a plan before implementation.
 4. Verify against `.planning/REQUIREMENTS.md` and `.planning/ROADMAP.md`.
 
@@ -70,9 +71,8 @@ Do not make broad implementation edits outside a SUNCO workflow unless explicitl
 
 ## Current Phase
 
-Phase 1: Safe HTML Document Foundation
+Phase 01: Safe HTML Document Foundation
 
 Goal: build the core document model and sandboxed preview path for one imported or mock-generated HTML artifact, including normalization, persistence, bridge validation, and error reporting.
 
-Phase 1 must close only when a single artifact can be sanitized, normalized with stable IDs, rendered in a sandboxed iframe, persisted, reloaded, and monitored for preview errors.
-
+Phase 01 must close only when a single artifact can be sanitized, normalized with stable IDs, rendered in a sandboxed iframe, persisted, reloaded, and monitored for preview errors.
