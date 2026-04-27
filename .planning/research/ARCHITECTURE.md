@@ -2,9 +2,9 @@
 
 ## Product Shape
 
-Pipeline: prompt/context -> generated or imported HTML -> sandboxed iframe preview -> direct visual editing -> right Tweaks panel -> export/handoff.
+Pipeline: prompt/context -> generated or imported HTML -> sandboxed iframe preview -> PPT/Figma/Paper-style direct visual editing -> right Tweaks panel -> export/handoff.
 
-The hard problem is not rendering HTML. It is preserving editable intent while the preview remains isolated, generated markup stays arbitrary enough to feel useful, exports remain deterministic, and the same artifact package can be continued from Codex, Claude Code, Cursor, local agents, or web agents.
+The hard problem is not rendering HTML. It is preserving editable intent while the preview remains isolated, generated markup stays arbitrary enough to feel useful, canvas edits behave like real design-tool operations, exports remain deterministic, and the same artifact package can be continued from Codex, Claude Code, Cursor, local agents, or web agents.
 
 ## Recommended Pattern
 
@@ -92,7 +92,7 @@ Mapping strategy:
 - The iframe bridge owns hit testing with `elementFromPoint()` and sends `nodeId` events to the parent.
 - The parent only accepts node ids that exist in the current `EditGraph`.
 - After agent regeneration, re-anchor patches by `data-cdx-id` first, then fingerprint, then path. Unmatched patches become explicit conflicts.
-- First release should avoid deep semantic anchoring, full design-system inference, and auto-layout reconstruction. Support stable element identity, text edits, asset swaps, color, typography, spacing, size, and simple position changes first.
+- First release should avoid deep semantic anchoring, full design-system inference, and full auto-layout reconstruction. It must still support stable element identity, text edits, asset swaps, color, typography, spacing, constrained move/resize/reorder/alignment, and simple position changes first.
 
 ## Sandbox Security
 
@@ -221,7 +221,7 @@ Recommended for this product.
 2. Static sandbox preview: render sanitized sample HTML in iframe with bridge messaging.
 3. Normalizer: inject stable ids, classify basic nodes, emit layout snapshots.
 4. Selection loop: click iframe element -> bridge message -> overlay selection -> Tweaks panel binds to node.
-5. Patch loop: edit text/color/typography/spacing/size/image -> append patch -> iframe applies patch.
+5. Patch loop: edit text/color/typography/spacing/size/image or constrained move/resize/reorder/alignment -> append patch -> iframe applies patch.
 6. Prompt adapter: generate/import HTML into the same normalization pipeline. Start with one runtime behind `AgentAdapter`.
 7. Exporter: deterministic standalone HTML + assets + optional re-import manifest.
 8. Regeneration/re-anchor: selected-node prompt edits, patch replay, conflict surfacing.
@@ -231,6 +231,6 @@ Recommended for this product.
 
 Plan the first vertical slice around this proof:
 
-`typed prompt or sample HTML -> normalized iframe preview -> select visible element -> edit in Tweaks panel -> reload and preserve patch -> export clean HTML`.
+`typed prompt or sample HTML -> normalized iframe preview -> select visible element -> edit/manipulate through overlay and Tweaks panel -> reload and preserve patch -> export clean HTML`.
 
 Anything outside that loop should be deferred unless it directly improves the mapping, sandbox, persistence, or export contract.

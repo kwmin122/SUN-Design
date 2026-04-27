@@ -2,11 +2,11 @@
 
 ## What This Is
 
-K-Design Studio is a Korean-first, browser-based AI design workspace. It lets a user create prototypes, slide decks, template-based artifacts, and other design outputs from prompt plus context, preview the live HTML artifact in a sandboxed canvas, directly edit visible text and layout/style properties, use inline comments and right-side Tweaks, manage versions, share, and export or hand off the result to Codex, Claude Code, Cursor, local agents, or web agents. The first version is an HTML-first design editor, not a full Figma clone.
+K-Design Studio is a Korean-first, browser-based AI design workspace. It lets a user create prototypes, slide decks, template-based artifacts, and other design outputs from prompt plus context, preview the live HTML artifact in a sandboxed canvas, directly edit visible text and layout/style properties, manipulate generated blocks through PPT/Figma/Paper-style handles, use inline comments and right-side Tweaks, manage versions, share, and export or hand off the result to Codex, Claude Code, Cursor, local agents, or web agents. The first version is an HTML-first design editor, not a full Figma clone.
 
 ## Core Value
 
-Turn generated HTML designs into something a user can inspect, tweak, edit, and export without dropping into source code.
+Turn generated HTML designs into directly editable working documents a user can inspect, tweak, move, resize, restyle, comment on, and export without dropping into source code.
 
 ## Product Quality Bar
 
@@ -33,6 +33,7 @@ Coding agents must follow `docs/guides/coding-principles.md`: think before codin
 - [ ] User can preview the artifact in a sandboxed iframe.
 - [ ] User can select visible editable elements in the preview.
 - [ ] User can edit text and common style properties without touching code.
+- [ ] User can directly manipulate generated text, image, card, section, and slide-like/artboard blocks with constrained PPT/Figma/Paper-style handles.
 - [ ] User can adjust meaningful tweak controls in a right-side panel and see changes apply immediately.
 - [ ] User can persist changes as artifact revisions.
 - [ ] User can export the result as HTML, ZIP, image/PDF, and PPTX in v1, with Canva and agent-agnostic handoff surfaces planned in v1.
@@ -57,6 +58,7 @@ Coding agents must follow `docs/guides/coding-principles.md`: think before codin
 | Patch-limited visual editing | Full arbitrary DOM editing is too fragile for v1. | Accepted |
 | Korean-first design system | The user's wedge is not just "Claude Design clone"; it is a Korean product/design sensibility. | Accepted |
 | Claude Design-level quality bar | The product must reach the same class of completeness and polish; phase scope may be narrow, but foundations cannot be throwaway shortcuts. | Accepted |
+| Beyond Claude Design editability | Claude Design is the baseline, but the product must go further by making generated output directly editable like constrained PPT/Figma/Paper canvas objects. | Accepted |
 | Context-driven design agent prompt | Visual artifact generation must be driven by `docs/prompts/context-driven-design-agent-prompt.md`, not ad-hoc generic web design behavior. | Accepted |
 | Claude Design capability parity | Official and Korean reference checks define v1 parity surfaces: Chat/Comments, canvas, top tools, Tweaks, context attachments, inline comments, live knobs, versioning, design systems, sharing, exports, Canva, and agent handoff. | Accepted |
 | Agent-agnostic runtime | Huashu Design shows the value of skill-style portability. K-Design Studio should provide a product UI while keeping prompts, artifact packages, and handoffs portable across Codex, Claude Code, Cursor, and similar agents. | Accepted |
@@ -72,7 +74,7 @@ Coding agents must follow `docs/guides/coding-principles.md`: think before codin
 ## Office Hours Summary
 
 - **Goal:** Build a real product, not only a prompt skill.
-- **Demand evidence:** User directly wants the Claude Design-grade loop with prompt generation, iframe preview, direct editing, Tweaks, and export.
+- **Demand evidence:** User directly wants the Claude Design-grade loop with prompt generation, iframe preview, direct editing, Tweaks, and export, plus Paper-style direct editability of generated output.
 - **Status quo:** Existing options split between proprietary product, skill-only HTML generation, and generic design editors.
 - **Target user:** Korean AI-native builder who works through agents and wants design output that can be edited without source-code work.
 - **Narrowest wedge:** One local web app proving prompt-to-edit-to-export for a single HTML artifact.
@@ -84,7 +86,7 @@ Three approaches were considered:
 
 1. **Skill-only generator:** Fastest, but misses direct manipulation.
 2. **Full design editor clone:** Ambitious, but too large for the first proof.
-3. **HTML-first visual editor:** Chosen because it matches the user's desired product loop while keeping scope shippable.
+3. **HTML-first visual editor:** Chosen because it matches the user's desired product loop while keeping scope shippable and making generated output editable through constrained canvas operations.
 
 ## Evolution
 

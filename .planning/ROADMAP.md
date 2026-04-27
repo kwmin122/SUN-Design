@@ -2,12 +2,12 @@
 
 ## Summary
 
-K-Design Studio v1 is planned as one milestone with five standard-granularity phases. The sequence proves the safe HTML editing loop first, then layers direct manipulation, Claude Design-level creation modes and context, export fidelity, and the remaining design-system/share/agent-agnostic handoff surfaces. The canonical product north star is `.planning/PRODUCT-NORTH-STAR.md`.
+K-Design Studio v1 is planned as one milestone with five standard-granularity phases. The sequence proves the safe HTML editing loop first, then layers PPT/Figma/Paper-style direct manipulation, Claude Design-level creation modes and context, export fidelity, and the remaining design-system/share/agent-agnostic handoff surfaces. The canonical product north star is `.planning/PRODUCT-NORTH-STAR.md`.
 
 | Phase | Name | Milestone | Complexity | v1 Requirements |
 |-------|------|-----------|------------|-----------------|
 | Phase 01 | Safe HTML Document Foundation | 1 | High | CORE-02, CORE-03, CORE-04, CORE-05, PREV-01, PREV-03, SEC-01, SEC-02, SEC-03 |
-| Phase 02 | Direct Editing, Comments, and Tweaks | 1 | High | EDIT-01, EDIT-02, EDIT-03, EDIT-04, EDIT-05, EDIT-06, EDIT-07, TWK-01, TWK-02, TWK-03, TWK-04, TWK-05 |
+| Phase 02 | Direct Editing, Comments, and Tweaks | 1 | High | EDIT-01, EDIT-02, EDIT-03, EDIT-04, EDIT-05, EDIT-06, EDIT-07, EDIT-08, TWK-01, TWK-02, TWK-03, TWK-04, TWK-05 |
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | 1 | High | CORE-01, CORE-06, CORE-07, CORE-08, CORE-09, CORE-10, SEC-04, KOR-01, KOR-02 |
 | Phase 04 | Responsive Preview and Export Fidelity | 1 | High | PREV-02, EXP-01, EXP-02, EXP-03, EXP-04, EXP-05, EXP-06, KOR-03, QUAL-01 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | 1 | High | DSGN-01, DSGN-02, DSGN-03, EXP-07, EXP-08, AGENT-01, AGENT-02, SHARE-01, SHARE-02 |
@@ -35,9 +35,9 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 
 ## Phase 02 — Direct Editing, Comments, and Tweaks
 
-**Goal:** Add the parent-owned visual editing loop: hover/select editable nodes, apply text/style/tweak patches, keep selection overlays aligned, support undo/redo through a patch log, and capture inline comments for targeted changes.
+**Goal:** Add the parent-owned visual editing loop: hover/select editable nodes, apply text/style/layout/tweak patches, keep selection overlays aligned, support undo/redo through a patch log, capture inline comments for targeted changes, and make generated output directly editable like a constrained PPT/Figma/Paper canvas.
 
-**Requirements:** EDIT-01, EDIT-02, EDIT-03, EDIT-04, EDIT-05, EDIT-06, EDIT-07, TWK-01, TWK-02, TWK-03, TWK-04, TWK-05
+**Requirements:** EDIT-01, EDIT-02, EDIT-03, EDIT-04, EDIT-05, EDIT-06, EDIT-07, EDIT-08, TWK-01, TWK-02, TWK-03, TWK-04, TWK-05
 
 **Success Criteria:**
 - Hovering editable text, image, button, and block elements highlights the correct target in the preview.
@@ -47,6 +47,7 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 - Undo and redo correctly move backward and forward through text, style, and tweak changes without corrupting stored state.
 - Inline comments can target a selected canvas region and persist as part of the project interaction state.
 - The user can save the current version and explore an alternate direction without losing the prior iteration.
+- Generated text, image, card, section, and slide-like/artboard blocks can be directly manipulated with handles for constrained move, resize, reorder, and alignment operations.
 - Global tweak controls from the right-side panel update the iframe preview immediately and persist with the document.
 - The tweak schema exposes meaningful controls such as palette, density, font scale, mood, radius, and spacing.
 - Live knobs, sliders, and segmented controls update spacing, color, density, and layout without requiring prompt rewrites.
@@ -56,7 +57,7 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 
 **Milestone:** 1
 
-**UI hint:** Parent-owned selection overlay, right-side Tweaks and inspector panel, and toolbar undo/redo controls.
+**UI hint:** Parent-owned selection overlay, resize/move handles, alignment guides, section/artboard controls, right-side Tweaks and inspector panel, and toolbar undo/redo controls.
 
 ## Phase 03 — Prompt, Creation Modes, Assets, and Korean Presets
 
@@ -151,6 +152,7 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 | EDIT-05 | Phase 02 |
 | EDIT-06 | Phase 02 |
 | EDIT-07 | Phase 02 |
+| EDIT-08 | Phase 02 |
 | TWK-01 | Phase 02 |
 | TWK-02 | Phase 02 |
 | TWK-03 | Phase 02 |
@@ -180,7 +182,7 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 | SHARE-01 | Phase 05 |
 | SHARE-02 | Phase 05 |
 
-All 48 v1 requirements map to exactly one phase. v2 requirements and out-of-scope items are intentionally excluded from Milestone 1.
+All 49 v1 requirements map to exactly one phase. v2 requirements and out-of-scope items are intentionally excluded from Milestone 1.
 
 ---
 *Last updated: 2026-04-27 after agent-agnostic north star sync*

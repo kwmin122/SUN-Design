@@ -7,6 +7,7 @@ Sources checked:
 - <https://simsimit00.tistory.com/580>
 - <https://daleseo.com/claude-design/>
 - <https://github.com/alchaincyf/huashu-design>
+- <https://paper.design/>
 
 Checked date: 2026-04-27
 
@@ -14,7 +15,7 @@ Checked date: 2026-04-27
 
 The official Claude Design guide describes Claude Design as a tool for creating designs, interactive prototypes, presentations, and more through conversation with Claude.
 
-Huashu Design is also a key reference because it demonstrates the opposite packaging model: a design-producing skill that is agent-agnostic and can run from Claude Code, Cursor, Codex, OpenClaw, Hermes, or similar coding agents. K-Design Studio should combine the product surface and polish of Claude Design with the runtime portability of that skill-style model.
+Huashu Design is also a key reference because it demonstrates the opposite packaging model: a design-producing skill that is agent-agnostic and can run from Claude Code, Cursor, Codex, OpenClaw, Hermes, or similar coding agents. Paper is a key reference for the next bar: a web-standard canvas connected to agents, code, and data where design and code stay in one language. K-Design Studio should combine the product surface and polish of Claude Design, the runtime portability of that skill-style model, and Paper-style editable canvas/source continuity.
 
 The core product layout has two main areas:
 
@@ -43,6 +44,7 @@ K-Design Studio must cover these capabilities at product-complete quality:
 - Organization or project design system setup for colors, typography, and component patterns.
 - Design-system learning from codebase, brand assets, uploaded references, and existing UI patterns.
 - Canvas review of generated artifacts.
+- PPT/Figma/Paper-style direct manipulation of generated text, image, card, section, and artboard-like blocks through constrained handles.
 - Chat-based iteration for broad changes.
 - Inline comments for targeted component-level changes.
 - Direct canvas text editing for copy adjustments.
@@ -68,3 +70,4 @@ K-Design Studio must not be Claude Code-only. The durable contract is:
 - Design-agent prompts and skills live as portable Markdown/project files.
 - Agent handoff exports a plain package that Codex, Claude Code, Cursor, and similar tools can read.
 - Provider/runtime adapters are replaceable; no core data model should assume Anthropic-only APIs or Claude-only tool semantics.
+- Direct canvas edits export as typed operations over `ProjectBundle + EditGraph + patch log`, not as live DOM snapshots.

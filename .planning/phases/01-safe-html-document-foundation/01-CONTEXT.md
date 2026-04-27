@@ -160,6 +160,7 @@ The planning or implementation agent may choose the exact local persistence mech
 - The product should feel like a real app, not a skill-only generator.
 - The user wants the project to reach real deployment quality, so Phase 01 must avoid demo-only shortcuts even though the first slice remains narrow.
 - The preview/editing mental model is "PPT/Figma-like direct manipulation," but Phase 01 only lays the safe document/runtime foundation.
+- The product must go beyond Claude Design by turning generated output into a constrained PPT/Figma/Paper-style editable canvas. Phase 01 only lays the safe identity, persistence, bridge, and shell foundation for that later manipulation.
 - The app should avoid copying leaked Claude Design prompts or restricted Huashu Design templates.
 - Claude Design is the UX/quality benchmark, not the runtime dependency. The same project package must remain usable from Codex, Claude Code, Cursor, local agents, and web agents.
 - Coding agents must keep Phase 01 changes simple and surgical: no speculative features, no unrelated refactors, and no completion claim without tests or browser verification.
@@ -182,7 +183,7 @@ The planning or implementation agent may choose the exact local persistence mech
 ## Deferred Ideas
 
 - Real prompt-to-HTML generation — Phase 03.
-- Semantic direct text/style editing and full Tweaks panel behavior — Phase 02.
+- Semantic direct text/style/layout editing, constrained PPT/Figma/Paper-style canvas manipulation, and full Tweaks panel behavior — Phase 02.
 - Responsive preview modes and export — Phase 04.
 - Interactive generated JavaScript preview mode — future phase after static sandbox is reliable.
 - Production hardening for auth, project permissions, hosted storage, export worker queues, quota/rate limits, deployment isolation, and observability — after the core Phase 01-05 loop is proven.

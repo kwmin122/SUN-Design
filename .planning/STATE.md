@@ -14,7 +14,7 @@
 | Branch | main |
 | Roadmap status | created |
 | Phase 01 status | executed - awaiting verification |
-| Requirement coverage | 48/48 v1 requirements mapped exactly once |
+| Requirement coverage | 49/49 v1 requirements mapped exactly once |
 | Next action | `/sunco:verify 1` |
 
 ## Phase Queue
@@ -22,7 +22,7 @@
 | Phase | Name | Status | Requirements |
 |-------|------|--------|--------------|
 | Phase 01 | Safe HTML Document Foundation | executed - awaiting verification | 9 |
-| Phase 02 | Direct Editing, Comments, and Tweaks | planned | 12 |
+| Phase 02 | Direct Editing, Comments, and Tweaks | planned | 13 |
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | planned | 9 |
 | Phase 04 | Responsive Preview and Export Fidelity | planned | 9 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | planned | 9 |
@@ -44,6 +44,7 @@ Phase 01 has executed both planned waves and is ready for independent verificati
 - Design-producing agents must use `docs/prompts/context-driven-design-agent-prompt.md` before creating visual artifacts.
 - Full Figma parity, realtime multiplayer, full native PowerPoint authoring, marketplace, and leaked prompt cloning stay outside v1. PPTX export/handoff is part of v1.
 - The product baseline now includes the visible Claude Design-level working surface: left Chat/Comments, central live canvas, top Share/Export/tool modes, right Tweaks, context attachments, inline comments, live adjustment controls, design-system inheritance/learning, sharing permissions, Canva handoff, and agent-agnostic handoff.
+- The product must go beyond Claude Design by making generated results directly editable as constrained PPT/Figma/Paper-style canvas objects: text, images, cards, sections, and slide-like/artboard blocks can be selected, moved, resized, reordered, aligned, restyled, commented on, and persisted as typed operations.
 - Runtime portability is required: Codex, Claude Code, Cursor, local agents, and web agents must all be able to continue from the same portable artifact package.
 - Coding agents must follow `docs/guides/coding-principles.md`: think before coding, keep the solution simple, make surgical changes, and verify against concrete success criteria.
 
@@ -53,7 +54,7 @@ Phase 01 has executed both planned waves and is ready for independent verificati
 
 ## Verification Notes
 
-- `.planning/REQUIREMENTS.md` traceability was expanded to 48/48 v1 requirements after checking the official Claude Design guide, Korean reference articles, and Huashu Design's agent-agnostic packaging model.
+- `.planning/REQUIREMENTS.md` traceability is now 49/49 v1 requirements after checking Claude Design references, Huashu Design's agent-agnostic packaging model, and adding the explicit PPT/Figma/Paper-style direct manipulation requirement.
 - `.planning/ROADMAP.md` now maps those requirements across five v1 phases and keeps only true post-v1 items outside Milestone 1.
 - Research summary risks were incorporated into phase ordering: security and normalization first, direct editing second, prompt and asset handling third, export fidelity last.
 - The local workspace is initialized as a git repository on `main` and connected to `origin` at `https://github.com/kwmin122/SUN-Design`.

@@ -1,7 +1,7 @@
 # STACK Research
 
 Date: 2026-04-27  
-Product: Claude Design-grade, agent-agnostic Korean design IDE. Prompt/context -> generated or imported HTML -> iframe preview -> direct rendered editing -> right Tweaks panel -> export/handoff to HTML/ZIP/PDF/PPTX/PNG/Canva/agents, with MP4 later.
+Product: Claude Design-grade, agent-agnostic Korean design IDE that goes further into PPT/Figma/Paper-style direct editability. Prompt/context -> generated or imported HTML -> iframe preview -> direct rendered editing and constrained canvas manipulation -> right Tweaks panel -> export/handoff to HTML/ZIP/PDF/PPTX/PNG/Canva/agents, with MP4 later.
 
 ## Executive Recommendation
 
@@ -95,7 +95,7 @@ Prompt
   -> Safe HTML/CSS renderer
   -> Sandboxed iframe preview
   -> Iframe bridge measures DOMRects and hit targets
-  -> Parent overlay renders selection boxes and handles
+  -> Parent overlay renders selection boxes, handles, and alignment guides
   -> Tweaks panel emits typed operations
   -> ProjectBundle updates, snapshots, rerender
 ```
@@ -138,14 +138,14 @@ Direct editing model:
 - Click/select: iframe bridge hit-tests `[data-cdx-id]` and posts selected node ID plus rect.
 - Drag/resize/rotate: parent overlay uses `react-moveable`; commit `setLayout`, `setSize`, `setTransform`, or `setStyle` operations.
 - Text edit: start controlled text-edit mode inside iframe bridge, then commit `setText`.
-- Tweaks panel: write typed style/layout ops, not raw string mutation.
+- Tweaks panel and canvas handles: write typed style/layout ops, not raw string mutation.
 - Undo/redo: operation log with inverse ops.
 
 Design subset:
 
 - For the first real release, require generated output to use an editor-safe subset: artboards, frames, groups, text, image, icon/SVG, button, input, repeated cards.
 - Prefer absolute positioning inside artboard/page design surfaces.
-- Allow flex/grid containers only when the Tweaks panel edits container properties instead of free-dragging children.
+- Allow flex/grid containers only when Tweaks or canvas handles edit container properties through constrained operations instead of free-dragging children.
 - Arbitrary existing HTML import is read-only or "convert to editable subset" until proven.
 
 Confidence: medium-high. This is the hardest part of the product and should be prototyped before expanding features.

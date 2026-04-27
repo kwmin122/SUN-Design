@@ -30,6 +30,7 @@
 - [ ] **EDIT-05**: User can see a visible selection overlay that stays aligned with the iframe content during scroll and resize.
 - [ ] **EDIT-06**: User can leave inline comments on specific canvas regions and route those comments into targeted design changes.
 - [ ] **EDIT-07**: User can save the current direction and explore an alternate version without losing the prior iteration.
+- [ ] **EDIT-08**: User can directly manipulate generated text, image, card, section, and slide-like/artboard blocks with PPT/Figma/Paper-style handles for constrained move, resize, reorder, and alignment operations.
 
 ### Tweaks
 
@@ -89,15 +90,15 @@
 - [ ] **COLL-01**: Multiple users can comment or collaborate on the same document.
 - [ ] **DSGN-04**: User can maintain project-level design skills, brand rules, and reusable presets beyond the core design-system setup.
 - [ ] **DATA-01**: Documents can sync between local storage and a hosted account.
-- [ ] **LAY-01**: User can drag/resize blocks with snap lines and simple layout constraints.
+- [ ] **LAY-01**: User can perform advanced freeform layout authoring beyond the constrained v1 direct-manipulation subset.
 - [ ] **REG-01**: Patches can be replayed across AI-regenerated base revisions with conflict handling.
 
 ---
 
 ## Out of Scope
 
-- Full Figma vector/path editor - too broad for the first vertical slice.
-- Full PPT authoring suite - distracts from HTML-native editing.
+- Full Figma vector/path editor - too broad for the first vertical slice; v1 still requires constrained Figma/Paper-like canvas manipulation of generated HTML blocks.
+- Full PPT authoring suite - distracts from HTML-native editing; v1 still requires slide-like/artboard block editing and PPTX handoff/export.
 - Public marketplace/templates store - distribution comes after core editing/export is trustworthy.
 - Realtime multiplayer editing - requires stable operation semantics first.
 - Native desktop app packaging - web app is enough to prove the product loop.
@@ -131,6 +132,7 @@
 | EDIT-05 | Phase 02 | planned |
 | EDIT-06 | Phase 02 | planned |
 | EDIT-07 | Phase 02 | planned |
+| EDIT-08 | Phase 02 | planned |
 | TWK-01 | Phase 02 | planned |
 | TWK-02 | Phase 02 | planned |
 | TWK-03 | Phase 02 | planned |

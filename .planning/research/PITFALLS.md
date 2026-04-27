@@ -2,7 +2,7 @@
 
 ## Scope
 
-Greenfield, solo-builder HTML design editor aimed at Claude Design-grade output: prompt-to-HTML artifacts, visual preview, constrained editing, asset handling, and export. This is not a full Figma clone.
+Greenfield, solo-builder HTML design editor aimed at Claude Design-grade output plus PPT/Figma/Paper-style direct editability: prompt-to-HTML artifacts, visual preview, constrained canvas manipulation, asset handling, and export. This is not a full Figma clone.
 
 Assumed phase ladder:
 
@@ -17,7 +17,7 @@ Assumed phase ladder:
 
 | Rank | Risk | L | I | Score | Why it fails early | Phase mitigations |
 |---:|---|---:|---:|---:|---|---|
-| 1 | Trying to clone Figma | 5 | 5 | 25 | Burns month one on layers, auto-layout, vector tools, multiplayer, plugins, comments, constraints, and file format problems before proving the core HTML-native loop. | P0: define non-goals. P1-P2: support only HTML artifact preview plus a small editable block/property set. P5: defer canvas-grade features until editing/export are reliable. |
+| 1 | Trying to clone Figma | 5 | 5 | 25 | Burns month one on layers, auto-layout, vector tools, multiplayer, plugins, comments, constraints, and file format problems before proving the core HTML-native loop. | P0: define non-goals. P1-P2: support HTML artifact preview plus a small editable block/property set and constrained direct manipulation. P5: defer advanced canvas-grade features until editing/export are reliable. |
 | 2 | Generated HTML is not safely mutable | 5 | 4 | 20 | One-shot AI HTML looks good but has no stable IDs, semantic nodes, editable regions, asset manifest, or round-trip contract. Every later edit becomes brittle string surgery. | P1: store a project manifest, AST/DOM snapshot, stable node IDs, asset references, and original source. P2: edits operate on structured nodes, not raw text replacement. Add round-trip fixtures. |
 | 3 | Arbitrary HTML security | 4 | 5 | 20 | A design editor must render user/AI HTML, which can include scripts, event handlers, external URLs, iframes, CSS exfiltration patterns, and unsafe DOM sinks. | P0: threat model untrusted HTML. P1: render documents on a separate origin in a sandboxed iframe. P1-P2: sanitize imported HTML with an allowlist. P3: treat LLM output as untrusted. P4: security regression corpus. |
 | 4 | Iframe editing traps | 4 | 4 | 16 | Direct iframe/contenteditable editing creates selection, undo/redo, focus, cross-origin, paste, and DOM mutation edge cases. `execCommand` is deprecated but still tempting because it preserves browser undo. | P1: iframe is preview/runtime, not source of truth. P2: parent app owns selection overlays and sends typed edit commands through `postMessage`. Avoid rich in-frame editing except text islands. |
@@ -30,7 +30,7 @@ Assumed phase ladder:
 
 ### 1. Do not clone Figma in month one
 
-The product should be HTML-native, not a general vector design suite. The early wedge is: AI/user produces HTML, the app previews it, user makes constrained edits, and the app exports faithfully. Figma-class surfaces that should be explicit non-goals in P0:
+The product should be HTML-native, not a general vector design suite. The early wedge is: AI/user produces HTML, the app previews it, user makes constrained PPT/Figma/Paper-style edits, and the app exports faithfully. Figma-class surfaces that should be explicit non-goals in P0:
 
 - Freeform vector/path editing
 - Auto-layout parity
@@ -39,6 +39,8 @@ The product should be HTML-native, not a general vector design suite. The early 
 - Full constraints/responsive design authoring
 - Component variants and design-token governance
 - Semantic editable Figma/PPTX round-trip editing
+
+These non-goals do not remove the v1 requirement for constrained move, resize, reorder, align, and restyle handles on generated text, image, card, section, and artboard-like blocks.
 
 ### 2. HTML mutability must be designed before AI generation
 
@@ -123,7 +125,7 @@ Do not copy leaked prompt text, internal command structures, hidden tool policy,
 | P2 | Constrained edit commands, parent-owned undo/redo, DOM round-trip tests, text/style/image edits only |
 | P3 | LLM output validator, asset resolver/cache, source/license metadata, placeholder fallback |
 | P4 | Deterministic renderer, screenshot/golden export tests, security corpus, broken asset tests |
-| P5 | Only then consider advanced layout, variants, animation export, semantic Figma/PPTX bridge, collaboration |
+| P5 | Only then consider advanced freeform layout, variants, animation export, semantic Figma/PPTX bridge, collaboration |
 
 ## Sources Checked
 

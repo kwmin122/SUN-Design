@@ -2,9 +2,9 @@
 
 ## Problem Statement
 
-K-Design Studio is a browser-based AI design workspace for builders who want Claude Design-level output without being locked into Claude Design itself. A user writes a prompt, receives a high-fidelity HTML artifact, previews it in an iframe, edits the rendered result directly like a lightweight slide or Figma canvas, adjusts meaningful design variables in a right-side Tweaks panel, exports the result, and can hand off the same artifact package to Codex, Claude Code, Cursor, local agents, or web agents.
+K-Design Studio is a browser-based AI design workspace for builders who want Claude Design-level output without being locked into Claude Design itself. A user writes a prompt, receives a high-fidelity HTML artifact, previews it in an iframe, edits the rendered result directly like a lightweight slide, Figma canvas, or Paper-style web-standard canvas, adjusts meaningful design variables in a right-side Tweaks panel, exports the result, and can hand off the same artifact package to Codex, Claude Code, Cursor, local agents, or web agents.
 
-The first product is not a full Figma clone. It is a controllable HTML design workbench where the generated artifact remains the source of truth and the visual editor makes common edits safe.
+The first product is not a full Figma clone. It is a controllable HTML design workbench where the generated artifact remains the source of truth and the visual editor makes common edits plus constrained move/resize/reorder/alignment operations safe.
 
 ## Evidence
 
@@ -24,7 +24,7 @@ The v1 slice is one local web app that can:
 2. Generate or mock-generate a single HTML artifact.
 3. Render the HTML in a sandboxed iframe.
 4. Select visible text and block elements through an overlay.
-5. Edit text, common style properties, and structured tweak variables.
+5. Edit text, directly manipulate constrained canvas objects, common style properties, and structured tweak variables.
 6. Persist the edited artifact.
 7. Export HTML, ZIP, PNG/PDF, raster PPTX, and a portable agent handoff package.
 
@@ -46,6 +46,7 @@ Use an HTML-first visual editor shell:
 - The generated output is stored as an artifact record: HTML, extracted editable nodes, tweak schema, assets, and revision history.
 - The preview iframe is sandboxed.
 - An overlay controller maps screen coordinates to editable DOM nodes.
+- Canvas handles support constrained move, resize, reorder, and alignment operations for generated text, image, card, section, and artboard-like blocks.
 - Text edits happen through explicit node patches.
 - Style edits target a limited property set: typography, spacing, color, layout presets, visibility, image source, and component-level tweak variables.
 - Export materializes the stored `ProjectBundle + patch log + assets + tweak values` into a clean document first. PNG/PDF capture may render that materialized document in a fresh headless browser, but export must never copy ad-hoc live iframe DOM mutations as the source of truth.
@@ -143,7 +144,7 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 |---|---|
 | Prompt input and HTML generation | user directive / office-hours |
 | iframe preview | user directive / office-hours |
-| PPT/Figma-like direct editing | user directive / office-hours |
+| PPT/Figma/Paper-like direct editing | user directive / office-hours / Paper reference |
 | right-side Tweaks panel | user directive / office-hours |
 | export | user directive / office-hours |
 | runtime-agnostic handoff | user directive / Huashu-style portability reference |
@@ -157,6 +158,6 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 | Completeness | 8 | Required sections present and grounded in the user's directive. |
 | Consistency | 8 | HTML-first source of truth is consistent across architecture and scope. |
 | Clarity | 8 | Requirements are mostly testable; later phases can refine exact patch formats. |
-| Scope | 8 | Cuts full Figma/PPT clone from v1 while preserving the core loop. |
+| Scope | 8 | Cuts full Figma/PPT clone from v1 while preserving constrained direct manipulation as part of the core loop. |
 | Feasibility | 7 | Ambitious but shippable if generation is mocked first and patch scope stays narrow. |
 | YAGNI | 8 | Collaboration, marketplace, native app, and full PPTX parity deferred. |

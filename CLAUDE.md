@@ -2,9 +2,9 @@
 
 ## Project Overview
 
-K-Design Studio is a Korean-first AI design workspace. Users create prototypes, slide decks, template-based artifacts, and other design outputs from prompt plus context, preview the live HTML artifact in a sandboxed canvas, edit visible elements through a PPT/Figma-like overlay, use inline comments and right-side Tweaks, manage versions, share, and export or hand off the result to Codex, Claude Code, Cursor, local agents, or web agents.
+K-Design Studio is a Korean-first AI design workspace. Users create prototypes, slide decks, template-based artifacts, and other design outputs from prompt plus context, preview the live HTML artifact in a sandboxed canvas, edit visible elements through a PPT/Figma/Paper-like overlay, use inline comments and right-side Tweaks, manage versions, share, and export or hand off the result to Codex, Claude Code, Cursor, local agents, or web agents.
 
-Core value: turn generated HTML designs into something a user can inspect, tweak, edit, and export without dropping into source code.
+Core value: turn generated HTML designs into directly editable working documents a user can inspect, tweak, move, resize, restyle, comment on, and export without dropping into source code.
 
 Product quality bar: the target is production-complete, Claude Design-level quality. Scope can be staged by phase, but phase outputs must be production-shaped foundations rather than throwaway demos.
 
@@ -41,6 +41,7 @@ Next SUNCO action: `/sunco:verify 1`
 | Stored-state export | Export must materialize from base artifact, assets, tweak values, and patch log. |
 | Korean-first defaults | Hangul typography and Korean design contexts are part of the product wedge. |
 | Claude Design-level product bar | The final product should compete at the same quality level; every phase should avoid shortcuts that block that bar. |
+| Beyond Claude Design editability | Generated output must become a constrained PPT/Figma/Paper-style editable canvas, not a static preview or one-shot HTML drop. |
 | Context-driven design agent prompt | Design-producing AI must use `docs/prompts/context-driven-design-agent-prompt.md` before creating visual artifacts. |
 | Claude Design capability parity | The product baseline includes Chat/Comments, canvas, top Share/Export/tool controls, right Tweaks, context attachments, inline comments, live knobs/sliders, versions, design systems, sharing permissions, Canva handoff, and agent handoff. |
 | Agent-agnostic runtime | Prompts, project files, artifact packages, and handoff flows must work across Codex, Claude Code, Cursor, and similar agents instead of assuming Claude Code-only tooling. |

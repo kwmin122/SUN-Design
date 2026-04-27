@@ -4,9 +4,9 @@
 
 K-Design Studio is an HTML-first Korean AI design IDE:
 
-`Korean prompt/context -> generated or imported HTML -> sandboxed iframe preview -> PPT/Figma-like direct edits -> right Tweaks panel -> export/handoff`
+`Korean prompt/context -> generated or imported HTML -> sandboxed iframe preview -> PPT/Figma/Paper-like direct edits -> right Tweaks panel -> export/handoff`
 
-The feature bar is not "can it generate a pretty page once?" The bar is "can the generated result stay editable, inspectable, tweakable, exportable, and portable across Codex, Claude Code, Cursor, local agents, and web agents without source-code work?"
+The feature bar is not "can it generate a pretty page once?" The bar is "can the generated result become a directly editable working canvas that stays inspectable, tweakable, exportable, and portable across Codex, Claude Code, Cursor, local agents, and web agents without source-code work?"
 
 ## Reference Signals
 
@@ -15,6 +15,7 @@ The feature bar is not "can it generate a pretty page once?" The bar is "can the
 | Claude Design | Prompt/import from documents, images, web capture, codebase/design files; inline comments, direct text edits, adjustment knobs; export to Canva/PDF/PPTX/HTML; agent handoff expectations. | The category expectation is a continuous create-refine-export loop, not a chatbot that drops a file. Claude Design is the product quality benchmark, not the runtime dependency. |
 | Open CoDesign | Local-first/BYOK, sandboxed iframe, built-in design skills, AI-emitted sliders, responsive previews, pin comments that rewrite only a region, on-device HTML/PDF/PPTX/ZIP exports. | Strong model for a solo-builder-friendly, non-cloud-locked design workbench. |
 | Figma Make / Figma | Prompt-to-code from existing frames, point-and-edit, direct preview/code edits, version history, design-library context, right-side properties panel, auto layout/responsive concepts. | Use Figma's interaction patterns, but do not chase full Figma parity in v1. |
+| Paper | Web-standard connected canvas for teams, agents, code, and data; Paper positions HTML/CSS canvas and agent connection as a way to keep design and code in one language. | This is the "beyond Claude Design" bar: generated output should become editable canvas objects backed by web standards and agent-readable state. |
 | Canva | AI design inside the editor, Canva Code for interactive widgets, Magic Layers turning static outputs into editable layered designs. | Users now expect AI outputs to become editable working files, not flat screenshots. |
 | Webflow | Right Style panel for layout, spacing, size, position, typography, background, borders, effects, classes, states, breakpoints. | The right panel should feel like safe CSS controls for selected HTML, not a generic form dump. |
 | Framer | AI Wireframer, AI component Workshop, visual responsive layouts, effects/interactions, generated components with property controls and style matching. | Use generated component/tweak controls for focused customization; defer publishing/CMS. |
@@ -29,6 +30,7 @@ The feature bar is not "can it generate a pretty page once?" The bar is "can the
 | Sandboxed iframe preview | Generated HTML is untrusted but must render like the final export. | Required. Preview must be isolated from app privileges. |
 | Element hover/select in preview | Direct editing begins with reliable hit testing. | Required. Use overlay + iframe bridge, not parent DOM access. |
 | Direct text editing | First "PPT-like" moment. | Required. Double-click or inspector text field for hardcoded text nodes. |
+| Constrained canvas manipulation | Generated objects must not remain static. | Required. Move, resize, reorder, align, and restyle text/image/card/section/artboard nodes through typed operations and layout constraints. |
 | Basic style inspector | Users need common edits without code. | Required. Text color, font size, weight, align, spacing, radius, background, image replace, visibility. |
 | Right Tweaks panel | This is the product's control surface after generation. | Required. Show global artifact tweaks plus selected-node properties. |
 | AI-emitted tweak variables | Avoid making users hunt arbitrary CSS. | Required if generation exists. Examples: brand color, density, mood, radius, section spacing, font scale. |
@@ -55,8 +57,8 @@ The feature bar is not "can it generate a pretty page once?" The bar is "can the
 
 | Anti-feature | Why to avoid |
 |---|---|
-| Full Figma clone | Vector tools, component variants, advanced auto layout, multiplayer, comments, plugins, and dev mode are too broad before proving HTML editability. |
-| Full PPT clone | Slide authoring, transitions, speaker notes, chart editing, and PPTX round-trip will distract from the core HTML loop. |
+| Full Figma clone | Vector tools, component variants, advanced auto layout, multiplayer, plugins, and dev mode are too broad before proving HTML editability. This does not remove the v1 requirement for constrained Figma/Paper-like manipulation. |
+| Full PPT clone | Slide authoring, transitions, speaker notes, chart editing, and PPTX round-trip will distract from the core HTML loop. This does not remove the v1 requirement for slide-like/artboard block editing. |
 | Unsandboxed iframe / same-origin preview | Security risk and bad architecture; the editor should communicate through a narrow bridge. |
 | Live iframe DOM as durable source of truth | Easy demo, brittle product. Save patches against normalized source instead. |
 | Whole-artifact regeneration for small edits | Causes design drift and breaks user trust. Prefer selected-node patches and region prompts. |
@@ -73,13 +75,13 @@ Build the first vertical slice around one artifact:
 1. Prompt or sample prompt creates a single normalized HTML artifact.
 2. Artifact renders in a sandboxed iframe.
 3. User selects visible text/block/image elements.
-4. User edits text and 5-8 safe style properties.
+4. User edits text, directly manipulates constrained canvas objects, and changes 5-8 safe style/layout properties.
 5. Right Tweaks panel updates global design variables.
 6. Patch log persists edits with undo/redo.
 7. User exports clean HTML, ZIP, PNG/PDF, raster PPTX, and a portable agent handoff package.
 8. Korean typography and content defaults are visible in the generated result.
 
-Defer: multiplayer, public marketplace, full layer tree, advanced drag layout, semantic editable Figma/PPTX round-trip, CMS, publishing, and complex code editing.
+Defer: multiplayer, public marketplace, full layer tree, advanced freeform drag/layout authoring, semantic editable Figma/PPTX round-trip, CMS, publishing, and complex code editing.
 
 ## Open Questions for Planning
 
@@ -95,6 +97,7 @@ Defer: multiplayer, public marketplace, full layer tree, advanced drag layout, s
 - Figma: [Introducing Figma Make](https://www.figma.com/blog/introducing-figma-make/)
 - Figma Help: [Create and edit a Figma Make file](https://help.figma.com/hc/en-us/articles/31304485164695-Create-and-edit-a-Figma-Make-file)
 - Figma Help: [Design, prototype, and explore layer properties in the right sidebar](https://help.figma.com/hc/en-us/articles/360039832014-Design-prototype-and-explore-layer-properties-in-the-right-sidebar)
+- Paper: [Paper - design, share, ship](https://paper.design/)
 - Framer: [Website builder overview](https://www.framer.com/)
 - Framer: [Workshop AI component generator](https://www.framer.com/workshop/)
 - Claude Code Docs: [Extend Claude with skills](https://code.claude.com/docs/en/skills)
