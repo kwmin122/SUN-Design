@@ -98,11 +98,11 @@
 
 ### Design Systems, Tokens, and Code Connection
 
-- [ ] **DSGN-04**: User can maintain project-level design skills, brand rules, reusable presets, and artifact-specific style rules beyond the core design-system setup.
-- [ ] **DSGN-05**: User can publish, remix, version, and roll back a design system after reviewing extracted colors, typography, spacing, components, and layout patterns.
-- [ ] **DSGN-06**: User can map design tokens to CSS variables, Tailwind classes, and code-component references.
-- [ ] **DSGN-07**: User can open a component playground to test component variants, props, variable modes, and states without mutating the main canvas.
-- [ ] **DSGN-08**: User can attach Storybook, GitHub, docs, and code references to design-system components and preserve those links in handoff.
+- [x] **DSGN-04**: User can maintain project-level design skills, brand rules, reusable presets, and artifact-specific style rules beyond the core design-system setup.
+- [x] **DSGN-05**: User can publish, remix, version, and roll back a design system after reviewing extracted colors, typography, spacing, components, and layout patterns.
+- [x] **DSGN-06**: User can map design tokens to CSS variables, Tailwind classes, and code-component references.
+- [x] **DSGN-07**: User can open a component playground to test component variants, props, variable modes, and states without mutating the main canvas.
+- [x] **DSGN-08**: User can attach Storybook, GitHub, docs, and code references to design-system components and preserve those links in handoff.
 
 ### AI and Variations
 
@@ -233,11 +233,11 @@
 | CANVAS-03 | Phase 06 | complete |
 | CANVAS-04 | Phase 06 | complete |
 | CANVAS-05 | Phase 06 | complete |
-| DSGN-04 | Phase 07 | planned |
-| DSGN-05 | Phase 07 | planned |
-| DSGN-06 | Phase 07 | planned |
-| DSGN-07 | Phase 07 | planned |
-| DSGN-08 | Phase 07 | planned |
+| DSGN-04 | Phase 07 | complete |
+| DSGN-05 | Phase 07 | complete |
+| DSGN-06 | Phase 07 | complete |
+| DSGN-07 | Phase 07 | complete |
+| DSGN-08 | Phase 07 | complete |
 | AI-01 | Phase 08 | planned |
 | AI-02 | Phase 08 | planned |
 | AI-03 | Phase 08 | planned |
