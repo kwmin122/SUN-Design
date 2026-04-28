@@ -2,7 +2,7 @@
   ".planning/PROJECT.md": "b2d545e4cbbc6491e14ca13a6c73e3c74edcea78cdabc149ffae7783a4034f98",
   ".planning/REQUIREMENTS.md": "191fc16d97f1a36516eb7258c9b25956473fdc4ec31c7bb6eb62a5cb10b6969f",
   ".planning/ROADMAP.md": "22f8d259d4d2f7e5e1f53ad7937bfeb57924fbad03487ce958246bf12ba39d23",
-  ".planning/STATE.md": "b7bcfe1005c72685a975cda4435b6837604957aed0206eb885503e081bca775d",
+  ".planning/STATE.md": "f2303b415dce8fa46d1b6e63cc008f907f89c49bfd660f5d36a3d9f53b0718a7",
   ".planning/phases/01-safe-html-document-foundation/01-01-PLAN.md": "51176ca0d9f83cab9bada0375e6f8ec45476c7e283d88b880045dbafcdd691fc",
   ".planning/phases/01-safe-html-document-foundation/01-01-SUMMARY.md": "f06ab28fa4d3aa063183aa5b8524bea2a65629714602b07f2cace94ca8de87b4",
   ".planning/phases/01-safe-html-document-foundation/01-02-PLAN.md": "ee8e7d508e6b3160a3430758922e5de66a47dbe0edbb364fe09b498dbfb9564b",
@@ -26,7 +26,7 @@
   ".planning/phases/04-responsive-preview-and-export-fidelity/04-CONTEXT.md": "ab3ff400c0105dfa50679fe05faac62e10f1e2c9f8088d25d0b1068f4ef97ccf",
   ".planning/phases/04-responsive-preview-and-export-fidelity/04-VERIFICATION.md": "7b4e854388f05ee696992a5e7032f8510d4cd98f61b62bca4b85ca655c1589ea",
   ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-01-PLAN.md": "efae34194b45fe78f88ca639f8cdc9defab617f0d0d4b0507d117955f051766d",
-  ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-01-SUMMARY.md": "f442df2d5cc6b413d33435f5784b33e84ec8f77c4c67c7bf6001e3da45745fe7",
+  ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-01-SUMMARY.md": "00824c2c5005eb5c57d6669399538afd6e5ea1c1a050155db21e514a7779aac3",
   ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-CONTEXT.md": "3ef9b47f383909ce40f7bcd825575b8ea793e58c3d415c6e057636b50e677e2c",
-  ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-VERIFICATION.md": "fea30a0c8040e7279ec2689b6c60a9fb815c3d2b851555f27c17b14432aefe92"
+  ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-VERIFICATION.md": "61d43d5c2cf4ba199cafa9df35aefae5fb967adfced018477637bb8e89ada3ba"
 }
