@@ -130,10 +130,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 status is corrected to foundation-complete with ship held: PROTO-01 through PROTO-03, SLIDE-01 through SLIDE-03, and AI-05 are complete; AI-01 through AI-04 remain foundation-only until real canvas-aware agent/model-generated typed operation ingestion exists.
 - Phase 08 gap-only discussion captured the remaining decisions in `.planning/phases/08-prototyping-slides-and-ai-variations/08-CONTEXT.md` and `.planning/phases/08-prototyping-slides-and-ai-variations/08-DISCUSSION-LOG.md`: selected-region context package, agent-agnostic structured output ingestion, visible compare/promote workflow, validation diagnostics, and tests.
 - Phase 08 gap-only execution plan was created in `.planning/phases/08-prototyping-slides-and-ai-variations/08-03-PLAN.md`: selected-region agent context package, agent-agnostic structured output ingestion, compare/promote UI, validation diagnostics, and end-to-end regression coverage.
+- Phase 08 gap-only plan hardening closed verifier findings before execution: agent output now requires multiple directions, agent operations/patches are allowlisted for selected-region rewrite/restyle, and runtime mismatches must be rejected with diagnostics.
 
 ---
-*Last updated: 2026-04-28 after Phase 08 gap-only plan creation*
+*Last updated: 2026-04-28 after Phase 08 gap-only plan hardening*
 - **phase**: 8
-- **last_updated**: 2026-04-28T20:55:00+09:00
+- **last_updated**: 2026-04-28T21:07:00+09:00
 - **status**: planned
 - **next_action**: /sunco:execute 8
