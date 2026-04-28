@@ -182,7 +182,7 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 
 ## Phase 08 — Prototyping, Slides, and AI Variations
 
-**Goal:** Add real prototype interactions, deck authoring, and localized AI variation workflows on top of the canvas model.
+**Goal:** Add real prototype interactions, deck authoring, and the stored foundation for localized AI variation workflows on top of the canvas model.
 
 **Requirements:** AI-01, AI-02, AI-03, AI-04, AI-05, PROTO-01, PROTO-02, PROTO-03, SLIDE-01, SLIDE-02, SLIDE-03
 
@@ -191,8 +191,9 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 - Component state can use variables, conditionals, and state sharing across matching components.
 - Presentation mode can preview interactions without losing edit state.
 - Slide decks support slide view, grid view, outline navigation, presenter notes, embedded prototype blocks, comments, polls, voting, or alignment-scale primitives.
-- The user can generate side-by-side variations and selected-region AI edits while preserving surrounding layout and provenance.
-- Canvas-aware agent actions emit typed operations and can be exported as portable prompt/script recipes.
+- The user can compare side-by-side deterministic variation foundations while preserving surrounding layout and provenance.
+- Canvas-aware agent recipes can export typed operation replay metadata.
+- True model-generated selected-region AI edits and canvas-aware agent output ingestion are not complete until AI-01 through AI-04 have a real provider/runtime path beyond deterministic local directions.
 
 **Complexity:** High
 

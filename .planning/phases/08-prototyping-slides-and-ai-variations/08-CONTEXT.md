@@ -12,7 +12,7 @@ source: .planning/research/COMPETITIVE-GAP-REVIEW.md
 
 ## Goal
 
-Add real prototype interactions, deck authoring, and localized AI variation workflows on top of the canvas model.
+Add real prototype interactions, deck authoring, and the stored foundation for localized AI variation workflows on top of the canvas model.
 
 ## Requirements
 
@@ -34,13 +34,15 @@ Claude Design emphasizes iterative prompt/chat/inline feedback and variations. F
 
 Phase 08 must treat prototypes and decks as first-class artifacts, not just generic pages.
 
+Post-review scope correction: Phase 08 may use deterministic local variation directions to prove the typed operation, provenance, compare, promote, and portable recipe contract. That foundation does not complete AI-01 through AI-04. Those requirements require a true canvas-aware agent/model-generated output path that reads the canvas object model and ingests generated typed operations. AI-05 plus the prototype and slide requirements can be completed by the foundation.
+
 ## Acceptance Criteria
 
 - Prototype interactions are stored as typed graph records.
 - Presentation mode can play interactions without mutating source state.
 - Slide decks have a stored outline and per-slide notes.
-- Variations can be compared side by side and promoted.
-- Selected-region AI edits produce typed operations with conflict/error handling.
+- Deterministic selected-region variation foundations can be compared side by side and promoted.
+- Selected-region AI edits are not complete until a real model/agent output path produces typed operations with conflict/error handling.
 
 ## Explicit Non-Goals
 

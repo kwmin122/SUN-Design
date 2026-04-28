@@ -210,6 +210,6 @@ describe("prototype helpers", () => {
       state: "hover",
       variableBindings: {}
     })).toThrow("Unknown component variant");
-    expect(() => playPrototypeInteraction(bundle, state, "proto_ix_bad_state")).toThrow("Invalid component state");
+    expect(() => playPrototypeInteraction(bundle, state, "proto_ix_bad_state")).toThrow("invalid component state");
   });
 });

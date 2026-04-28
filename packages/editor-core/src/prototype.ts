@@ -1,5 +1,6 @@
 import { ensureCanvasGraph } from "./canvas-graph.js";
 import { stableHash } from "./ids.js";
+import { assertPrototypeInteractionIntegrity } from "./integrity.js";
 import {
   ComponentStateRuleSchema,
   PresentationStateSchema,
@@ -174,6 +175,7 @@ export function playPrototypeInteraction(
   if (!interaction) {
     throw new Error(`Unknown prototype interaction: ${interactionId}`);
   }
+  assertPrototypeInteractionIntegrity(current, interaction);
   if (!conditionsPass(current.prototypeGraph!.variables, state.variableValues, interaction.conditions)) {
     return state;
   }

@@ -15,6 +15,8 @@ executor_model: inline-codex
 
 Exposed the Phase 08 stored-state model as visible studio workflows: prototype interaction authoring, local-only presentation playback, slide deck editing, selected-region variation comparison, promotion, and runtime-agnostic agent recipe export. The UI follows the existing dense tool rail pattern and keeps Phase 01-07 controls available.
 
+Post-review correction: this summary completes AI-05, PROTO-01 through PROTO-03, and SLIDE-01 through SLIDE-03. AI-01 through AI-04 remain foundation-only because the visible remix workflow uses deterministic local directions rather than real canvas-aware agent/model output ingestion.
+
 ## Tasks Completed
 
 | # | Task | Commit | Notes |

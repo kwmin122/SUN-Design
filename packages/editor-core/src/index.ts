@@ -10,6 +10,7 @@ export * from "./canvas-graph.js";
 export * from "./canvas-operations.js";
 export * from "./canvas-components.js";
 export * from "./design-system.js";
+export * from "./integrity.js";
 export * from "./prototype.js";
 export * from "./slides.js";
 export * from "./variations.js";

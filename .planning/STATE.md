@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 08 shipped |
+| Current phase | Phase 08 foundation remediated; ship held for AI parity gap |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -20,12 +20,12 @@
 | Phase 05 status | complete |
 | Phase 06 status | shipped |
 | Phase 07 status | shipped |
-| Phase 08 status | shipped |
+| Phase 08 status | foundation-complete; ship held |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
-| Requirement coverage | 49/49 v1 complete; 21/46 v2 requirements complete; 25 v2 requirements mapped to Phase 09-11 |
-| Next action | `/sunco:research 9` |
+| Requirement coverage | 49/49 v1 complete; 17/46 v2 requirements complete; AI-01 through AI-04 are foundation-only until true agent/model output ingestion exists |
+| Next action | `/sunco:discuss 8 --gaps-only` |
 
 ## Phase Queue
 
@@ -38,14 +38,14 @@
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
 | Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
-| Phase 08 | Prototyping, Slides, and AI Variations | shipped | 11 |
+| Phase 08 | Prototyping, Slides, and AI Variations | foundation-complete; ship held | 7 complete, 4 foundation-only |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototype interactions, slide decks, presentation preview, selected-region variations, and portable agent recipes. The next step is `/sunco:research 9`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 now has a remediated prototype/slide/variation/agent-recipe foundation with persisted reference integrity validation, but it is not marked shipped because AI-01 through AI-04 still require a true canvas-aware agent/model-generated typed operation path. The next step is `/sunco:discuss 8 --gaps-only`.
 
 ## Key Decisions Carried Forward
 
@@ -124,12 +124,13 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 research and execution plans were created in `.planning/phases/08-prototyping-slides-and-ai-variations/`: Wave 1 core prototype/slide/variation/recipe model and Wave 2 web workflows for prototype authoring, presentation mode, slide decks, variation compare, and agent recipe export.
 - Phase 08 Wave 1 completed in `883da9a`: editor-core prototype graph, presentation state, slide deck, variation set, agent recipe schemas/helpers, handoff includes, and unit coverage.
 - Phase 08 Wave 2 completed in `350cc0a`: web prototype panel, presentation mode, slide deck panel, variation compare panel, editor-shell wiring, responsive styling, and browser workflow coverage.
-- Phase 08 formal verification passed in `.planning/phases/08-prototyping-slides-and-ai-variations/08-VERIFICATION.md`. Gates passed: `pnpm lint`, `pnpm typecheck`, `pnpm test` (15 files, 74 tests), `pnpm e2e` (22 browser tests), and Playwright visual smoke at 1440/768/390 px with no body overflow.
-- Phase 08 implementation shipped direct-to-main through `350cc0a`. This is a verified prototype/slide/variation/agent-recipe foundation, not the final Paper/Figma/Claude Design-level product. Phase 09-11 continue the parity target.
+- Phase 08 initial verification passed the automated gates, but external adversarial review correctly found that persisted Phase 08 references were not validated on load and AI-01 through AI-04 were overclaimed as complete.
+- Phase 08 remediation added persisted-state reference integrity validation for prototype interactions, presentation state, slide decks, variation sets, and agent recipes. It also validates direct prototype playback before state transition.
+- Phase 08 status is corrected to foundation-complete with ship held: PROTO-01 through PROTO-03, SLIDE-01 through SLIDE-03, and AI-05 are complete; AI-01 through AI-04 remain foundation-only until real canvas-aware agent/model-generated typed operation ingestion exists.
 
 ---
-*Last updated: 2026-04-28 after Phase 08 verification and shipping*
+*Last updated: 2026-04-28 after Phase 08 persisted-state remediation and AI claim correction*
 - **phase**: 8
-- **last_updated**: 2026-04-28T15:59:00+09:00
-- **status**: shipped
-- **next_action**: `/sunco:research 9`
+- **last_updated**: 2026-04-28T19:45:00+09:00
+- **status**: foundation-complete; ship held
+- **next_action**: `/sunco:discuss 8 --gaps-only`

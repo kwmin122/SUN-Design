@@ -15,6 +15,8 @@ executor_model: inline-codex
 
 Implemented the Phase 08 editor-core foundation for stored prototype interactions, non-mutating presentation playback state, slide decks, selected-region variation sets, and portable agent recipes. The model stays source-of-truth first: typed bundle state and typed operations are persisted, while live iframe DOM state remains excluded.
 
+Post-review correction: this summary completes AI-05, PROTO-01 through PROTO-03, and SLIDE-01 through SLIDE-03. AI-01 through AI-04 were foundation-addressed only by deterministic local variation records and typed operation contracts; they are not complete until a real canvas-aware agent/model-generated output path exists.
+
 ## Tasks Completed
 
 | # | Task | Commit | Notes |
@@ -70,7 +72,7 @@ Implemented the Phase 08 editor-core foundation for stored prototype interaction
 
 ## Deviations
 
-None.
+- AI-01 through AI-04 are foundation-only, not complete. The deterministic variation helper proves the stored operation and recipe contract but is not a real AI generation path.
 
 ## Self-Check
 

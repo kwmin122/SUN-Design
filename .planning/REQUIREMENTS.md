@@ -106,10 +106,10 @@
 
 ### AI and Variations
 
-- [x] **AI-01**: User can ask the AI to rewrite or restyle only a selected region.
-- [x] **AI-02**: User can compare multiple generated visual directions side by side.
-- [x] **AI-03**: User can right-click or otherwise target an object and request a localized remix that preserves surrounding layout and source provenance.
-- [x] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits.
+- [ ] **AI-01**: User can ask the AI to rewrite or restyle only a selected region. Phase 08 has the deterministic selected-region variation foundation; true model-generated rewrite/restyle remains open.
+- [ ] **AI-02**: User can compare multiple generated visual directions side by side. Phase 08 has side-by-side deterministic directions; true generated direction ingestion remains open.
+- [ ] **AI-03**: User can right-click or otherwise target an object and request a localized remix that preserves surrounding layout and source provenance. Phase 08 has scoped remix records; real targeted AI remix remains open.
+- [ ] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits. Phase 08 has the typed operation and recipe contract; real agent/model output ingestion remains open.
 - [x] **AI-05**: User can export a portable prompt/script recipe that another agent runtime can replay against the same artifact package.
 
 ### Prototyping and Slides
@@ -238,10 +238,10 @@
 | DSGN-06 | Phase 07 | complete |
 | DSGN-07 | Phase 07 | complete |
 | DSGN-08 | Phase 07 | complete |
-| AI-01 | Phase 08 | complete |
-| AI-02 | Phase 08 | complete |
-| AI-03 | Phase 08 | complete |
-| AI-04 | Phase 08 | complete |
+| AI-01 | Phase 08 | foundation only; true agent path pending |
+| AI-02 | Phase 08 | foundation only; true generated direction ingestion pending |
+| AI-03 | Phase 08 | foundation only; targeted AI remix pending |
+| AI-04 | Phase 08 | foundation only; canvas-aware model output ingestion pending |
 | AI-05 | Phase 08 | complete |
 | PROTO-01 | Phase 08 | complete |
 | PROTO-02 | Phase 08 | complete |
