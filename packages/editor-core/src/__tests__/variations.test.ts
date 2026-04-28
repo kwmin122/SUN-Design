@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ensureCanvasGraph } from "../canvas-graph.js";
 import { BASIC_LANDING_FIXTURE_HTML } from "../fixtures.js";
 import { normalizeHtml } from "../normalize.js";
-import type { CanvasOperation, ProjectBundle } from "../schemas.js";
+import type { CanvasOperation, ProjectBundle, VariationDirection } from "../schemas.js";
 import {
   addVariationDirection,
   createSelectedRegionRemix,
@@ -150,5 +150,45 @@ describe("variation helpers", () => {
       prompt: "Unsafe recipe",
       instructionsPath: "https://example.com/prompt.md"
     })).toThrow("instructionsPath");
+  });
+
+  it("rejects promoted persisted agent-output directions with unsupported operations", () => {
+    const fixture = createVariationBundle();
+    const bundle = createSelectedRegionRemix(fixture.bundle, {
+      id: "variation_set_region",
+      targetObjectId: fixture.targetObjectId,
+      prompt: "Make the selected region clearer.",
+      createdAt: "2026-04-28T00:00:00.000Z"
+    });
+    const set = bundle.variationSets.find((item) => item.id === "variation_set_region")!;
+    const corruptDirection: VariationDirection = {
+      id: "variation_dir_agent_corrupt",
+      name: "Corrupt agent direction",
+      description: "Attempts to bypass ingest validation through persisted state.",
+      targetObjectId: fixture.targetObjectId,
+      operations: [{
+        id: "variation_op_agent_corrupt",
+        op: "reorderObject",
+        objectId: fixture.targetObjectId,
+        value: { parentId: fixture.targetObjectId, index: 0 },
+        source: "agent",
+        baseRevision: bundle.baseRevision,
+        createdAt: "2026-04-28T00:00:01.000Z"
+      }],
+      patches: [],
+      status: "candidate",
+      provenance: "agent-output:codex",
+      createdAt: "2026-04-28T00:00:01.000Z"
+    };
+    const pollutedBundle: ProjectBundle = {
+      ...bundle,
+      variationSets: bundle.variationSets.map((item) => item.id === set.id ? {
+        ...item,
+        directions: [...item.directions, corruptDirection]
+      } : item)
+    };
+
+    expect(() => promoteVariationDirection(pollutedBundle, set.id, corruptDirection.id))
+      .toThrow("Agent variation direction failed validation");
   });
 });

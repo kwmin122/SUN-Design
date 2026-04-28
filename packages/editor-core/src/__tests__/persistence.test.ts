@@ -17,6 +17,30 @@ function createBundle() {
   });
 }
 
+type RawCanvasObject = {
+  id: string;
+  kind: string;
+  name: string;
+  nodeId?: string;
+  parentId?: string;
+  childIds: string[];
+};
+
+type RawProjectBundle = {
+  baseRevision: string;
+  canvasGraph: {
+    rootObjectIds: string[];
+    objects: Record<string, RawCanvasObject>;
+  };
+  agentContextPackages?: unknown[];
+  agentOutputs?: unknown[];
+  agentRuns?: unknown[];
+  variationSets?: unknown[];
+  [key: string]: unknown;
+};
+
+const AGENT_TEST_TIME = "2026-04-28T00:00:00.000Z";
+
 describe("project bundle persistence", () => {
   it("serializes and parses a normalized bundle", () => {
     const bundle = createBundle();
@@ -267,4 +291,206 @@ describe("project bundle persistence", () => {
     }];
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Agent run references missing output id");
   });
+
+  it("rejects persisted agent output safety violations", () => {
+    const { raw, contextPackage, targetObjectId, targetNodeId } = createRawAgentState();
+
+    raw.agentContextPackages = [contextPackage];
+    raw.agentOutputs = [createRawAgentOutput(contextPackage, {
+      targetObjectId,
+      directions: [{
+        id: "agent_dir_unsupported",
+        name: "Unsupported",
+        description: "Attempts an unsupported graph mutation.",
+        rationale: "Polluted persisted state.",
+        targetObjectId,
+        operations: [{
+          id: "agent_op_unsupported",
+          op: "reorderObject",
+          objectId: targetObjectId,
+          value: { parentId: targetObjectId, index: 0 },
+          source: "agent",
+          baseRevision: raw.baseRevision,
+          createdAt: AGENT_TEST_TIME
+        }],
+        patches: [],
+        provenance: "agent-output:codex",
+        createdAt: AGENT_TEST_TIME
+      }, {
+        id: "agent_dir_unsafe_patch",
+        name: "Unsafe patch",
+        description: "Attempts raw HTML patch output.",
+        rationale: "Polluted persisted state.",
+        targetObjectId,
+        operations: [],
+        patches: [{
+          id: "agent_patch_unsafe",
+          nodeId: targetNodeId,
+          op: "setText",
+          value: "<strong onclick=\"alert(1)\">unsafe</strong>",
+          source: "agent",
+          baseRevision: raw.baseRevision,
+          createdAt: AGENT_TEST_TIME
+        }],
+        provenance: "agent-output:codex",
+        createdAt: AGENT_TEST_TIME
+      }]
+    })];
+
+    expect(() => parseProjectBundleJson(JSON.stringify(raw)))
+      .toThrow("Agent output failed persisted validation");
+  });
+
+  it("rejects persisted agent run runtime mismatches", () => {
+    const { raw, contextPackage, targetObjectId } = createRawAgentState();
+    const output = createRawAgentOutput(contextPackage, { targetObjectId });
+
+    raw.agentContextPackages = [contextPackage];
+    raw.agentOutputs = [output];
+    raw.agentRuns = [{
+      id: "agent_run_runtime_mismatch",
+      runtime: "claudeCode",
+      status: "validated",
+      contextPackageId: contextPackage.id,
+      outputId: output.id,
+      targetObjectId,
+      sourceRevision: raw.baseRevision,
+      diagnostics: [],
+      createdAt: AGENT_TEST_TIME,
+      updatedAt: AGENT_TEST_TIME
+    }];
+
+    expect(() => parseProjectBundleJson(JSON.stringify(raw)))
+      .toThrow("Agent run runtime does not match output runtime");
+  });
+
+  it("rejects persisted agent-output variation safety violations", () => {
+    const { raw, targetObjectId } = createRawAgentState();
+
+    raw.variationSets = [{
+      id: "variation_set_agent_corrupt",
+      targetObjectId,
+      prompt: "Agent output variation should be safe on reload.",
+      sourceRevision: raw.baseRevision,
+      directions: [{
+        id: "variation_dir_agent_corrupt",
+        name: "Corrupt agent direction",
+        description: "Attempts an unsupported operation through persisted state.",
+        targetObjectId,
+        operations: [{
+          id: "variation_op_agent_corrupt",
+          op: "reorderObject",
+          objectId: targetObjectId,
+          value: { parentId: targetObjectId, index: 0 },
+          source: "agent",
+          baseRevision: raw.baseRevision,
+          createdAt: AGENT_TEST_TIME
+        }],
+        patches: [],
+        status: "candidate",
+        provenance: "agent-output:codex",
+        createdAt: AGENT_TEST_TIME
+      }],
+      createdAt: AGENT_TEST_TIME,
+      updatedAt: AGENT_TEST_TIME
+    }];
+
+    expect(() => parseProjectBundleJson(JSON.stringify(raw)))
+      .toThrow("Agent variation direction failed persisted validation");
+  });
 });
+
+function createRawAgentState(): {
+  raw: RawProjectBundle;
+  contextPackage: {
+    id: string;
+    runtime: "codex";
+    targetObjectId: string;
+    sourceRevision: string;
+    prompt: string;
+    instructionsPath: string;
+    selectedObject: RawCanvasObject;
+    ancestors: unknown[];
+    siblings: unknown[];
+    tokenSummary: unknown[];
+    guardrails: string[];
+    createdAt: string;
+  };
+  targetObjectId: string;
+  targetNodeId: string;
+} {
+  const bundle = ensureCanvasGraph(createBundle());
+  const raw = JSON.parse(serializeProjectBundle(bundle)) as RawProjectBundle;
+  const targetObject = Object.values(raw.canvasGraph.objects).find((object) => object.nodeId);
+  if (!targetObject?.nodeId) {
+    throw new Error("Expected a fixture object with a nodeId.");
+  }
+  const contextPackage = {
+    id: "agent_context_valid",
+    runtime: "codex" as const,
+    targetObjectId: targetObject.id,
+    sourceRevision: raw.baseRevision,
+    prompt: "Generate selected-region directions.",
+    instructionsPath: "docs/prompts/context-driven-design-agent-prompt.md",
+    selectedObject: {
+      id: targetObject.id,
+      kind: targetObject.kind,
+      name: targetObject.name,
+      nodeId: targetObject.nodeId,
+      ...(targetObject.parentId ? { parentId: targetObject.parentId } : {}),
+      childIds: targetObject.childIds
+    },
+    ancestors: [],
+    siblings: [],
+    tokenSummary: [],
+    guardrails: ["Use stored ProjectBundle ids only."],
+    createdAt: AGENT_TEST_TIME
+  };
+
+  return {
+    raw,
+    contextPackage,
+    targetObjectId: targetObject.id,
+    targetNodeId: targetObject.nodeId
+  };
+}
+
+function createRawAgentOutput(
+  contextPackage: { id: string; runtime: "codex"; sourceRevision: string },
+  input: {
+    targetObjectId: string;
+    directions?: unknown[];
+  }
+) {
+  return {
+    id: "agent_output_valid",
+    contextPackageId: contextPackage.id,
+    runtime: contextPackage.runtime,
+    targetObjectId: input.targetObjectId,
+    sourceRevision: contextPackage.sourceRevision,
+    prompt: "Generate selected-region directions.",
+    directions: input.directions ?? [{
+      id: "agent_dir_a",
+      name: "A",
+      description: "A",
+      rationale: "A",
+      targetObjectId: input.targetObjectId,
+      operations: [],
+      patches: [],
+      provenance: "agent-output:codex",
+      createdAt: AGENT_TEST_TIME
+    }, {
+      id: "agent_dir_b",
+      name: "B",
+      description: "B",
+      rationale: "B",
+      targetObjectId: input.targetObjectId,
+      operations: [],
+      patches: [],
+      provenance: "agent-output:codex",
+      createdAt: AGENT_TEST_TIME
+    }],
+    diagnostics: [],
+    createdAt: AGENT_TEST_TIME
+  };
+}

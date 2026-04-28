@@ -48,6 +48,12 @@ type IngestAgentOutputInput = {
   createdAt?: string;
 };
 
+type AgentValidationScope = {
+  targetObjectId: string;
+  targetNodeId?: string;
+  sourceRevision: string;
+};
+
 export function parseAgentOutputJson(json: string): unknown {
   return JSON.parse(json);
 }
@@ -199,19 +205,36 @@ export function validateAgentOutputScope(
     if (direction.targetObjectId !== contextPackage.targetObjectId) {
       diagnostics.push(createDiagnostic("out-of-scope-target", `Direction target must stay on selected object: ${contextPackage.targetObjectId}`, output.createdAt, direction.targetObjectId));
     }
-    for (const operation of direction.operations) {
-      validateAgentOperation(contextPackage, operation, output.createdAt, diagnostics);
-    }
-    for (const patch of direction.patches) {
-      validateAgentPatch(contextPackage, target.nodeId, patch, output.createdAt, diagnostics);
-    }
+    diagnostics.push(...validateAgentDirectionSafety({
+      targetObjectId: contextPackage.targetObjectId,
+      ...(target.nodeId ? { targetNodeId: target.nodeId } : {}),
+      sourceRevision: contextPackage.sourceRevision,
+      operations: direction.operations,
+      patches: direction.patches,
+      createdAt: output.createdAt
+    }));
   }
 
   return diagnostics;
 }
 
+export function validateAgentDirectionSafety(input: AgentValidationScope & {
+  operations: CanvasOperation[];
+  patches: EditPatch[];
+  createdAt: string;
+}): AgentOutputDiagnostic[] {
+  const diagnostics: AgentOutputDiagnostic[] = [];
+  for (const operation of input.operations) {
+    validateAgentOperation(input, operation, input.createdAt, diagnostics);
+  }
+  for (const patch of input.patches) {
+    validateAgentPatch(input, patch, input.createdAt, diagnostics);
+  }
+  return diagnostics;
+}
+
 function validateAgentOperation(
-  contextPackage: AgentContextPackage,
+  scope: AgentValidationScope,
   operation: CanvasOperation,
   createdAt: string,
   diagnostics: AgentOutputDiagnostic[]
@@ -219,17 +242,16 @@ function validateAgentOperation(
   if (!ALLOWED_AGENT_CANVAS_OPS.has(operation.op)) {
     diagnostics.push(createDiagnostic("unsupported-operation", `Unsupported agent canvas operation: ${operation.op}`, createdAt, operation.id));
   }
-  if (operation.objectId !== contextPackage.targetObjectId) {
-    diagnostics.push(createDiagnostic("out-of-scope-target", `Agent operation must target ${contextPackage.targetObjectId}.`, createdAt, operation.objectId));
+  if (operation.objectId !== scope.targetObjectId) {
+    diagnostics.push(createDiagnostic("out-of-scope-target", `Agent operation must target ${scope.targetObjectId}.`, createdAt, operation.objectId));
   }
-  if (operation.baseRevision !== contextPackage.sourceRevision) {
+  if (operation.baseRevision !== scope.sourceRevision) {
     diagnostics.push(createDiagnostic("stale-revision", `Agent operation has stale revision: ${operation.baseRevision}`, createdAt, operation.id));
   }
 }
 
 function validateAgentPatch(
-  contextPackage: AgentContextPackage,
-  targetNodeId: string | undefined,
+  scope: AgentValidationScope,
   patch: EditPatch,
   createdAt: string,
   diagnostics: AgentOutputDiagnostic[]
@@ -237,12 +259,12 @@ function validateAgentPatch(
   if (!ALLOWED_AGENT_PATCH_OPS.has(patch.op)) {
     diagnostics.push(createDiagnostic("unsupported-operation", `Unsupported agent patch operation: ${patch.op}`, createdAt, patch.id));
   }
-  if (!targetNodeId) {
+  if (!scope.targetNodeId) {
     diagnostics.push(createDiagnostic("missing-reference", "Selected canvas object has no editable node for patch output.", createdAt, patch.id));
-  } else if (patch.nodeId !== targetNodeId) {
-    diagnostics.push(createDiagnostic("out-of-scope-target", `Agent patch must target selected node ${targetNodeId}.`, createdAt, patch.nodeId));
+  } else if (patch.nodeId !== scope.targetNodeId) {
+    diagnostics.push(createDiagnostic("out-of-scope-target", `Agent patch must target selected node ${scope.targetNodeId}.`, createdAt, patch.nodeId));
   }
-  if (patch.baseRevision !== contextPackage.sourceRevision) {
+  if (patch.baseRevision !== scope.sourceRevision) {
     diagnostics.push(createDiagnostic("stale-revision", `Agent patch has stale revision: ${patch.baseRevision}`, createdAt, patch.id));
   }
   if (hasUnsafePatchValue(patch.value)) {

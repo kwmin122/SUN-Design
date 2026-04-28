@@ -1,4 +1,5 @@
 import { applyCanvasOperationToBundle } from "./canvas-operations.js";
+import { validateAgentDirectionSafety } from "./agent-output.js";
 import { ensureCanvasGraph } from "./canvas-graph.js";
 import { stableHash } from "./ids.js";
 import { applyEditPatchToBundle } from "./patches.js";
@@ -65,6 +66,7 @@ export function addVariationDirection(
     provenance: input.provenance ?? "localized-remix",
     createdAt
   });
+  validateAgentGeneratedDirection(current, set, direction);
   return ProjectBundleSchema.parse({
     ...current,
     variationSets: current.variationSets.map((item) => item.id === variationSetId ? {
@@ -112,6 +114,7 @@ export function promoteVariationDirection(
     throw new Error(`Unknown variation direction: ${directionId}`);
   }
   validateDirectionScope(current, set.targetObjectId, direction.operations, direction.patches);
+  validateAgentGeneratedDirection(current, set, direction);
   let next = current;
   for (const operation of direction.operations) {
     assertFreshRevision(current, operation.baseRevision);
@@ -259,6 +262,32 @@ function validateDirectionScope(
       throw new Error("Variation patches must stay scoped to the selected node.");
     }
   }
+}
+
+function validateAgentGeneratedDirection(
+  bundle: ProjectBundle,
+  set: { targetObjectId: string; sourceRevision: string },
+  direction: VariationDirection
+): void {
+  if (!isAgentOutputProvenance(direction.provenance)) {
+    return;
+  }
+  const target = requireCanvasObject(bundle, set.targetObjectId);
+  const diagnostics = validateAgentDirectionSafety({
+    targetObjectId: set.targetObjectId,
+    ...(target.nodeId ? { targetNodeId: target.nodeId } : {}),
+    sourceRevision: set.sourceRevision,
+    operations: direction.operations,
+    patches: direction.patches,
+    createdAt: direction.createdAt
+  });
+  if (diagnostics.length > 0) {
+    throw new Error(`Agent variation direction failed validation: ${diagnostics.map((diagnostic) => diagnostic.code).join(", ")}`);
+  }
+}
+
+function isAgentOutputProvenance(provenance: string): boolean {
+  return provenance.startsWith("agent-output:");
 }
 
 function assertFreshRevision(bundle: ProjectBundle, baseRevision: string): void {

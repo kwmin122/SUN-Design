@@ -24,7 +24,7 @@
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
-| Requirement coverage | 49/49 v1 complete; 21/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion |
+| Requirement coverage | 49/49 v1 complete; 21/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
 | Next action | `/sunco:verify 8` |
 
 ## Phase Queue
@@ -45,7 +45,7 @@
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 gap execution is complete: selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, and explicit promote workflow are implemented. The next step is `/sunco:verify 8`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 gap execution is complete: selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, and persisted reload/promote invariant checks are implemented. The next step is `/sunco:verify 8`.
 
 ## Key Decisions Carried Forward
 
@@ -132,10 +132,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 gap-only execution plan was created in `.planning/phases/08-prototyping-slides-and-ai-variations/08-03-PLAN.md`: selected-region agent context package, agent-agnostic structured output ingestion, compare/promote UI, validation diagnostics, and end-to-end regression coverage.
 - Phase 08 gap-only plan hardening closed verifier findings before execution: agent output now requires multiple directions, agent operations/patches are allowlisted for selected-region rewrite/restyle, and runtime mismatches must be rejected with diagnostics.
 - Phase 08 gap-only execution completed the remaining AI-01 through AI-04 path: `AgentContextPackage`, `AgentOutputEnvelope`, `AgentRun`, persisted integrity checks, selected-region web ingestion UI, validation diagnostics, and Playwright E2E for valid/rejected agent output.
+- Phase 08 post-review remediation closed the reload/promote invariant gap: persisted `agentOutputs` now reuse the same allowlist/unsafe-patch validation as ingest, `agentRuns` must match linked output runtime/context/target/revision, and `agent-output:*` variation directions are rejected on load or promote if unsafe.
 
 ---
-*Last updated: 2026-04-28 after Phase 08 gap-only execution*
+*Last updated: 2026-04-28 after Phase 08 persisted agent-output invariant remediation*
 - **phase**: 8
-- **last_updated**: 2026-04-28T21:28:00+09:00
+- **last_updated**: 2026-04-28T21:50:00+09:00
 - **status**: executed
 - **next_action**: /sunco:verify 8

@@ -13,6 +13,7 @@ import type {
   VariationDirection,
   VariationSet
 } from "./schemas.js";
+import { validateAgentDirectionSafety, validateAgentOutputScope } from "./agent-output.js";
 
 const COMPONENT_STATES = new Set(["default", "hover", "pressed", "disabled"]);
 
@@ -214,6 +215,19 @@ function assertVariationDirectionIntegrity(
       throw new Error(`Variation patch revision does not match source revision: ${patch.id}`);
     }
   }
+  if (isAgentOutputProvenance(direction.provenance)) {
+    const diagnostics = validateAgentDirectionSafety({
+      targetObjectId: set.targetObjectId,
+      ...(target.nodeId ? { targetNodeId: target.nodeId } : {}),
+      sourceRevision: set.sourceRevision,
+      operations: direction.operations,
+      patches: direction.patches,
+      createdAt: direction.createdAt
+    });
+    if (diagnostics.length > 0) {
+      throw new Error(`Agent variation direction failed persisted validation: ${formatDiagnosticCodes(diagnostics)}`);
+    }
+  }
 }
 
 function assertVariationOperationIntegrity(
@@ -334,29 +348,63 @@ function assertAgentOutputRefs(
       }
     }
   }
+  const diagnostics = validateAgentOutputScope(bundle, contextPackage, output);
+  if (diagnostics.length > 0) {
+    throw new Error(`Agent output failed persisted validation: ${formatDiagnosticCodes(diagnostics)}`);
+  }
 }
 
 function assertAgentRunIntegrity(bundle: ProjectBundle): void {
-  const contextPackageIds = new Set(bundle.agentContextPackages.map((contextPackage) => contextPackage.id));
-  const outputIds = new Set(bundle.agentOutputs.map((output) => output.id));
+  const contextPackages = new Map(bundle.agentContextPackages.map((contextPackage) => [contextPackage.id, contextPackage]));
+  const outputs = new Map(bundle.agentOutputs.map((output) => [output.id, output]));
   for (const run of bundle.agentRuns) {
-    assertAgentRunRefs(bundle, contextPackageIds, outputIds, run);
+    assertAgentRunRefs(bundle, contextPackages, outputs, run);
   }
 }
 
 function assertAgentRunRefs(
   bundle: ProjectBundle,
-  contextPackageIds: Set<string>,
-  outputIds: Set<string>,
+  contextPackages: Map<string, AgentContextPackage>,
+  outputs: Map<string, AgentOutputEnvelope>,
   run: AgentRun
 ): void {
   assertCanvasObject(bundle, run.targetObjectId, "Agent run");
-  if (!contextPackageIds.has(run.contextPackageId)) {
+  const contextPackage = contextPackages.get(run.contextPackageId);
+  if (!contextPackage) {
     throw new Error(`Agent run references missing context package: ${run.contextPackageId}`);
   }
-  if (run.outputId && !outputIds.has(run.outputId)) {
-    throw new Error(`Agent run references missing output id: ${run.outputId}`);
+  if (run.targetObjectId !== contextPackage.targetObjectId) {
+    throw new Error(`Agent run target does not match context package: ${run.id}`);
   }
+  if (run.sourceRevision !== contextPackage.sourceRevision) {
+    throw new Error(`Agent run revision does not match context package: ${run.id}`);
+  }
+  if (run.outputId) {
+    const output = outputs.get(run.outputId);
+    if (!output) {
+      throw new Error(`Agent run references missing output id: ${run.outputId}`);
+    }
+    if (run.runtime !== output.runtime) {
+      throw new Error(`Agent run runtime does not match output runtime: ${run.id}`);
+    }
+    if (run.contextPackageId !== output.contextPackageId) {
+      throw new Error(`Agent run context does not match output context: ${run.id}`);
+    }
+    if (run.targetObjectId !== output.targetObjectId) {
+      throw new Error(`Agent run target does not match output target: ${run.id}`);
+    }
+    if (run.sourceRevision !== output.sourceRevision) {
+      throw new Error(`Agent run revision does not match output revision: ${run.id}`);
+    }
+  }
+}
+
+function isAgentOutputProvenance(provenance: string): boolean {
+  return provenance.startsWith("agent-output:");
+}
+
+function formatDiagnosticCodes(diagnostics: { code: string }[]): string {
+  return diagnostics.map((diagnostic) => diagnostic.code).join(", ");
 }
 
 function assertCanvasObject(bundle: ProjectBundle, objectId: string, label: string) {
