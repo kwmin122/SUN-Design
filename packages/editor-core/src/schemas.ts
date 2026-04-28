@@ -417,6 +417,180 @@ export const DesignSystemSchema = z.object({
 });
 export type DesignSystem = z.infer<typeof DesignSystemSchema>;
 
+export const PrototypeTriggerSchema = z.enum(["click", "hover", "tap", "keyboard", "timed"]);
+export type PrototypeTrigger = z.infer<typeof PrototypeTriggerSchema>;
+
+export const PrototypeActionKindSchema = z.enum([
+  "navigateTo",
+  "setComponentState",
+  "setVariable",
+  "toggleVariable",
+  "openOverlay",
+  "closeOverlay"
+]);
+export type PrototypeActionKind = z.infer<typeof PrototypeActionKindSchema>;
+
+export const PrototypeTransitionSchema = z.object({
+  kind: z.enum(["instant", "dissolve", "slide"]),
+  durationMs: z.number().int().positive().optional(),
+  easing: z.string().min(1).optional()
+});
+export type PrototypeTransition = z.infer<typeof PrototypeTransitionSchema>;
+
+export const PrototypeConditionSchema = z.object({
+  variableId: z.string().min(1),
+  operator: z.enum(["equals", "notEquals", "isTruthy", "isFalsy"]),
+  value: z.unknown().optional()
+});
+export type PrototypeCondition = z.infer<typeof PrototypeConditionSchema>;
+
+export const PrototypeInteractionSchema = z.object({
+  id: z.string().min(1),
+  sourceObjectId: z.string().min(1),
+  trigger: PrototypeTriggerSchema,
+  action: PrototypeActionKindSchema,
+  targetObjectId: z.string().min(1).optional(),
+  variableId: z.string().min(1).optional(),
+  value: z.unknown().optional(),
+  key: z.string().min(1).optional(),
+  delayMs: z.number().int().positive().optional(),
+  conditions: z.array(PrototypeConditionSchema).default([]),
+  transition: PrototypeTransitionSchema.optional(),
+  provenance: z.string().min(1),
+  createdAt: z.string().min(1)
+});
+export type PrototypeInteraction = z.infer<typeof PrototypeInteractionSchema>;
+
+export const PrototypeVariableSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  kind: z.enum(["string", "number", "boolean", "mode"]),
+  defaultValue: z.unknown(),
+  modeValues: z.array(z.string().min(1)).default([]),
+  sharedComponentId: z.string().min(1).optional()
+});
+export type PrototypeVariable = z.infer<typeof PrototypeVariableSchema>;
+
+export const ComponentStateRuleSchema = z.object({
+  id: z.string().min(1),
+  componentId: z.string().min(1),
+  variantId: z.string().min(1).optional(),
+  state: z.enum(["default", "hover", "pressed", "disabled"]),
+  variableBindings: z.record(z.string(), z.unknown()).default({}),
+  conditions: z.array(PrototypeConditionSchema).default([])
+});
+export type ComponentStateRule = z.infer<typeof ComponentStateRuleSchema>;
+
+export const PrototypeGraphSchema = z.object({
+  version: z.literal(1),
+  interactions: z.array(PrototypeInteractionSchema).default([]),
+  variables: z.array(PrototypeVariableSchema).default([]),
+  stateRules: z.array(ComponentStateRuleSchema).default([]),
+  updatedAt: z.string().min(1)
+});
+export type PrototypeGraph = z.infer<typeof PrototypeGraphSchema>;
+
+export const PresentationStateSchema = z.object({
+  mode: z.enum(["edit", "present"]),
+  activeObjectId: z.string().min(1).optional(),
+  activeSlideId: z.string().min(1).optional(),
+  activeInteractionId: z.string().min(1).optional(),
+  variableValues: z.record(z.string(), z.unknown()).default({}),
+  componentStates: z.record(z.string(), z.enum(["default", "hover", "pressed", "disabled"])).default({}),
+  history: z.array(z.string().min(1)).default([]),
+  startedAt: z.string().min(1)
+});
+export type PresentationState = z.infer<typeof PresentationStateSchema>;
+
+export const SlideBlockSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["canvasObject", "prototypeBlock", "text", "image"]),
+  objectId: z.string().min(1).optional(),
+  interactionId: z.string().min(1).optional(),
+  content: z.string().optional(),
+  order: z.number().int().nonnegative()
+});
+export type SlideBlock = z.infer<typeof SlideBlockSchema>;
+
+export const SlideFeedbackSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["comment", "poll", "vote", "alignment"]),
+  author: z.string().min(1),
+  body: z.string().optional(),
+  choices: z.array(z.string().min(1)).default([]),
+  targetId: z.string().min(1).optional(),
+  value: z.number().int().optional(),
+  createdAt: z.string().min(1)
+});
+export type SlideFeedback = z.infer<typeof SlideFeedbackSchema>;
+
+export const SlideSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  order: z.number().int().nonnegative(),
+  notes: z.string().default(""),
+  blocks: z.array(SlideBlockSchema).default([]),
+  feedback: z.array(SlideFeedbackSchema).default([])
+});
+export type Slide = z.infer<typeof SlideSchema>;
+
+export const SlideDeckSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  view: z.enum(["slide", "grid", "outline"]).default("slide"),
+  slides: z.array(SlideSchema).default([]),
+  activeSlideId: z.string().min(1).optional(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+});
+export type SlideDeck = z.infer<typeof SlideDeckSchema>;
+
+export const VariationDirectionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
+  targetObjectId: z.string().min(1),
+  operations: z.array(CanvasOperationSchema).default([]),
+  patches: z.array(EditPatchSchema).default([]),
+  status: z.enum(["candidate", "promoted", "rejected"]).default("candidate"),
+  provenance: z.string().min(1),
+  createdAt: z.string().min(1)
+});
+export type VariationDirection = z.infer<typeof VariationDirectionSchema>;
+
+export const VariationSetSchema = z.object({
+  id: z.string().min(1),
+  targetObjectId: z.string().min(1),
+  prompt: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  directions: z.array(VariationDirectionSchema).default([]),
+  promotedDirectionId: z.string().min(1).optional(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+});
+export type VariationSet = z.infer<typeof VariationSetSchema>;
+
+export const AgentRecipeSchema = z.object({
+  id: z.string().min(1),
+  runtime: AgentRuntimeSchema,
+  targetObjectId: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  prompt: z.string().min(1),
+  instructionsPath: z.string().refine((path) => (
+    path.startsWith("docs/prompts/") &&
+    path.endsWith(".md") &&
+    !path.includes("..") &&
+    !path.includes("://") &&
+    !path.startsWith("/")
+  ), "instructionsPath must be a safe repo-relative prompt markdown path"),
+  operationIds: z.array(z.string().min(1)).default([]),
+  variationSetId: z.string().min(1).optional(),
+  directionId: z.string().min(1).optional(),
+  replaySteps: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type AgentRecipe = z.infer<typeof AgentRecipeSchema>;
+
 export const ShareLinkSchema = z.object({
   id: z.string().min(1),
   access: ShareAccessSchema,
@@ -492,7 +666,12 @@ export const ProjectBundleSchema = z.object({
   shareLinks: z.array(ShareLinkSchema).default([]),
   handoffPackages: z.array(HandoffPackageSchema).default([]),
   canvasGraph: CanvasGraphSchema.optional(),
-  canvasOperations: z.array(CanvasOperationSchema).default([])
+  canvasOperations: z.array(CanvasOperationSchema).default([]),
+  prototypeGraph: PrototypeGraphSchema.optional(),
+  presentationState: PresentationStateSchema.optional(),
+  slideDecks: z.array(SlideDeckSchema).default([]),
+  variationSets: z.array(VariationSetSchema).default([]),
+  agentRecipes: z.array(AgentRecipeSchema).default([])
 });
 export type ProjectBundle = z.infer<typeof ProjectBundleSchema>;
 

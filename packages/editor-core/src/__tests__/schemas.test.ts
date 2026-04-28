@@ -1,7 +1,53 @@
 import { describe, expect, it } from "vitest";
 
-import { DesignSystemSchema, ProjectBundleSchema } from "../schemas.js";
+import {
+  AgentRecipeSchema,
+  DesignSystemSchema,
+  ProjectBundleSchema,
+  PrototypeInteractionSchema,
+  SlideBlockSchema,
+  SlideFeedbackSchema
+} from "../schemas.js";
 import { PreviewMessageSchema } from "../preview-schemas.js";
+
+function createMinimalBundleRecord(): Record<string, unknown> {
+  return {
+    schemaVersion: 1,
+    id: "phase-08-fixture",
+    title: "Phase 08 Fixture",
+    baseRevision: "rev_test",
+    createdAt: "2026-04-28T00:00:00.000Z",
+    updatedAt: "2026-04-28T00:00:00.000Z",
+    source: { kind: "fixture" },
+    html: {
+      raw: "<main></main>",
+      sanitized: "<main></main>",
+      normalized: '<main data-cdx-id="cdx_test" data-cdx-role="frame"></main>'
+    },
+    assets: [],
+    editGraph: {
+      version: 1,
+      rootNodeIds: ["cdx_test"],
+      nodes: {
+        cdx_test: {
+          id: "cdx_test",
+          kind: "frame",
+          tagName: "main",
+          domPath: "main[0]",
+          fingerprint: "frame-main",
+          editableProps: ["backgroundColor", "padding", "gap", "borderRadius"]
+        }
+      }
+    },
+    patches: [],
+    sanitizerReport: {
+      removedElementCount: 0,
+      removedAttributeCount: 0,
+      blockedUrlCount: 0,
+      changes: []
+    }
+  };
+}
 
 describe("schema contracts", () => {
   it("accepts a minimal ProjectBundle with an empty patch log", () => {
@@ -261,6 +307,159 @@ describe("schema contracts", () => {
       source: "learned",
       createdAt: "2026-04-28T00:00:00.000Z",
       publishState: "live"
+    }).success).toBe(false);
+  });
+
+  it("parses legacy bundles with prototype slide and variation defaults", () => {
+    const result = ProjectBundleSchema.parse(createMinimalBundleRecord());
+
+    expect(result.prototypeGraph).toBeUndefined();
+    expect(result.presentationState).toBeUndefined();
+    expect(result.slideDecks).toEqual([]);
+    expect(result.variationSets).toEqual([]);
+    expect(result.agentRecipes).toEqual([]);
+  });
+
+  it("accepts a ProjectBundle with prototype slides variations and agent recipes", () => {
+    const result = ProjectBundleSchema.safeParse({
+      ...createMinimalBundleRecord(),
+      prototypeGraph: {
+        version: 1,
+        variables: [{
+          id: "proto_var_open",
+          name: "Overlay open",
+          kind: "boolean",
+          defaultValue: false
+        }],
+        interactions: [{
+          id: "proto_ix_open",
+          sourceObjectId: "obj_button",
+          trigger: "click",
+          action: "openOverlay",
+          targetObjectId: "obj_overlay",
+          conditions: [{
+            variableId: "proto_var_open",
+            operator: "isFalsy"
+          }],
+          transition: {
+            kind: "dissolve",
+            durationMs: 180,
+            easing: "ease-out"
+          },
+          provenance: "fixture",
+          createdAt: "2026-04-28T00:00:00.000Z"
+        }],
+        stateRules: [{
+          id: "state_rule_open",
+          componentId: "component_card",
+          variantId: "variant_open",
+          state: "hover",
+          variableBindings: { proto_var_open: true }
+        }],
+        updatedAt: "2026-04-28T00:00:00.000Z"
+      },
+      presentationState: {
+        mode: "present",
+        activeObjectId: "obj_button",
+        activeInteractionId: "proto_ix_open",
+        variableValues: { proto_var_open: false },
+        componentStates: { obj_button: "hover" },
+        history: ["proto_ix_open"],
+        startedAt: "2026-04-28T00:00:00.000Z"
+      },
+      slideDecks: [{
+        id: "deck_demo",
+        title: "Demo Deck",
+        view: "outline",
+        activeSlideId: "slide_intro",
+        slides: [{
+          id: "slide_intro",
+          title: "Intro",
+          order: 0,
+          notes: "Presenter notes",
+          blocks: [{
+            id: "slide_block_canvas",
+            kind: "canvasObject",
+            objectId: "obj_button",
+            order: 0
+          }],
+          feedback: [{
+            id: "feedback_poll",
+            kind: "poll",
+            author: "reviewer",
+            choices: ["A", "B"],
+            createdAt: "2026-04-28T00:00:00.000Z"
+          }]
+        }],
+        createdAt: "2026-04-28T00:00:00.000Z",
+        updatedAt: "2026-04-28T00:00:00.000Z"
+      }],
+      variationSets: [{
+        id: "variation_set_hero",
+        targetObjectId: "obj_button",
+        prompt: "Make the selected CTA clearer.",
+        sourceRevision: "rev_test",
+        directions: [{
+          id: "variation_dir_clear",
+          name: "Clear CTA",
+          description: "Increase spacing and contrast.",
+          targetObjectId: "obj_button",
+          operations: [],
+          patches: [],
+          status: "candidate",
+          provenance: "fixture",
+          createdAt: "2026-04-28T00:00:00.000Z"
+        }],
+        createdAt: "2026-04-28T00:00:00.000Z",
+        updatedAt: "2026-04-28T00:00:00.000Z"
+      }],
+      agentRecipes: [{
+        id: "agent_recipe_codex",
+        runtime: "codex",
+        targetObjectId: "obj_button",
+        sourceRevision: "rev_test",
+        prompt: "Improve selected region.",
+        instructionsPath: "docs/prompts/context-driven-design-agent-prompt.md",
+        operationIds: ["variation_op_1"],
+        replaySteps: ["Load the stored ProjectBundle."],
+        createdAt: "2026-04-28T00:00:00.000Z"
+      }]
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid prototype slide feedback and recipe values", () => {
+    expect(PrototypeInteractionSchema.safeParse({
+      id: "proto_ix_bad",
+      sourceObjectId: "obj_button",
+      trigger: "double-click",
+      action: "navigateTo",
+      provenance: "fixture",
+      createdAt: "2026-04-28T00:00:00.000Z"
+    }).success).toBe(false);
+
+    expect(SlideBlockSchema.safeParse({
+      id: "slide_block_bad",
+      kind: "liveDom",
+      order: 0
+    }).success).toBe(false);
+
+    expect(SlideFeedbackSchema.safeParse({
+      id: "feedback_bad",
+      kind: "emoji",
+      author: "reviewer",
+      createdAt: "2026-04-28T00:00:00.000Z"
+    }).success).toBe(false);
+
+    expect(AgentRecipeSchema.safeParse({
+      id: "agent_recipe_bad",
+      runtime: "claude",
+      targetObjectId: "obj_button",
+      sourceRevision: "rev_test",
+      prompt: "Improve selected region.",
+      instructionsPath: "docs/prompts/context-driven-design-agent-prompt.md",
+      createdAt: "2026-04-28T00:00:00.000Z"
     }).success).toBe(false);
   });
 

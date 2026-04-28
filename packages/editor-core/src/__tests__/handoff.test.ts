@@ -59,5 +59,9 @@ describe("design system and handoff helpers", () => {
     expect(codex.includes).toContain("codeReferences");
     expect(codex.includes).toContain("componentPatterns");
     expect(codex.includes).toContain("designSystemVersions");
+    expect(codex.includes).toContain("prototypeGraph");
+    expect(codex.includes).toContain("slideDecks");
+    expect(codex.includes).toContain("variationSets");
+    expect(codex.includes).toContain("agentRecipes");
   });
 });
