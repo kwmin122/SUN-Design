@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 08 context |
+| Current phase | Phase 08 planned |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -20,12 +20,12 @@
 | Phase 05 status | complete |
 | Phase 06 status | shipped |
 | Phase 07 status | shipped |
-| Phase 08 status | context |
+| Phase 08 status | planned |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 10/46 v2 requirements complete; 36 v2 requirements mapped to Phase 08-11 |
-| Next action | `/sunco:plan 8` |
+| Next action | `/sunco:execute 8` |
 
 ## Phase Queue
 
@@ -38,14 +38,14 @@
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
 | Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
-| Phase 08 | Prototyping, Slides, and AI Variations | context | 11 |
+| Phase 08 | Prototyping, Slides, and AI Variations | planned | 11 |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 already has context; the next step is `/sunco:plan 8`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is planned for prototype interactions, slide decks, presentation preview, selected-region variations, and portable agent recipes; the next step is `/sunco:execute 8`.
 
 ## Key Decisions Carried Forward
 
@@ -121,10 +121,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 07 execution gates passed: `pnpm lint`, `pnpm typecheck`, `pnpm test` (12 files, 61 tests), and `pnpm e2e` (19 browser tests).
 - Phase 07 formal verification passed in `.planning/phases/07-design-system-tokens-and-code-connect/07-VERIFICATION.md`. The completion boundary remains explicit: Phase 07 is a verified governed design-system/code-connect foundation, not the final Paper/Figma/Claude Design-level product.
 - Phase 07 shipped direct-to-main in `2f96ccb` / remote `2f96ccb4dd341cf1b503c9543cf8c06eb7abd424`. A PR was not created because the verified work was already committed and pushed on `main`.
+- Phase 08 research and execution plans were created in `.planning/phases/08-prototyping-slides-and-ai-variations/`: Wave 1 core prototype/slide/variation/recipe model and Wave 2 web workflows for prototype authoring, presentation mode, slide decks, variation compare, and agent recipe export.
 
 ---
-*Last updated: 2026-04-28 after Phase 07 shipping*
+*Last updated: 2026-04-28 after Phase 08 planning*
 - **phase**: 8
-- **last_updated**: 2026-04-28T15:17:05+09:00
-- **status**: context
-- **next_action**: `/sunco:plan 8`
+- **last_updated**: 2026-04-28T15:24:00+09:00
+- **status**: planned
+- **next_action**: `/sunco:execute 8`
