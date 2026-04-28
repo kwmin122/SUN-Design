@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 06 verified |
+| Current phase | Phase 07 context |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -18,14 +18,14 @@
 | Phase 03 status | complete |
 | Phase 04 status | complete |
 | Phase 05 status | complete |
-| Phase 06 status | verified |
+| Phase 06 status | shipped |
 | Phase 07 status | context |
 | Phase 08 status | context |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 5/46 v2 requirements complete; 41 v2 requirements mapped to Phase 07-11 |
-| Next action | `/sunco:ship 6` |
+| Next action | `/sunco:plan 7` |
 
 ## Phase Queue
 
@@ -36,7 +36,7 @@
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | complete | 9 |
 | Phase 04 | Responsive Preview and Export Fidelity | complete | 9 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
-| Phase 06 | Canvas and Component Model | verified | 5 |
+| Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | context | 5 |
 | Phase 08 | Prototyping, Slides, and AI Variations | context | 11 |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
@@ -45,7 +45,7 @@
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is formally verified for the Milestone 2 canvas/component foundation; the next step is `/sunco:ship 6`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation; the next step is `/sunco:plan 7`.
 
 ## Key Decisions Carried Forward
 
@@ -112,10 +112,12 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 06 final verification remediation fixed persisted component prop/variant/override invariants on graph load and the exported component override helper.
 - Post-remediation gates passed: `pnpm lint`, `pnpm typecheck`, `pnpm test` (11 files, 52 tests), and `pnpm e2e` (17 browser tests).
 - The visible design-agent workflow requested for the studio shell is present: Ask, Search, Verify, 3 Directions, and Iterate.
+- Phase 06 shipped direct-to-main in `4a2a4fb` / remote `4a2a4fbe0ad01b727c924d32723db13434d42156`. A PR was not created because the verified work was already committed and pushed on `main`.
+- The Phase 06 completion boundary remains explicit: this is a verified canvas/component foundation, not the final Paper/Figma/Claude Design-level product. Phase 07-11 continue the parity target.
 
 ---
-*Last updated: 2026-04-28 after Phase 06 formal verification*
-- **phase**: 6
-- **last_updated**: 2026-04-28T13:07:51+09:00
-- **status**: verified
-- **next_action**: `/sunco:ship 6`
+*Last updated: 2026-04-28 after Phase 06 direct-to-main ship*
+- **phase**: 7
+- **last_updated**: 2026-04-28T13:29:22+09:00
+- **status**: context
+- **next_action**: `/sunco:plan 7`
