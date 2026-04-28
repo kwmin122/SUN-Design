@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("renders fixture in a sandboxed iframe", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByText("K-Design Studio")).toBeVisible();
+  await expect(page.getByLabel("K-Design Studio project launcher").getByText("K-Design Studio")).toBeVisible();
   await expect(page.getByText("Phase 02 Direct Canvas", { exact: false })).toBeVisible();
 
   const iframe = page.getByTitle("Sandboxed design preview");

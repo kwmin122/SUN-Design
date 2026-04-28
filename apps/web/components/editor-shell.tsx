@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Bot,
   ChevronDown,
@@ -25,6 +25,8 @@ import {
 import type {
   BundleVersion,
   CanvasComment,
+  CanvasConstraints,
+  CanvasOperation,
   ContextAttachment,
   CreationMode,
   EditPatch,
@@ -39,6 +41,7 @@ import type {
 import {
   BASIC_LANDING_FIXTURE_HTML,
   ProjectBundleSchema,
+  applyCanvasOperationToBundle,
   applyEditPatchToBundle,
   applyEditPatchesToBundle,
   createGeneratedProjectBundle,
@@ -47,7 +50,11 @@ import {
   createAgentHandoff,
   createCanvaHandoff,
   createShareLink,
+  deriveCanvasGraph,
+  ensureCanvasGraph,
+  findCanvasObjectByNodeId,
   learnDesignSystem,
+  listCanvasObjects,
   runKoreanQualityAudit,
   findNodeIdsByClass,
   normalizeHtml
@@ -56,6 +63,9 @@ import { createPreviewNonce } from "@kdesign/preview-runtime";
 
 import { DiagnosticsPanel } from "./diagnostics-panel";
 import { PreviewFrame } from "./preview-frame";
+import { CanvasLayerTree } from "./canvas-layer-tree";
+import { CanvasObjectInspector } from "./canvas-object-inspector";
+import { ComponentInstancePanel } from "./component-instance-panel";
 import {
   clearLocalProjectBundle,
   loadLocalProjectBundle,
@@ -208,6 +218,7 @@ export function EditorShell() {
   const [presentMode, setPresentMode] = useState(false);
   const [nodeRects, setNodeRects] = useState<Record<string, PreviewNodeRect>>({});
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [textDraft, setTextDraft] = useState("");
   const [commentDraft, setCommentDraft] = useState("");
@@ -226,22 +237,25 @@ export function EditorShell() {
 
   const commitBundle = useCallback((bundle: ProjectBundle, options: { trackUndo?: boolean } = {}) => {
     const current = projectBundleRef.current;
+    const ensuredBundle = ensureCanvasGraph(bundle);
     if (options.trackUndo && current) {
       setUndoStack((stack) => [...stack, current].slice(-30));
       setRedoStack([]);
     }
-    saveLocalProjectBundle(bundle);
-    projectBundleRef.current = bundle;
-    setProjectBundle(bundle);
+    saveLocalProjectBundle(ensuredBundle);
+    projectBundleRef.current = ensuredBundle;
+    setProjectBundle(ensuredBundle);
     resetRuntime();
   }, [resetRuntime]);
 
   const loadOrCreateBundle = useCallback(() => {
     const saved = loadLocalProjectBundle();
     if (saved) {
+      const ensuredSaved = ensureCanvasGraph(saved);
       setTweaks(readArtifactTweaks(saved.tweakValues));
-      setProjectBundle(saved);
-      projectBundleRef.current = saved;
+      saveLocalProjectBundle(ensuredSaved);
+      setProjectBundle(ensuredSaved);
+      projectBundleRef.current = ensuredSaved;
       resetRuntime();
       return;
     }
@@ -280,19 +294,30 @@ export function EditorShell() {
 
   const reloadSample = useCallback(() => {
     commitBundle(createFixtureBundle(tweaks));
+    setSelectedNodeId(null);
+    setSelectedObjectId(null);
   }, [commitBundle, tweaks]);
 
   const clearSavedState = useCallback(() => {
     clearLocalProjectBundle();
     commitBundle(createFixtureBundle(tweaks));
+    setSelectedNodeId(null);
+    setSelectedObjectId(null);
   }, [commitBundle, tweaks]);
 
   const appendDiagnostic = useCallback((error: PreviewError) => {
     setDiagnostics((current) => [error, ...current].slice(0, 30));
   }, []);
 
-  const selectedNode = selectedNodeId && projectBundle ? projectBundle.editGraph.nodes[selectedNodeId] : undefined;
-  const selectedRect = selectedNodeId ? nodeRects[selectedNodeId] : undefined;
+  const canvasGraph = useMemo(
+    () => projectBundle ? projectBundle.canvasGraph ?? deriveCanvasGraph(projectBundle) : undefined,
+    [projectBundle]
+  );
+  const canvasObjects = useMemo(() => canvasGraph ? listCanvasObjects(canvasGraph) : [], [canvasGraph]);
+  const selectedObject = selectedObjectId && canvasGraph ? canvasGraph.objects[selectedObjectId] : undefined;
+  const resolvedSelectedNodeId = selectedObject?.nodeId ?? selectedNodeId;
+  const selectedNode = resolvedSelectedNodeId && projectBundle ? projectBundle.editGraph.nodes[resolvedSelectedNodeId] : undefined;
+  const selectedRect = resolvedSelectedNodeId ? nodeRects[resolvedSelectedNodeId] : undefined;
   const hoveredRect = hoveredNodeId ? nodeRects[hoveredNodeId] : undefined;
 
   useEffect(() => {
@@ -303,11 +328,23 @@ export function EditorShell() {
     setNodeRects(Object.fromEntries(nodes.map((node) => [node.nodeId, node])));
   }, []);
 
+  const selectCanvasObject = useCallback((objectId: string) => {
+    const object = canvasGraph?.objects[objectId];
+    if (!object) {
+      return;
+    }
+    setSelectedObjectId(object.id);
+    setSelectedNodeId(object.nodeId ?? null);
+    setHoveredNodeId(null);
+  }, [canvasGraph]);
+
   const handleNodeSelected = useCallback((node: PreviewNodeRect) => {
     setNodeRects((current) => ({ ...current, [node.nodeId]: node }));
+    const object = canvasGraph ? findCanvasObjectByNodeId(canvasGraph, node.nodeId) : undefined;
+    setSelectedObjectId(object?.id ?? null);
     setSelectedNodeId(node.nodeId);
     setHoveredNodeId(null);
-  }, []);
+  }, [canvasGraph]);
 
   const handleNodeHovered = useCallback((node: PreviewNodeRect) => {
     setNodeRects((current) => ({ ...current, [node.nodeId]: node }));
@@ -339,6 +376,8 @@ export function EditorShell() {
       const nextBundle = applyEditPatchToBundle(current, patch);
       commitBundle(nextBundle, { trackUndo: true });
       setSelectedNodeId(nodeId);
+      const object = nextBundle.canvasGraph ? findCanvasObjectByNodeId(nextBundle.canvasGraph, nodeId) : undefined;
+      setSelectedObjectId(object?.id ?? null);
     } catch (error) {
       appendDiagnostic({
         id: createLocalId("patch_error"),
@@ -350,6 +389,52 @@ export function EditorShell() {
       });
     }
   }, [appendDiagnostic, commitBundle]);
+
+  const commitCanvasOperation = useCallback((
+    op: CanvasOperation["op"],
+    value: unknown,
+    objectId = selectedObjectId
+  ) => {
+    const current = projectBundleRef.current;
+    if (!current || !objectId) {
+      appendDiagnostic({
+        id: createLocalId("canvas_op_error"),
+        source: "bridge",
+        severity: "warning",
+        code: "patch_rejected",
+        message: "Canvas operation requires a selected object.",
+        createdAt: new Date().toISOString()
+      });
+      return;
+    }
+
+    const operation: CanvasOperation = {
+      id: createLocalId("canvas_op"),
+      objectId,
+      op,
+      value,
+      source: "canvas",
+      baseRevision: current.baseRevision,
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      const nextBundle = applyCanvasOperationToBundle(current, operation);
+      commitBundle(nextBundle, { trackUndo: true });
+      setSelectedObjectId(objectId);
+      const nextObject = nextBundle.canvasGraph?.objects[objectId];
+      setSelectedNodeId(nextObject?.nodeId ?? selectedNodeId);
+    } catch (error) {
+      appendDiagnostic({
+        id: createLocalId("canvas_op_error"),
+        source: "bridge",
+        severity: "warning",
+        code: "patch_rejected",
+        message: error instanceof Error ? error.message : "Canvas operation was rejected.",
+        createdAt: new Date().toISOString()
+      });
+    }
+  }, [appendDiagnostic, commitBundle, selectedNodeId, selectedObjectId]);
 
   const addComment = useCallback(() => {
     const current = projectBundleRef.current;
@@ -464,6 +549,7 @@ export function EditorShell() {
     setTweaks(initialTweaks);
     commitBundle(bundleWithTweaks, { trackUndo: true });
     setSelectedNodeId(null);
+    setSelectedObjectId(null);
   }, [activePreset, commitBundle, contextAttachments, creationMode, fidelityTarget, prompt]);
 
   const runQualityCheck = useCallback(() => {
@@ -658,6 +744,36 @@ export function EditorShell() {
           </div>
         </section>
 
+        <section className="prompt-composer" aria-label="Design prompt composer">
+          <textarea
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            aria-label="Prompt"
+          />
+          <div className="composer-actions">
+            <button
+              type="button"
+              aria-label="Attach image context"
+              onClick={() => addContextAttachment("image", "제품 스크린샷.png")}
+            >
+              <Paperclip size={15} /> Image
+            </button>
+            <button type="button" aria-label="Voice prompt"><Mic size={15} /></button>
+            <button type="button" onClick={() => addContextAttachment("slideDeck", "기존 발표자료.pptx")}><Import size={15} /> PPTX</button>
+            <button type="button" onClick={() => addContextAttachment("document", "제품 요구사항.docx")}>DOCX</button>
+            <button type="button" onClick={() => addContextAttachment("spreadsheet", "시장 데이터.xlsx")}>XLSX</button>
+            <button type="button" onClick={() => addContextAttachment("webCapture", "https://example.com")}>Web</button>
+            <button className="send-button" type="button" onClick={() => createFromPrompt()}><Send size={15} /> Send</button>
+          </div>
+          <div className="context-chips" data-testid="context-attachments">
+            {contextAttachments.length === 0 ? (
+              <span>첨부 컨텍스트 없음</span>
+            ) : contextAttachments.map((attachment) => (
+              <span key={attachment.id}>{attachment.name} · {attachment.status}</span>
+            ))}
+          </div>
+        </section>
+
         <section className="assistant-thread">
           <div className="thread-label"><Bot size={15} /> Design Agent</div>
           <article className="agent-card searching">
@@ -714,35 +830,24 @@ export function EditorShell() {
           </div>
         </section>
 
-        <section className="prompt-composer" aria-label="Design prompt composer">
-          <textarea
-            value={prompt}
-            onChange={(event) => setPrompt(event.target.value)}
-            aria-label="Prompt"
+        {canvasGraph ? (
+          <CanvasLayerTree
+            graph={canvasGraph}
+            selectedObjectId={selectedObjectId}
+            onSelectObject={selectCanvasObject}
+            onRenameObject={(objectId, name) => commitCanvasOperation("setObjectName", { name }, objectId)}
+            onSetHidden={(objectId, hidden) => commitCanvasOperation("setObjectVisibility", { hidden }, objectId)}
+            onSetLocked={(objectId, locked) => commitCanvasOperation("setObjectLock", { locked }, objectId)}
+            onReorderObject={(objectId, parentId, index) => commitCanvasOperation("reorderObject", { parentId, index }, objectId)}
+            onGroupSelection={(objectIds) => {
+              const anchorObjectId = objectIds[0] ?? selectedObjectId;
+              if (anchorObjectId) {
+                commitCanvasOperation("groupObjects", { name: "Group", childObjectIds: objectIds }, anchorObjectId);
+              }
+            }}
+            onUngroupObject={(objectId) => commitCanvasOperation("ungroupObjects", {}, objectId)}
           />
-          <div className="composer-actions">
-            <button
-              type="button"
-              aria-label="Attach image context"
-              onClick={() => addContextAttachment("image", "제품 스크린샷.png")}
-            >
-              <Paperclip size={15} /> Image
-            </button>
-            <button type="button" aria-label="Voice prompt"><Mic size={15} /></button>
-            <button type="button" onClick={() => addContextAttachment("slideDeck", "기존 발표자료.pptx")}><Import size={15} /> PPTX</button>
-            <button type="button" onClick={() => addContextAttachment("document", "제품 요구사항.docx")}>DOCX</button>
-            <button type="button" onClick={() => addContextAttachment("spreadsheet", "시장 데이터.xlsx")}>XLSX</button>
-            <button type="button" onClick={() => addContextAttachment("webCapture", "https://example.com")}>Web</button>
-            <button className="send-button" type="button" onClick={() => createFromPrompt()}><Send size={15} /> Send</button>
-          </div>
-          <div className="context-chips" data-testid="context-attachments">
-            {contextAttachments.length === 0 ? (
-              <span>첨부 컨텍스트 없음</span>
-            ) : contextAttachments.map((attachment) => (
-              <span key={attachment.id}>{attachment.name} · {attachment.status}</span>
-            ))}
-          </div>
-        </section>
+        ) : null}
       </aside>
 
       <section className="design-workspace">
@@ -825,9 +930,17 @@ export function EditorShell() {
                 <h1>{projectBundle.title}</h1>
               </div>
               <span className={isPreviewReady ? "stage-status ready" : "stage-status"}>
-                {isPreviewReady ? selectedNode ? `selected ${selectedNode.kind}` : "ready" : "booting"}
+                {isPreviewReady ? selectedObject ? `selected ${selectedObject.kind}` : `ready · ${canvasObjects.length} objects` : "booting"}
               </span>
             </div>
+            {selectedObject ? (
+              <div className="canvas-object-breadcrumb" data-testid="canvas-object-breadcrumb">
+                <span>{selectedObject.kind}</span>
+                <strong>{selectedObject.name}</strong>
+                <span>{selectedNode?.tagName ?? "canvas object"}</span>
+              </div>
+            ) : null}
+            {selectedObject ? <div className="snap-guide" aria-hidden="true" /> : null}
             <PreviewFrame
               bundle={projectBundle}
               nonce={nonce}
@@ -847,6 +960,49 @@ export function EditorShell() {
 
           {tweaksEnabled ? (
             <aside className="tweaks-rail" aria-label="Tweaks panel">
+              {canvasGraph ? (
+                <>
+                  <CanvasObjectInspector
+                    object={selectedObject}
+                    nodeKind={selectedNode?.kind}
+                    nodeTagName={selectedNode?.tagName}
+                    onSetName={(name) => selectedObject && commitCanvasOperation("setObjectName", { name }, selectedObject.id)}
+                    onSetLayoutConstraints={(constraints: CanvasConstraints) => selectedObject && commitCanvasOperation("setLayoutConstraints", { constraints }, selectedObject.id)}
+                    onSetHidden={(hidden) => selectedObject && commitCanvasOperation("setObjectVisibility", { hidden }, selectedObject.id)}
+                    onSetLocked={(locked) => selectedObject && commitCanvasOperation("setObjectLock", { locked }, selectedObject.id)}
+                  />
+                  <ComponentInstancePanel
+                    graph={canvasGraph}
+                    selectedObject={selectedObject}
+                    onCreateComponent={(name) => selectedObject && commitCanvasOperation("createComponent", { name, sourceObjectId: selectedObject.id }, selectedObject.id)}
+                    onCreateInstance={(componentId) => selectedObject && commitCanvasOperation("createComponentInstance", { componentId, targetObjectId: selectedObject.id }, selectedObject.id)}
+                    onSetVariant={(instanceId, variantId) => {
+                      const objectId = canvasGraph.instances[instanceId]?.objectId ?? selectedObject?.id;
+                      if (objectId) {
+                        commitCanvasOperation("updateComponentOverride", { instanceId, variantId }, objectId);
+                      }
+                    }}
+                    onSetState={(instanceId, state) => {
+                      const objectId = canvasGraph.instances[instanceId]?.objectId ?? selectedObject?.id;
+                      if (objectId) {
+                        commitCanvasOperation("updateComponentOverride", { instanceId, state }, objectId);
+                      }
+                    }}
+                    onSetOverride={(instanceId, key, value) => {
+                      const objectId = canvasGraph.instances[instanceId]?.objectId ?? selectedObject?.id;
+                      if (objectId) {
+                        commitCanvasOperation("updateComponentOverride", { instanceId, overrides: { [key]: value } }, objectId);
+                      }
+                    }}
+                    onDetachInstance={(instanceId) => {
+                      const objectId = canvasGraph.instances[instanceId]?.objectId ?? selectedObject?.id;
+                      if (objectId) {
+                        commitCanvasOperation("detachComponentInstance", { instanceId }, objectId);
+                      }
+                    }}
+                  />
+                </>
+              ) : null}
               <section className="tweak-card inspector-card" data-testid="selection-inspector">
                 <div className="inspector-heading">
                   <div>
