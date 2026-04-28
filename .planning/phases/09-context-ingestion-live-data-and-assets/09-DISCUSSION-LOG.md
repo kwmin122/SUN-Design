@@ -84,7 +84,7 @@
 | Production hosted account sync | Implement real hosted accounts, auth, permissions, billing, object storage, and conflict merge. | |
 
 **Selected choice:** Account-shaped sync envelope with local/mock adapter.
-**Notes:** This satisfies the foundation for DATA-01 while keeping full hosted hardening in later phases.
+**Notes:** This satisfies only the Phase 09 foundation for DATA-01. DATA-01 should not be marked fully complete until hosted-account sync semantics are implemented and verified.
 
 ---
 

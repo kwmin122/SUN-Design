@@ -213,6 +213,7 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 - A live web page or selected region can be captured into editable canvas sections with source provenance.
 - Components can bind to CSV, spreadsheet, API fixture, or static JSON data and preview realistic repeated content.
 - Assets can be cached, relinked, replaced, audited, and served through stable project URLs.
+- Documents can be wrapped in a server-portable sync foundation with local/hosted account metadata, revision cursors, and conflict diagnostics; DATA-01 should not be marked fully complete until hosted-account sync semantics are implemented and verified.
 
 **Complexity:** High
 

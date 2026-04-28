@@ -1,7 +1,7 @@
 {
   ".planning/PROJECT.md": "4f27084f1094664f38c750ba477b1bcdee18b864bf982c63fe2559f185e81ec2",
   ".planning/REQUIREMENTS.md": "7b249077d877c2279fbfea1d343286020af930777d653f71f4738d0e78a3f822",
-  ".planning/ROADMAP.md": "c28a5d698a1a9ea7d05a22b37263e35fa2899814a4469ef96fc2773057b19d26",
+  ".planning/ROADMAP.md": "dc2b7f8cf7bde26235f5dbd4a40875f67c043860f1a805eef1cb037cee21dc88",
   ".planning/STATE.md": "7b3d1428d6a8e9873a05191e31c953e576ebd9e6affe72a9d90ea508934264aa",
   ".planning/phases/01-safe-html-document-foundation/01-01-PLAN.md": "51176ca0d9f83cab9bada0375e6f8ec45476c7e283d88b880045dbafcdd691fc",
   ".planning/phases/01-safe-html-document-foundation/01-01-SUMMARY.md": "f06ab28fa4d3aa063183aa5b8524bea2a65629714602b07f2cace94ca8de87b4",
@@ -56,8 +56,8 @@
   ".planning/phases/08-prototyping-slides-and-ai-variations/08-DISCUSSION-LOG.md": "510a49c2b7657c0dc5e1ad19c4cd07ec110b576718e1f3c0295d4d919473e772",
   ".planning/phases/08-prototyping-slides-and-ai-variations/08-RESEARCH.md": "e92664e2aa5811c943596017ea0a5ed2c2a95a2a2335a06a519e2fe84beeabc7",
   ".planning/phases/08-prototyping-slides-and-ai-variations/08-VERIFICATION.md": "60bee068d079694baadfa04d044d3d85d40dd88422db3fd197bbe66250b99594",
-  ".planning/phases/09-context-ingestion-live-data-and-assets/09-CONTEXT.md": "2ad7c8895d9a3a1fb8280db1a131b435d9f542b78dd8110346a7042c3f718fcc",
-  ".planning/phases/09-context-ingestion-live-data-and-assets/09-DISCUSSION-LOG.md": "0cca1b0e3cd069439b72cd655262474be49925cf0b0524106bc4d22ad987fc62",
+  ".planning/phases/09-context-ingestion-live-data-and-assets/09-CONTEXT.md": "ad7dd95419c2512e217d5de35c57f9fe72bd59ecb254fd951dfd3bc7f5f6786c",
+  ".planning/phases/09-context-ingestion-live-data-and-assets/09-DISCUSSION-LOG.md": "5a696dff81b49dd78c7145d381c65d84b92b5cb30ba4a600de4f27a67f54e443",
   ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-CONTEXT.md": "f2e76b7a242fe1237d9e0dbe917009d2937fd3774fae8ab72b8daf5e662b64ca",
   ".planning/phases/11-collaboration-search-and-governance/11-CONTEXT.md": "8cd9bf1f6d74a09a3dc7659fda071b2c946ff278b8e2cd177f2438c95da89be3"
 }
