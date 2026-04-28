@@ -62,25 +62,104 @@ import {
   saveLocalProjectBundle
 } from "../lib/local-project-store";
 
-type FixtureTweaks = {
+type ArtifactTweaks = {
   feedColumns: 2 | 3 | 4;
   density: "compact" | "comfortable";
   pointColor: "coral" | "teal" | "blue";
 };
 
-const DEFAULT_TWEAKS: FixtureTweaks = {
+type TweakProfileId = "fixture" | "saasLanding" | "pitchDeck" | "mobileApp" | "generic";
+
+type TweakOption = {
+  label: string;
+  value: ArtifactTweaks[keyof ArtifactTweaks];
+};
+
+type TweakGroup = {
+  key: keyof ArtifactTweaks;
+  label: string;
+  options: TweakOption[];
+};
+
+type TweakProfile = {
+  id: TweakProfileId;
+  title: string;
+  description: string;
+  groups: TweakGroup[];
+};
+
+const DEFAULT_TWEAKS: ArtifactTweaks = {
   feedColumns: 3,
   density: "comfortable",
   pointColor: "coral"
 };
 
-const POINT_COLORS: Record<FixtureTweaks["pointColor"], string> = {
+const POINT_COLORS: Record<ArtifactTweaks["pointColor"], string> = {
   coral: "#c98265",
   teal: "#2f9f8f",
   blue: "#647da8"
 };
 
-function createFixtureBundle(tweaks: FixtureTweaks = DEFAULT_TWEAKS): ProjectBundle {
+const ACCENT_BACKGROUNDS: Record<ArtifactTweaks["pointColor"], string> = {
+  coral: "#f4efe7",
+  teal: "#edf7f5",
+  blue: "#eef4ff"
+};
+
+const TWEAK_PROFILES: Record<TweakProfileId, TweakProfile> = {
+  fixture: {
+    id: "fixture",
+    title: "Fixture Tweaks",
+    description: "샘플 HTML의 피드, 밀도, 포인트 컬러를 조정합니다.",
+    groups: [
+      { key: "feedColumns", label: "피드 레이아웃", options: [{ label: "2열", value: 2 }, { label: "3열", value: 3 }, { label: "4열", value: 4 }] },
+      { key: "density", label: "콘텐츠 밀도", options: [{ label: "컴팩트", value: "compact" }, { label: "여유", value: "comfortable" }] },
+      { key: "pointColor", label: "포인트 컬러", options: [{ label: "코랄", value: "coral" }, { label: "틸", value: "teal" }, { label: "블루", value: "blue" }] }
+    ]
+  },
+  saasLanding: {
+    id: "saasLanding",
+    title: "Landing Tweaks",
+    description: "랜딩 페이지의 히어로 균형, 섹션 리듬, 브랜드 톤을 조정합니다.",
+    groups: [
+      { key: "feedColumns", label: "히어로 구성", options: [{ label: "집중형", value: 2 }, { label: "균형형", value: 3 }, { label: "확장형", value: 4 }] },
+      { key: "density", label: "섹션 리듬", options: [{ label: "타이트", value: "compact" }, { label: "넉넉", value: "comfortable" }] },
+      { key: "pointColor", label: "브랜드 톤", options: [{ label: "코랄", value: "coral" }, { label: "틸", value: "teal" }, { label: "블루", value: "blue" }] }
+    ]
+  },
+  pitchDeck: {
+    id: "pitchDeck",
+    title: "Pitch Deck Tweaks",
+    description: "슬라이드의 구조, 발표 밀도, 강조 톤을 조정합니다.",
+    groups: [
+      { key: "feedColumns", label: "슬라이드 레이아웃", options: [{ label: "단일 슬라이드", value: 2 }, { label: "스플릿", value: 3 }, { label: "목차형", value: 4 }] },
+      { key: "density", label: "발표 밀도", options: [{ label: "압축", value: "compact" }, { label: "여백", value: "comfortable" }] },
+      { key: "pointColor", label: "강조 톤", options: [{ label: "코랄", value: "coral" }, { label: "틸", value: "teal" }, { label: "블루", value: "blue" }] }
+    ]
+  },
+  mobileApp: {
+    id: "mobileApp",
+    title: "Mobile App Tweaks",
+    description: "앱 화면 폭, 터치 밀도, 액션 컬러를 조정합니다.",
+    groups: [
+      { key: "feedColumns", label: "모바일 화면 폭", options: [{ label: "좁게", value: 2 }, { label: "표준", value: 3 }, { label: "넓게", value: 4 }] },
+      { key: "density", label: "터치 밀도", options: [{ label: "컴팩트", value: "compact" }, { label: "편안", value: "comfortable" }] },
+      { key: "pointColor", label: "액션 컬러", options: [{ label: "코랄", value: "coral" }, { label: "틸", value: "teal" }, { label: "블루", value: "blue" }] }
+    ]
+  },
+  generic: {
+    id: "generic",
+    title: "Artifact Tweaks",
+    description: "현재 HTML 구조에서 안전하게 찾을 수 있는 전역 스타일만 조정합니다.",
+    groups: [
+      { key: "feedColumns", label: "구조 강도", options: [{ label: "단순", value: 2 }, { label: "균형", value: 3 }, { label: "풍부", value: 4 }] },
+      { key: "density", label: "전체 밀도", options: [{ label: "컴팩트", value: "compact" }, { label: "여유", value: "comfortable" }] },
+      { key: "pointColor", label: "포인트 톤", options: [{ label: "코랄", value: "coral" }, { label: "틸", value: "teal" }, { label: "블루", value: "blue" }] }
+    ]
+  }
+};
+
+function createFixtureBundle(tweaks: ArtifactTweaks = DEFAULT_TWEAKS): ProjectBundle {
   const bundle = normalizeHtml({
     id: "phase-01-fixture",
     title: "Phase 01 Fixture",
@@ -88,11 +167,11 @@ function createFixtureBundle(tweaks: FixtureTweaks = DEFAULT_TWEAKS): ProjectBun
   });
   return ProjectBundleSchema.parse({
     ...bundle,
-    tweakValues: tweaks
+    tweakValues: { ...tweaks, profileId: "fixture" }
   });
 }
 
-function applyFixtureTweaks(html: string, tweaks: FixtureTweaks): string {
+function applyFixtureTweaks(html: string, tweaks: ArtifactTweaks): string {
   const heroPadding = tweaks.density === "compact" ? "clamp(24px, 5vw, 40px)" : "clamp(28px, 7vw, 54px)";
   const gridGap = tweaks.density === "compact" ? "12px" : "18px";
   const cardPadding = tweaks.density === "compact" ? "16px" : "22px";
@@ -118,7 +197,7 @@ export function EditorShell() {
   const [chatTab, setChatTab] = useState<"chat" | "comments">("chat");
   const [tweaksEnabled, setTweaksEnabled] = useState(true);
   const [toolMode, setToolMode] = useState<"comment" | "edit" | "draw">("edit");
-  const [tweaks, setTweaks] = useState<FixtureTweaks>(DEFAULT_TWEAKS);
+  const [tweaks, setTweaks] = useState<ArtifactTweaks>(DEFAULT_TWEAKS);
   const [prompt, setPrompt] = useState("한국어 SaaS 제품 랜딩 페이지를 high fidelity로 만들어줘");
   const [creationMode, setCreationMode] = useState<CreationMode>("prototype");
   const [fidelityTarget, setFidelityTarget] = useState<FidelityTarget>("highFidelity");
@@ -160,7 +239,7 @@ export function EditorShell() {
   const loadOrCreateBundle = useCallback(() => {
     const saved = loadLocalProjectBundle();
     if (saved) {
-      setTweaks(readFixtureTweaks(saved.tweakValues));
+      setTweaks(readArtifactTweaks(saved.tweakValues));
       setProjectBundle(saved);
       projectBundleRef.current = saved;
       resetRuntime();
@@ -178,7 +257,7 @@ export function EditorShell() {
     loadOrCreateBundle();
   }, [loadOrCreateBundle]);
 
-  const rebuildWithTweaks = useCallback((nextTweaks: FixtureTweaks) => {
+  const rebuildWithTweaks = useCallback((nextTweaks: ArtifactTweaks) => {
     setTweaks(nextTweaks);
     const current = projectBundleRef.current;
     if (!current) {
@@ -186,12 +265,13 @@ export function EditorShell() {
       return;
     }
 
+    const profile = getTweakProfile(current);
     const bundleWithTweaks = ProjectBundleSchema.parse({
       ...current,
-      tweakValues: nextTweaks,
+      tweakValues: { ...nextTweaks, profileId: profile.id },
       updatedAt: new Date().toISOString()
     });
-    const patches = createTweakPatches(current, tweaks, nextTweaks);
+    const patches = createTweakPatches(current, tweaks, nextTweaks, profile.id);
     const nextBundle = patches.length > 0
       ? applyEditPatchesToBundle(bundleWithTweaks, patches)
       : bundleWithTweaks;
@@ -374,9 +454,15 @@ export function EditorShell() {
       preset,
       contextAttachments
     });
+    const initialTweaks = DEFAULT_TWEAKS;
+    const bundleWithTweaks = ProjectBundleSchema.parse({
+      ...bundle,
+      tweakValues: { ...initialTweaks, profileId: preset }
+    });
     setActivePreset(preset);
     setCreationMode(mode);
-    commitBundle(bundle, { trackUndo: true });
+    setTweaks(initialTweaks);
+    commitBundle(bundleWithTweaks, { trackUndo: true });
     setSelectedNodeId(null);
   }, [activePreset, commitBundle, contextAttachments, creationMode, fidelityTarget, prompt]);
 
@@ -484,18 +570,6 @@ export function EditorShell() {
     setPreviewZoom((current) => current === 100 ? 90 : current === 90 ? 75 : 100);
   }, []);
 
-  const setFeedColumns = (feedColumns: FixtureTweaks["feedColumns"]) => {
-    rebuildWithTweaks({ ...tweaks, feedColumns });
-  };
-
-  const setDensity = (density: FixtureTweaks["density"]) => {
-    rebuildWithTweaks({ ...tweaks, density });
-  };
-
-  const setPointColor = (pointColor: FixtureTweaks["pointColor"]) => {
-    rebuildWithTweaks({ ...tweaks, pointColor });
-  };
-
   if (!projectBundle || !nonce) {
     return (
       <main className="studio-editor">
@@ -508,6 +582,8 @@ export function EditorShell() {
       </main>
     );
   }
+
+  const tweakProfile = getTweakProfile(projectBundle);
 
   return (
     <main className={presentMode ? "studio-editor present-mode" : "studio-editor"}>
@@ -856,31 +932,20 @@ export function EditorShell() {
                   ))}
                 </div>
               </section>
-              <section className="tweak-card">
-                <h2>Tweaks</h2>
-                <TweakSegment
-                  label="피드 레이아웃"
-                  options={[
-                    { label: "2열", active: tweaks.feedColumns === 2, onClick: () => setFeedColumns(2) },
-                    { label: "3열", active: tweaks.feedColumns === 3, onClick: () => setFeedColumns(3) },
-                    { label: "4열", active: tweaks.feedColumns === 4, onClick: () => setFeedColumns(4) }
-                  ]}
-                />
-                <TweakSegment
-                  label="콘텐츠 밀도"
-                  options={[
-                    { label: "컴팩트", active: tweaks.density === "compact", onClick: () => setDensity("compact") },
-                    { label: "여유", active: tweaks.density === "comfortable", onClick: () => setDensity("comfortable") }
-                  ]}
-                />
-                <TweakSegment
-                  label="포인트 컬러"
-                  options={[
-                    { label: "코랄", active: tweaks.pointColor === "coral", onClick: () => setPointColor("coral") },
-                    { label: "틸", active: tweaks.pointColor === "teal", onClick: () => setPointColor("teal") },
-                    { label: "블루", active: tweaks.pointColor === "blue", onClick: () => setPointColor("blue") }
-                  ]}
-                />
+              <section className="tweak-card" data-testid="tweak-profile">
+                <h2>{tweakProfile.title}</h2>
+                <p className="tweak-description">{tweakProfile.description}</p>
+                {tweakProfile.groups.map((group) => (
+                  <TweakSegment
+                    key={group.key}
+                    label={group.label}
+                    options={group.options.map((option) => ({
+                      label: option.label,
+                      active: tweaks[group.key] === option.value,
+                      onClick: () => rebuildWithTweaks(writeTweakValue(tweaks, group.key, option.value))
+                    }))}
+                  />
+                ))}
               </section>
               <section className="tweak-card asset-card" data-testid="asset-manifest">
                 <h2>Context & Assets</h2>
@@ -979,7 +1044,34 @@ export function EditorShell() {
   );
 }
 
-function readFixtureTweaks(value: Record<string, unknown>): FixtureTweaks {
+function getTweakProfile(bundle: ProjectBundle): TweakProfile {
+  if (bundle.source.preset) {
+    return TWEAK_PROFILES[bundle.source.preset];
+  }
+  if (bundle.source.kind === "fixture") {
+    return TWEAK_PROFILES.fixture;
+  }
+  return TWEAK_PROFILES.generic;
+}
+
+function writeTweakValue(
+  current: ArtifactTweaks,
+  key: keyof ArtifactTweaks,
+  value: ArtifactTweaks[keyof ArtifactTweaks]
+): ArtifactTweaks {
+  if (key === "feedColumns" && (value === 2 || value === 3 || value === 4)) {
+    return { ...current, feedColumns: value };
+  }
+  if (key === "density" && (value === "compact" || value === "comfortable")) {
+    return { ...current, density: value };
+  }
+  if (key === "pointColor" && (value === "coral" || value === "teal" || value === "blue")) {
+    return { ...current, pointColor: value };
+  }
+  return current;
+}
+
+function readArtifactTweaks(value: Record<string, unknown>): ArtifactTweaks {
   return {
     feedColumns: value.feedColumns === 2 || value.feedColumns === 3 || value.feedColumns === 4
       ? value.feedColumns
@@ -993,9 +1085,20 @@ function readFixtureTweaks(value: Record<string, unknown>): FixtureTweaks {
   };
 }
 
-function createTweakPatches(current: ProjectBundle, previous: FixtureTweaks, next: FixtureTweaks): EditPatch[] {
+function createTweakPatches(
+  current: ProjectBundle,
+  previous: ArtifactTweaks,
+  next: ArtifactTweaks,
+  profileId: TweakProfileId
+): EditPatch[] {
   const createdAt = new Date().toISOString();
   const patches: EditPatch[] = [];
+
+  if (profileId !== "fixture") {
+    patches.push(...createGeneratedTweakPatches(current, previous, next, profileId, createdAt));
+    return patches;
+  }
+
   const featureGridId = findNodeIdsByClass(current, "feature-grid")[0];
   const heroId = findNodeIdsByClass(current, "hero")[0];
 
@@ -1026,6 +1129,144 @@ function createTweakPatches(current: ProjectBundle, previous: FixtureTweaks, nex
   }
 
   return patches;
+}
+
+function createGeneratedTweakPatches(
+  current: ProjectBundle,
+  previous: ArtifactTweaks,
+  next: ArtifactTweaks,
+  profileId: TweakProfileId,
+  createdAt: string
+): EditPatch[] {
+  const patches: EditPatch[] = [];
+  const rootClass = profileId === "pitchDeck"
+    ? "generated-deck"
+    : profileId === "mobileApp"
+      ? "generated-mobile"
+      : profileId === "saasLanding"
+        ? "generated-landing"
+        : "";
+  const rootId = rootClass ? findNodeIdsByClass(current, rootClass)[0] : current.editGraph.rootNodeIds[0];
+
+  if (rootId && previous.pointColor !== next.pointColor) {
+    patches.push(createPatch(current, rootId, "setStyle", {
+      background: ACCENT_BACKGROUNDS[next.pointColor]
+    }, createdAt));
+  }
+
+  if (profileId === "saasLanding") {
+    addLandingTweakPatches(current, previous, next, patches, createdAt);
+  } else if (profileId === "pitchDeck") {
+    addDeckTweakPatches(current, previous, next, patches, createdAt);
+  } else if (profileId === "mobileApp") {
+    addMobileTweakPatches(current, previous, next, patches, createdAt);
+  } else if (rootId && previous.density !== next.density) {
+    patches.push(createPatch(current, rootId, "setStyle", {
+      padding: next.density === "compact" ? "24px" : "clamp(28px, 6vw, 60px)"
+    }, createdAt));
+  }
+
+  if (previous.pointColor !== next.pointColor) {
+    for (const node of Object.values(current.editGraph.nodes)) {
+      const text = node.textPreview ?? "";
+      if (node.kind === "text" && (text.includes("·") || text === "01" || text === "02" || text === "03")) {
+        patches.push(createPatch(current, node.id, "setStyle", { color: POINT_COLORS[next.pointColor] }, createdAt));
+      }
+    }
+  }
+
+  return patches;
+}
+
+function addLandingTweakPatches(
+  current: ProjectBundle,
+  previous: ArtifactTweaks,
+  next: ArtifactTweaks,
+  patches: EditPatch[],
+  createdAt: string
+): void {
+  const heroId = findNodeIdsByClass(current, "generated-hero")[0];
+  const cardStackId = findNodeIdsByClass(current, "generated-card-stack")[0];
+  if (heroId && previous.feedColumns !== next.feedColumns) {
+    patches.push(createPatch(current, heroId, "setStyle", {
+      gap: next.feedColumns === 2 ? "22px" : next.feedColumns === 3 ? "30px" : "42px",
+      "align-items": next.feedColumns === 4 ? "flex-start" : "center"
+    }, createdAt));
+  }
+  if (heroId && previous.density !== next.density) {
+    patches.push(createPatch(current, heroId, "setStyle", {
+      padding: next.density === "compact" ? "clamp(24px, 5vw, 42px)" : "clamp(28px, 6vw, 56px)"
+    }, createdAt));
+  }
+  if (cardStackId && (previous.feedColumns !== next.feedColumns || previous.density !== next.density)) {
+    patches.push(createPatch(current, cardStackId, "setStyle", {
+      gap: next.density === "compact" ? "10px" : next.feedColumns === 4 ? "18px" : "14px"
+    }, createdAt));
+  }
+}
+
+function addDeckTweakPatches(
+  current: ProjectBundle,
+  previous: ArtifactTweaks,
+  next: ArtifactTweaks,
+  patches: EditPatch[],
+  createdAt: string
+): void {
+  const gridId = findNodeIdsByClass(current, "generated-deck-grid")[0];
+  const coverId = findNodeIdsByClass(current, "generated-deck-cover")[0];
+  const outlineId = findNodeIdsByClass(current, "generated-deck-outline")[0];
+  if (gridId && previous.feedColumns !== next.feedColumns) {
+    patches.push(createPatch(current, gridId, "setStyle", {
+      "grid-template-columns": next.feedColumns === 2 ? "minmax(0, 1fr)" : next.feedColumns === 3 ? "minmax(0, 1.15fr) minmax(280px, .85fr)" : "minmax(0, .9fr) minmax(260px, 1.1fr)"
+    }, createdAt));
+  }
+  if (gridId && previous.density !== next.density) {
+    patches.push(createPatch(current, gridId, "setStyle", {
+      gap: next.density === "compact" ? "14px" : "22px"
+    }, createdAt));
+  }
+  if (coverId && previous.density !== next.density) {
+    patches.push(createPatch(current, coverId, "setStyle", {
+      padding: next.density === "compact" ? "clamp(24px, 5vw, 42px)" : "clamp(28px, 6vw, 56px)"
+    }, createdAt));
+  }
+  if (outlineId && previous.density !== next.density) {
+    patches.push(createPatch(current, outlineId, "setStyle", {
+      gap: next.density === "compact" ? "10px" : "16px"
+    }, createdAt));
+  }
+}
+
+function addMobileTweakPatches(
+  current: ProjectBundle,
+  previous: ArtifactTweaks,
+  next: ArtifactTweaks,
+  patches: EditPatch[],
+  createdAt: string
+): void {
+  const phoneId = findNodeIdsByClass(current, "generated-phone-frame")[0];
+  const heroId = findNodeIdsByClass(current, "generated-mobile-hero")[0];
+  const actionsId = findNodeIdsByClass(current, "generated-mobile-actions")[0];
+  if (phoneId && previous.feedColumns !== next.feedColumns) {
+    patches.push(createPatch(current, phoneId, "setStyle", {
+      width: next.feedColumns === 2 ? "min(100%, 390px)" : next.feedColumns === 3 ? "min(100%, 430px)" : "min(100%, 460px)"
+    }, createdAt));
+  }
+  if (phoneId && previous.density !== next.density) {
+    patches.push(createPatch(current, phoneId, "setStyle", {
+      padding: next.density === "compact" ? "18px" : "22px"
+    }, createdAt));
+  }
+  if (heroId && previous.density !== next.density) {
+    patches.push(createPatch(current, heroId, "setStyle", {
+      padding: next.density === "compact" ? "20px" : "26px"
+    }, createdAt));
+  }
+  if (actionsId && previous.density !== next.density) {
+    patches.push(createPatch(current, actionsId, "setStyle", {
+      gap: next.density === "compact" ? "8px" : "12px"
+    }, createdAt));
+  }
 }
 
 function createPatch(

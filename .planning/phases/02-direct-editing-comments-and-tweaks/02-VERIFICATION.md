@@ -26,6 +26,7 @@
 - PASS: undo and redo traverse bundle snapshots.
 - PASS: right-side Tweaks toggle hides and restores the inspector rail.
 - PASS: global feed layout tweak persists as `tweakValues` and materialized normalized HTML.
+- PASS: artifact-specific Tweaks profiles change the right rail labels and patch targets for pitch deck and mobile app artifacts.
 - PASS: spoofed bridge messages are rejected through the existing bridge diagnostics path.
 
 ## Visual Evidence
@@ -38,3 +39,19 @@
 
 - Computer Use retry result: blocked by macOS Apple event error `-1743`.
 - Browser-use Node REPL runtime was not available in this session, so direct browser verification used Playwright against `http://localhost:3107`.
+
+## Post-Verification Remediation: Dynamic Tweaks
+
+**Verified:** 2026-04-28
+
+| Command | Result |
+|---|---|
+| `pnpm typecheck` | PASS |
+| `pnpm lint` | PASS |
+| `pnpm exec playwright test apps/web/tests/phase-03.spec.ts` | PASS: 3 browser tests |
+| `pnpm test` | PASS: 8 files, 31 tests |
+| `pnpm e2e` | PASS: 15 browser tests |
+
+- PASS: pitch deck generation exposes `Pitch Deck Tweaks`, changes the first control group to `슬라이드 레이아웃`, and persists `profileId: "pitchDeck"`.
+- PASS: mobile app generation exposes `Mobile App Tweaks`, changes the first control group to `모바일 화면 폭`, and persists `profileId: "mobileApp"`.
+- PASS: dynamic controls patch stable generated classes (`generated-deck-grid`, `generated-phone-frame`) through stored bundle state.

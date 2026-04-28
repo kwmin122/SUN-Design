@@ -60,3 +60,31 @@ test("creates all three Korean preset contexts", async ({ page }) => {
   await expect(frame.getByText("실제 제품 맥락과 한국어 문장 리듬")).toBeVisible();
   await expect(page.getByTestId("asset-manifest")).toContainText("saasLanding");
 });
+
+test("changes Tweaks controls and patch targets by artifact type", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
+  const frame = page.frameLocator('iframe[title="Sandboxed design preview"]');
+
+  await page.getByRole("button", { name: "피치덱" }).click();
+  await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
+  await expect(page.getByTestId("tweak-profile")).toContainText("Pitch Deck Tweaks");
+  await expect(page.getByTestId("tweak-profile")).toContainText("슬라이드 레이아웃");
+  await page.getByRole("button", { name: "단일 슬라이드" }).click();
+  await expect.poll(async () => frame.locator(".generated-deck-grid").getAttribute("style")).toContain("minmax(0, 1fr)");
+
+  let saved = await page.evaluate(() => window.localStorage.getItem("kdesign.phase01.project.v1"));
+  expect(saved).toContain("\"profileId\":\"pitchDeck\"");
+  expect(saved).toContain("generated-deck-grid");
+
+  await page.getByRole("button", { name: "모바일 앱" }).click();
+  await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
+  await expect(page.getByTestId("tweak-profile")).toContainText("Mobile App Tweaks");
+  await expect(page.getByTestId("tweak-profile")).toContainText("모바일 화면 폭");
+  await page.getByRole("button", { name: "넓게" }).click();
+  await expect.poll(async () => frame.locator(".generated-phone-frame").getAttribute("style")).toContain("460px");
+
+  saved = await page.evaluate(() => window.localStorage.getItem("kdesign.phase01.project.v1"));
+  expect(saved).toContain("\"profileId\":\"mobileApp\"");
+  expect(saved).toContain("generated-phone-frame");
+});

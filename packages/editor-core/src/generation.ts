@@ -112,7 +112,7 @@ function landingHtml(prompt: string, modeLabel: string, fidelityLabel: string, c
         <span style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 18px; border: 3px solid #171717; border-radius: 14px; background: #f5c84b; font-weight: 900;">컨텍스트 ${contextCount}개 반영</span>
       </div>
     </div>
-    <section style="flex: 1 1 320px; min-width: min(100%, 260px); display: grid; gap: 14px;">
+    <section class="generated-card-stack" style="flex: 1 1 320px; min-width: min(100%, 260px); display: grid; gap: 14px;">
       <article style="min-height: 120px; border: 3px solid #171717; border-radius: 22px; background: #eaf6f3; padding: 22px; box-shadow: 8px 8px 0 rgba(23,23,23,.1);">
         <h2 style="margin: 0; font-size: 24px;">제품 화면 중심</h2>
         <p style="margin: 10px 0 0; color: #56606c;">추상 장식 대신 사용자가 판단할 수 있는 정보 위계를 먼저 보여줍니다.</p>
@@ -128,8 +128,8 @@ function landingHtml(prompt: string, modeLabel: string, fidelityLabel: string, c
 
 function deckHtml(prompt: string, modeLabel: string, fidelityLabel: string, contextCount: number): string {
   return String.raw`<main class="generated generated-deck" style="min-height: 100vh; background: #f2f5f4; color: #171717; font-family: Inter, Pretendard, Apple SD Gothic Neo, Noto Sans KR, system-ui, sans-serif; padding: clamp(24px, 5vw, 52px); line-height: 1.55; word-break: keep-all;">
-  <section style="display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr); gap: 22px; align-items: stretch;">
-    <article style="min-height: 620px; border: 4px solid #171717; border-radius: 28px; background: #fffdf7; padding: clamp(28px, 6vw, 56px); box-shadow: 14px 16px 0 rgba(23, 23, 23, .12);">
+  <section class="generated-deck-grid" style="display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr); gap: 22px; align-items: stretch;">
+    <article class="generated-deck-cover" style="min-height: 620px; border: 4px solid #171717; border-radius: 28px; background: #fffdf7; padding: clamp(28px, 6vw, 56px); box-shadow: 14px 16px 0 rgba(23, 23, 23, .12);">
       <p style="margin: 0 0 16px; color: #c98265; font-size: 15px; font-weight: 900;">${modeLabel} · ${fidelityLabel}</p>
       <h1 style="margin: 0; max-width: 760px; font-size: clamp(34px, 7vw, 62px); line-height: 1.08;">${prompt}</h1>
       <p style="margin: 26px 0 0; color: #3f4654; font-size: 22px;">문제, 해결책, 시장, 실행 계획이 한 장면씩 이어지는 발표 리듬으로 구성했습니다.</p>
@@ -138,7 +138,7 @@ function deckHtml(prompt: string, modeLabel: string, fidelityLabel: string, cont
         <span style="border: 3px solid #171717; border-radius: 999px; background: #f5c84b; padding: 10px 16px; font-weight: 900;">한국어 발표용</span>
       </div>
     </article>
-    <aside style="display: grid; gap: 16px;">
+    <aside class="generated-deck-outline" style="display: grid; gap: 16px;">
       <article style="border: 3px solid #171717; border-radius: 22px; background: #ffffff; padding: 22px;"><h2 style="margin:0;">01 문제</h2><p style="color:#56606c;">지금 사용자의 막힘을 한 문장으로 정리합니다.</p></article>
       <article style="border: 3px solid #171717; border-radius: 22px; background: #fff8df; padding: 22px;"><h2 style="margin:0;">02 해결</h2><p style="color:#56606c;">제품이 바꾸는 행동을 화면 중심으로 보여줍니다.</p></article>
       <article style="border: 3px solid #171717; border-radius: 22px; background: #eaf6f3; padding: 22px;"><h2 style="margin:0;">03 실행</h2><p style="color:#56606c;">다음 액션과 검증 기준을 분명히 둡니다.</p></article>
@@ -149,14 +149,14 @@ function deckHtml(prompt: string, modeLabel: string, fidelityLabel: string, cont
 
 function mobileHtml(prompt: string, modeLabel: string, fidelityLabel: string, contextCount: number): string {
   return String.raw`<main class="generated generated-mobile" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f4efe7; color: #171717; font-family: Inter, Pretendard, Apple SD Gothic Neo, Noto Sans KR, system-ui, sans-serif; padding: 34px; line-height: 1.55; word-break: keep-all;">
-  <section style="width: min(100%, 430px); min-height: 760px; border: 5px solid #171717; border-radius: 42px; background: #fffdf7; padding: 22px; box-shadow: 16px 18px 0 rgba(23,23,23,.12);">
+  <section class="generated-phone-frame" style="width: min(100%, 430px); min-height: 760px; border: 5px solid #171717; border-radius: 42px; background: #fffdf7; padding: 22px; box-shadow: 16px 18px 0 rgba(23,23,23,.12);">
     <div style="height: 34px; display: flex; justify-content: center;"><span style="width: 112px; height: 8px; border-radius: 999px; background: #171717;"></span></div>
-    <article style="margin-top: 28px; border: 3px solid #171717; border-radius: 28px; background: #eaf6f3; padding: 26px; min-height: 300px;">
+    <article class="generated-mobile-hero" style="margin-top: 28px; border: 3px solid #171717; border-radius: 28px; background: #eaf6f3; padding: 26px; min-height: 300px;">
       <p style="margin: 0 0 12px; color: #2f9f8f; font-size: 14px; font-weight: 900;">${modeLabel} · ${fidelityLabel}</p>
       <h1 style="margin: 0; font-size: 36px; line-height: 1.12;">${prompt}</h1>
       <p style="margin: 18px 0 0; color: #56606c; font-size: 17px;">한국어 앱 화면에서 읽히는 줄 길이와 버튼 크기를 우선했습니다.</p>
     </article>
-    <div style="display: grid; gap: 12px; margin-top: 20px;">
+    <div class="generated-mobile-actions" style="display: grid; gap: 12px; margin-top: 20px;">
       <button style="min-height: 58px; border: 3px solid #171717; border-radius: 18px; background: #171717; color: #fff; font-size: 18px; font-weight: 900;">시작하기</button>
       <button style="min-height: 58px; border: 3px solid #171717; border-radius: 18px; background: #f5c84b; color: #171717; font-size: 18px; font-weight: 900;">컨텍스트 ${contextCount}개 보기</button>
     </div>

@@ -18,7 +18,9 @@
   - saved versions
   - undo/redo
 - Converted global Tweaks from fixture-only regeneration into persisted tweak values plus typed patch materialization where possible.
+- Added artifact-aware Tweaks profiles for fixture HTML, SaaS landing pages, pitch decks, mobile app mockups, and generic imported HTML. The rail now changes labels and controls by `ProjectBundle.source`, then patches explicit generated/source nodes instead of treating every artifact as a feed.
 - Added Phase 02 E2E coverage for selection, editing, styling, comments, versions, undo/redo, layout controls, persisted Tweaks, toolbar paths, and bridge rejection.
+- Added remediation E2E coverage that verifies pitch deck and mobile app Tweaks expose different controls and persist typed patches to `generated-deck-grid` and `generated-phone-frame`.
 
 ## Source-of-Truth Check
 
@@ -34,3 +36,4 @@ The iframe remains a projection boundary. It reports geometry and selected node 
 
 - Computer Use was attempted for desktop-level interaction but macOS returned Apple event error `-1743`. Browser/Playwright automation was used as the direct verification fallback.
 - Browser-use plugin instructions require the Node REPL browser client, but that callable tool is not exposed in this session. Playwright was used for actual browser execution and screenshots.
+- Post-completion dynamic Tweaks remediation was added on 2026-04-28 so Claude Design/Paper-style live controls adapt to the artifact the user is actually making.

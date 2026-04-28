@@ -730,6 +730,13 @@ button {
   font-size: 19px;
 }
 
+.tweak-description {
+  margin: -8px 0 14px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .inspector-card {
   display: flex;
   flex-direction: column;
