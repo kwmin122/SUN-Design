@@ -106,10 +106,10 @@
 
 ### AI and Variations
 
-- [ ] **AI-01**: User can ask the AI to rewrite or restyle only a selected region. Phase 08 has the deterministic selected-region variation foundation; true model-generated rewrite/restyle remains open.
-- [ ] **AI-02**: User can compare multiple generated visual directions side by side. Phase 08 has side-by-side deterministic directions; true generated direction ingestion remains open.
-- [ ] **AI-03**: User can right-click or otherwise target an object and request a localized remix that preserves surrounding layout and source provenance. Phase 08 has scoped remix records; real targeted AI remix remains open.
-- [ ] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits. Phase 08 has the typed operation and recipe contract; real agent/model output ingestion remains open.
+- [x] **AI-01**: User can ask the AI to rewrite or restyle only a selected region. Phase 08 supports selected-object agent context packages and local-first structured agent output ingestion into typed operations/patches.
+- [x] **AI-02**: User can compare multiple generated visual directions side by side. Phase 08 requires at least two agent-generated directions per valid output envelope and displays them as validated candidates.
+- [x] **AI-03**: User can right-click or otherwise target an object and request a localized remix that preserves surrounding layout and source provenance. Phase 08 preserves selected-object scope, source revision, runtime provenance, and explicit promote workflow.
+- [x] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits. Phase 08 validates agent output against stored canvas ids, allowlisted operations/patches, and persisted reference integrity.
 - [x] **AI-05**: User can export a portable prompt/script recipe that another agent runtime can replay against the same artifact package.
 
 ### Prototyping and Slides
@@ -238,10 +238,10 @@
 | DSGN-06 | Phase 07 | complete |
 | DSGN-07 | Phase 07 | complete |
 | DSGN-08 | Phase 07 | complete |
-| AI-01 | Phase 08 | foundation only; true agent path pending |
-| AI-02 | Phase 08 | foundation only; true generated direction ingestion pending |
-| AI-03 | Phase 08 | foundation only; targeted AI remix pending |
-| AI-04 | Phase 08 | foundation only; canvas-aware model output ingestion pending |
+| AI-01 | Phase 08 | complete; local-first structured agent output ingestion |
+| AI-02 | Phase 08 | complete; multiple generated direction ingestion and compare |
+| AI-03 | Phase 08 | complete; selected-object scoped remix provenance |
+| AI-04 | Phase 08 | complete; canvas-aware typed operation/patch ingestion |
 | AI-05 | Phase 08 | complete |
 | PROTO-01 | Phase 08 | complete |
 | PROTO-02 | Phase 08 | complete |

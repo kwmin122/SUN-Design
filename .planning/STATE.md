@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 08 gap planned; ship held until execute/verify |
+| Current phase | Phase 08 gap executed; ready for verify |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -20,12 +20,12 @@
 | Phase 05 status | complete |
 | Phase 06 status | shipped |
 | Phase 07 status | shipped |
-| Phase 08 status | planned; ship held |
+| Phase 08 status | executed; verify next |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
-| Requirement coverage | 49/49 v1 complete; 17/46 v2 requirements complete; AI-01 through AI-04 are foundation-only until true agent/model output ingestion exists |
-| Next action | `/sunco:execute 8` |
+| Requirement coverage | 49/49 v1 complete; 21/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion |
+| Next action | `/sunco:verify 8` |
 
 ## Phase Queue
 
@@ -38,14 +38,14 @@
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
 | Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
-| Phase 08 | Prototyping, Slides, and AI Variations | planned; ship held | 7 complete, 4 foundation-only |
+| Phase 08 | Prototyping, Slides, and AI Variations | executed; verify next | 11 complete |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 now has a gap-only execution plan in `.planning/phases/08-prototyping-slides-and-ai-variations/08-03-PLAN.md` for the remaining AI-01 through AI-04 ship hold: true canvas-aware agent/model output ingestion from selected-region context into validated typed operations. The next step is `/sunco:execute 8`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 gap execution is complete: selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, and explicit promote workflow are implemented. The next step is `/sunco:verify 8`.
 
 ## Key Decisions Carried Forward
 
@@ -127,14 +127,15 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 initial verification passed the automated gates, but external adversarial review correctly found that persisted Phase 08 references were not validated on load and AI-01 through AI-04 were overclaimed as complete.
 - Phase 08 remediation added persisted-state reference integrity validation for prototype interactions, presentation state, slide decks, variation sets, and agent recipes. It also validates direct prototype playback before state transition.
 - Phase 08 follow-up hardening tightened transient presentation helpers too: `createPresentationState` and `playPrototypeInteraction` now reject missing active objects, missing interactions, missing prototype variables, and invalid component-state object references before preview state can advance.
-- Phase 08 status is corrected to foundation-complete with ship held: PROTO-01 through PROTO-03, SLIDE-01 through SLIDE-03, and AI-05 are complete; AI-01 through AI-04 remain foundation-only until real canvas-aware agent/model-generated typed operation ingestion exists.
+- Phase 08 status was corrected to foundation-complete with ship held after initial verification: PROTO-01 through PROTO-03, SLIDE-01 through SLIDE-03, and AI-05 were complete while AI-01 through AI-04 still needed real canvas-aware agent/model-generated typed operation ingestion.
 - Phase 08 gap-only discussion captured the remaining decisions in `.planning/phases/08-prototyping-slides-and-ai-variations/08-CONTEXT.md` and `.planning/phases/08-prototyping-slides-and-ai-variations/08-DISCUSSION-LOG.md`: selected-region context package, agent-agnostic structured output ingestion, visible compare/promote workflow, validation diagnostics, and tests.
 - Phase 08 gap-only execution plan was created in `.planning/phases/08-prototyping-slides-and-ai-variations/08-03-PLAN.md`: selected-region agent context package, agent-agnostic structured output ingestion, compare/promote UI, validation diagnostics, and end-to-end regression coverage.
 - Phase 08 gap-only plan hardening closed verifier findings before execution: agent output now requires multiple directions, agent operations/patches are allowlisted for selected-region rewrite/restyle, and runtime mismatches must be rejected with diagnostics.
+- Phase 08 gap-only execution completed the remaining AI-01 through AI-04 path: `AgentContextPackage`, `AgentOutputEnvelope`, `AgentRun`, persisted integrity checks, selected-region web ingestion UI, validation diagnostics, and Playwright E2E for valid/rejected agent output.
 
 ---
-*Last updated: 2026-04-28 after Phase 08 gap-only plan hardening*
+*Last updated: 2026-04-28 after Phase 08 gap-only execution*
 - **phase**: 8
-- **last_updated**: 2026-04-28T21:07:00+09:00
-- **status**: planned
-- **next_action**: /sunco:execute 8
+- **last_updated**: 2026-04-28T21:28:00+09:00
+- **status**: executed
+- **next_action**: /sunco:verify 8

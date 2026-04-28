@@ -552,7 +552,7 @@ export const VariationDirectionSchema = z.object({
   targetObjectId: z.string().min(1),
   operations: z.array(CanvasOperationSchema).default([]),
   patches: z.array(EditPatchSchema).default([]),
-  status: z.enum(["candidate", "promoted", "rejected"]).default("candidate"),
+  status: z.enum(["candidate", "validated", "promoted", "rejected"]).default("candidate"),
   provenance: z.string().min(1),
   createdAt: z.string().min(1)
 });
@@ -590,6 +590,98 @@ export const AgentRecipeSchema = z.object({
   createdAt: z.string().min(1)
 });
 export type AgentRecipe = z.infer<typeof AgentRecipeSchema>;
+
+export const AgentOutputDiagnosticSchema = z.object({
+  id: z.string().min(1),
+  severity: z.enum(["info", "warning", "error"]),
+  code: z.enum([
+    "parse-error",
+    "schema-error",
+    "stale-revision",
+    "missing-reference",
+    "out-of-scope-target",
+    "unsafe-patch",
+    "unsupported-operation",
+    "insufficient-directions",
+    "runtime-mismatch"
+  ]),
+  message: z.string().min(1),
+  targetId: z.string().min(1).optional(),
+  createdAt: z.string().min(1)
+});
+export type AgentOutputDiagnostic = z.infer<typeof AgentOutputDiagnosticSchema>;
+
+export const AgentContextObjectSummarySchema = z.object({
+  id: z.string().min(1),
+  kind: CanvasObjectKindSchema,
+  name: z.string().min(1),
+  nodeId: z.string().min(1).optional(),
+  parentId: z.string().min(1).optional(),
+  childIds: z.array(z.string().min(1)).default([])
+});
+export type AgentContextObjectSummary = z.infer<typeof AgentContextObjectSummarySchema>;
+
+export const AgentContextPackageSchema = z.object({
+  id: z.string().min(1),
+  runtime: AgentRuntimeSchema.optional(),
+  targetObjectId: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  prompt: z.string().min(1),
+  instructionsPath: z.string().refine((path) => (
+    path.startsWith("docs/prompts/") &&
+    path.endsWith(".md") &&
+    !path.includes("..") &&
+    !path.includes("://") &&
+    !path.startsWith("/")
+  ), "instructionsPath must be a safe repo-relative prompt markdown path"),
+  selectedObject: AgentContextObjectSummarySchema,
+  ancestors: z.array(AgentContextObjectSummarySchema).default([]),
+  siblings: z.array(AgentContextObjectSummarySchema).default([]),
+  tokenSummary: z.array(z.string().min(1)).default([]),
+  guardrails: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type AgentContextPackage = z.infer<typeof AgentContextPackageSchema>;
+
+export const AgentOutputDirectionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().min(1),
+  rationale: z.string().min(1),
+  targetObjectId: z.string().min(1),
+  operations: z.array(CanvasOperationSchema).default([]),
+  patches: z.array(EditPatchSchema).default([]),
+  provenance: z.string().min(1),
+  createdAt: z.string().min(1)
+});
+export type AgentOutputDirection = z.infer<typeof AgentOutputDirectionSchema>;
+
+export const AgentOutputEnvelopeSchema = z.object({
+  id: z.string().min(1),
+  contextPackageId: z.string().min(1),
+  runtime: AgentRuntimeSchema,
+  targetObjectId: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  prompt: z.string().min(1),
+  directions: z.array(AgentOutputDirectionSchema).min(2).max(6),
+  diagnostics: z.array(AgentOutputDiagnosticSchema).default([]),
+  createdAt: z.string().min(1)
+});
+export type AgentOutputEnvelope = z.infer<typeof AgentOutputEnvelopeSchema>;
+
+export const AgentRunSchema = z.object({
+  id: z.string().min(1),
+  runtime: AgentRuntimeSchema,
+  status: z.enum(["draft", "validated", "rejected", "promoted"]),
+  contextPackageId: z.string().min(1),
+  outputId: z.string().min(1).optional(),
+  targetObjectId: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  diagnostics: z.array(AgentOutputDiagnosticSchema).default([]),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+});
+export type AgentRun = z.infer<typeof AgentRunSchema>;
 
 export const ShareLinkSchema = z.object({
   id: z.string().min(1),
@@ -671,7 +763,10 @@ export const ProjectBundleSchema = z.object({
   presentationState: PresentationStateSchema.optional(),
   slideDecks: z.array(SlideDeckSchema).default([]),
   variationSets: z.array(VariationSetSchema).default([]),
-  agentRecipes: z.array(AgentRecipeSchema).default([])
+  agentRecipes: z.array(AgentRecipeSchema).default([]),
+  agentContextPackages: z.array(AgentContextPackageSchema).default([]),
+  agentOutputs: z.array(AgentOutputEnvelopeSchema).default([]),
+  agentRuns: z.array(AgentRunSchema).default([])
 });
 export type ProjectBundle = z.infer<typeof ProjectBundleSchema>;
 

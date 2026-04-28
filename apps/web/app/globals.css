@@ -1421,6 +1421,40 @@ button {
   align-items: stretch;
 }
 
+.agent-context-list,
+.agent-output-diagnostics {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfaf7;
+  padding: 10px;
+}
+
+.agent-context-list strong,
+.agent-output-diagnostics strong {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.agent-context-list span,
+.agent-output-diagnostics span {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.agent-output-json {
+  min-height: 118px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+}
+
 .variation-direction-card {
   min-width: 0;
   min-height: 112px;
@@ -1438,6 +1472,11 @@ button {
 .variation-direction-card.active {
   border-color: rgba(63, 111, 182, 0.58);
   background: #edf4ff;
+}
+
+.variation-direction-card[data-provenance^="agent-output"] {
+  border-color: rgba(47, 159, 143, 0.55);
+  background: #edf8f5;
 }
 
 .variation-direction-card strong,

@@ -14,6 +14,7 @@ export * from "./integrity.js";
 export * from "./prototype.js";
 export * from "./slides.js";
 export * from "./variations.js";
+export * from "./agent-output.js";
 export * from "./generation.js";
 export * from "./export.js";
 export * from "./handoff.js";

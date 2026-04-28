@@ -68,6 +68,7 @@ import {
   createMockContextAttachment,
   createExportJob,
   createComponentPlaygroundState,
+  createAgentContextPackage,
   createAgentHandoff,
   createCanvaHandoff,
   createShareLink,
@@ -89,7 +90,9 @@ import {
   setSlideDeckView,
   setSlideNotes,
   findNodeIdsByClass,
-  normalizeHtml
+  ingestAgentOutput,
+  normalizeHtml,
+  parseAgentOutputJson
 } from "@kdesign/editor-core";
 import { createPreviewNonce } from "@kdesign/preview-runtime";
 
@@ -981,6 +984,60 @@ export function EditorShell() {
     }
   }, [commitBundle, reportWorkflowError]);
 
+  const createAgentContext = useCallback((input: {
+    runtime: AgentRuntime;
+    targetObjectId: string;
+    prompt: string;
+  }) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(createAgentContextPackage(current, input), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("agent_context_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const ingestAgentOutputJson = useCallback((input: {
+    contextPackageId: string;
+    runtime: AgentRuntime;
+    outputJson: string;
+  }) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      let output: unknown;
+      try {
+        output = parseAgentOutputJson(input.outputJson);
+      } catch {
+        output = input.outputJson;
+      }
+      const nextBundle = ingestAgentOutput(current, {
+        contextPackageId: input.contextPackageId,
+        runtime: input.runtime,
+        output
+      });
+      commitBundle(nextBundle, { trackUndo: true });
+      const latestRun = nextBundle.agentRuns[0];
+      if (latestRun?.status === "rejected") {
+        appendDiagnostic({
+          id: createLocalId("agent_output_rejected"),
+          source: "bridge",
+          severity: "warning",
+          code: latestRun.diagnostics[0]?.code ?? "agent-output-rejected",
+          message: latestRun.diagnostics.map((diagnostic) => diagnostic.code).join(", ") || "Agent output was rejected.",
+          createdAt: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      reportWorkflowError("agent_output_rejected", error);
+    }
+  }, [appendDiagnostic, commitBundle, reportWorkflowError]);
+
   const promoteLocalizedVariation = useCallback((variationSetId: string, directionId: string) => {
     const current = projectBundleRef.current;
     if (!current) {
@@ -1472,6 +1529,8 @@ export function EditorShell() {
                     graph={canvasGraph}
                     selectedObjectId={selectedObjectId}
                     onCreateRemix={createLocalizedRemix}
+                    onCreateAgentContext={createAgentContext}
+                    onIngestAgentOutput={ingestAgentOutputJson}
                     onPromote={promoteLocalizedVariation}
                     onExportRecipe={createAgentRecipe}
                   />

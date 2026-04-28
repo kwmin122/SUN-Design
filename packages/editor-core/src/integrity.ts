@@ -1,5 +1,8 @@
 import type {
+  AgentContextPackage,
+  AgentOutputEnvelope,
   AgentRecipe,
+  AgentRun,
   CanvasOperation,
   PresentationState,
   ProjectBundle,
@@ -19,6 +22,9 @@ export function assertProjectBundleIntegrity(bundle: ProjectBundle): void {
   assertSlideDeckIntegrity(bundle);
   assertVariationIntegrity(bundle);
   assertAgentRecipeIntegrity(bundle);
+  assertAgentContextPackageIntegrity(bundle);
+  assertAgentOutputIntegrity(bundle);
+  assertAgentRunIntegrity(bundle);
 }
 
 function assertPrototypeIntegrity(bundle: ProjectBundle): void {
@@ -264,6 +270,92 @@ function assertAgentRecipeRefs(
     if (!operationIds.has(operationId)) {
       throw new Error(`Agent recipe references missing operation id: ${operationId}`);
     }
+  }
+}
+
+function assertAgentContextPackageIntegrity(bundle: ProjectBundle): void {
+  for (const contextPackage of bundle.agentContextPackages) {
+    assertAgentContextPackageRefs(bundle, contextPackage);
+  }
+}
+
+function assertAgentContextPackageRefs(bundle: ProjectBundle, contextPackage: AgentContextPackage): void {
+  assertCanvasObject(bundle, contextPackage.targetObjectId, "Agent context package");
+  if (contextPackage.selectedObject.id !== contextPackage.targetObjectId) {
+    throw new Error(`Agent context selected object does not match target: ${contextPackage.id}`);
+  }
+}
+
+function assertAgentOutputIntegrity(bundle: ProjectBundle): void {
+  const contextPackages = new Map(bundle.agentContextPackages.map((contextPackage) => [contextPackage.id, contextPackage]));
+  for (const output of bundle.agentOutputs) {
+    assertAgentOutputRefs(bundle, contextPackages, output);
+  }
+}
+
+function assertAgentOutputRefs(
+  bundle: ProjectBundle,
+  contextPackages: Map<string, AgentContextPackage>,
+  output: AgentOutputEnvelope
+): void {
+  const contextPackage = contextPackages.get(output.contextPackageId);
+  if (!contextPackage) {
+    throw new Error(`Agent output references missing context package: ${output.contextPackageId}`);
+  }
+  if (output.targetObjectId !== contextPackage.targetObjectId) {
+    throw new Error(`Agent output target does not match context package: ${output.id}`);
+  }
+  if (output.sourceRevision !== contextPackage.sourceRevision) {
+    throw new Error(`Agent output revision does not match context package: ${output.id}`);
+  }
+  const target = assertCanvasObject(bundle, output.targetObjectId, "Agent output");
+  for (const direction of output.directions) {
+    if (direction.targetObjectId !== output.targetObjectId) {
+      throw new Error(`Agent output direction target does not match output target: ${direction.id}`);
+    }
+    for (const operation of direction.operations) {
+      assertCanvasObject(bundle, operation.objectId, "Agent output operation");
+      if (operation.objectId !== output.targetObjectId) {
+        throw new Error(`Agent output operation must stay scoped to selected object: ${operation.id}`);
+      }
+      if (operation.baseRevision !== output.sourceRevision) {
+        throw new Error(`Agent output operation revision does not match source revision: ${operation.id}`);
+      }
+    }
+    for (const patch of direction.patches) {
+      if (!target.nodeId || patch.nodeId !== target.nodeId) {
+        throw new Error(`Agent output patch must stay scoped to selected node: ${patch.id}`);
+      }
+      if (!bundle.editGraph.nodes[patch.nodeId]) {
+        throw new Error(`Agent output patch references missing edit node: ${patch.nodeId}`);
+      }
+      if (patch.baseRevision !== output.sourceRevision) {
+        throw new Error(`Agent output patch revision does not match source revision: ${patch.id}`);
+      }
+    }
+  }
+}
+
+function assertAgentRunIntegrity(bundle: ProjectBundle): void {
+  const contextPackageIds = new Set(bundle.agentContextPackages.map((contextPackage) => contextPackage.id));
+  const outputIds = new Set(bundle.agentOutputs.map((output) => output.id));
+  for (const run of bundle.agentRuns) {
+    assertAgentRunRefs(bundle, contextPackageIds, outputIds, run);
+  }
+}
+
+function assertAgentRunRefs(
+  bundle: ProjectBundle,
+  contextPackageIds: Set<string>,
+  outputIds: Set<string>,
+  run: AgentRun
+): void {
+  assertCanvasObject(bundle, run.targetObjectId, "Agent run");
+  if (!contextPackageIds.has(run.contextPackageId)) {
+    throw new Error(`Agent run references missing context package: ${run.contextPackageId}`);
+  }
+  if (run.outputId && !outputIds.has(run.outputId)) {
+    throw new Error(`Agent run references missing output id: ${run.outputId}`);
   }
 }
 
