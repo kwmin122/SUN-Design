@@ -9,6 +9,7 @@ export * from "./patches.js";
 export * from "./canvas-graph.js";
 export * from "./canvas-operations.js";
 export * from "./canvas-components.js";
+export * from "./design-system.js";
 export * from "./generation.js";
 export * from "./export.js";
 export * from "./handoff.js";

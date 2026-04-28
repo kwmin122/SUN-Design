@@ -41,20 +41,29 @@ import type {
 import {
   BASIC_LANDING_FIXTURE_HTML,
   ProjectBundleSchema,
+  addCodeComponentReference,
+  approveDesignSystemItems,
   applyCanvasOperationToBundle,
   applyEditPatchToBundle,
   applyEditPatchesToBundle,
   createGeneratedProjectBundle,
   createMockContextAttachment,
   createExportJob,
+  createComponentPlaygroundState,
   createAgentHandoff,
   createCanvaHandoff,
   createShareLink,
   deriveCanvasGraph,
   ensureCanvasGraph,
+  extractDesignSystemCandidates,
   findCanvasObjectByNodeId,
   learnDesignSystem,
   listCanvasObjects,
+  mapTokenToCode,
+  publishDesignSystem,
+  rejectDesignSystemItems,
+  remixDesignSystem,
+  rollbackDesignSystem,
   runKoreanQualityAudit,
   findNodeIdsByClass,
   normalizeHtml
@@ -66,6 +75,8 @@ import { PreviewFrame } from "./preview-frame";
 import { CanvasLayerTree } from "./canvas-layer-tree";
 import { CanvasObjectInspector } from "./canvas-object-inspector";
 import { ComponentInstancePanel } from "./component-instance-panel";
+import { ComponentPlaygroundPanel, type ComponentPlaygroundState } from "./component-playground-panel";
+import { DesignSystemPanel } from "./design-system-panel";
 import {
   clearLocalProjectBundle,
   loadLocalProjectBundle,
@@ -232,6 +243,7 @@ export function EditorShell() {
   const [commentDraft, setCommentDraft] = useState("");
   const [undoStack, setUndoStack] = useState<ProjectBundle[]>([]);
   const [redoStack, setRedoStack] = useState<ProjectBundle[]>([]);
+  const [playgroundState, setPlaygroundState] = useState<ComponentPlaygroundState | null>(null);
 
   useEffect(() => {
     projectBundleRef.current = projectBundle;
@@ -619,6 +631,118 @@ export function EditorShell() {
       updatedAt: designSystem.createdAt
     }), { trackUndo: true });
   }, [commitBundle]);
+
+  const extractDesignSystem = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const designSystem = extractDesignSystemCandidates(current);
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      designSystem,
+      updatedAt: designSystem.updatedAt ?? new Date().toISOString()
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const updateDesignSystem = useCallback((
+    updater: (system: NonNullable<ProjectBundle["designSystem"]>, current: ProjectBundle) => NonNullable<ProjectBundle["designSystem"]>
+  ) => {
+    const current = projectBundleRef.current;
+    if (!current?.designSystem) {
+      appendDiagnostic({
+        id: createLocalId("design_system_error"),
+        source: "bridge",
+        severity: "warning",
+        code: "design_system_required",
+        message: "Extract design-system candidates first.",
+        createdAt: new Date().toISOString()
+      });
+      return;
+    }
+    try {
+      const designSystem = updater(current.designSystem, current);
+      commitBundle(ProjectBundleSchema.parse({
+        ...current,
+        designSystem,
+        updatedAt: designSystem.updatedAt ?? new Date().toISOString()
+      }), { trackUndo: true });
+    } catch (error) {
+      appendDiagnostic({
+        id: createLocalId("design_system_error"),
+        source: "bridge",
+        severity: "warning",
+        code: "design_system_rejected",
+        message: error instanceof Error ? error.message : "Design-system update rejected.",
+        createdAt: new Date().toISOString()
+      });
+    }
+  }, [appendDiagnostic, commitBundle]);
+
+  const approveDesignItems = useCallback((itemIds: string[]) => {
+    updateDesignSystem((system) => approveDesignSystemItems(system, itemIds));
+  }, [updateDesignSystem]);
+
+  const rejectDesignItems = useCallback((itemIds: string[]) => {
+    updateDesignSystem((system) => rejectDesignSystemItems(system, itemIds));
+  }, [updateDesignSystem]);
+
+  const mapDesignToken = useCallback((tokenId: string, mapping: { cssVariable?: string; tailwindClass?: string; codeReferenceId?: string }) => {
+    updateDesignSystem((system) => mapTokenToCode(system, tokenId, mapping));
+  }, [updateDesignSystem]);
+
+  const addCodeReference = useCallback((input: {
+    name: string;
+    framework: string;
+    importPath: string;
+    exportName: string;
+    sourcePath?: string;
+    sourceUrl?: string;
+    docsUrl?: string;
+    storybookUrl?: string;
+  }) => {
+    updateDesignSystem((system) => addCodeComponentReference(system, input));
+  }, [updateDesignSystem]);
+
+  const publishCurrentDesignSystem = useCallback((label: string) => {
+    updateDesignSystem((system, current) => publishDesignSystem(system, {
+      label,
+      sourceRevision: current.baseRevision
+    }));
+  }, [updateDesignSystem]);
+
+  const remixCurrentDesignSystem = useCallback((name: string) => {
+    updateDesignSystem((system) => remixDesignSystem(system, { name }));
+  }, [updateDesignSystem]);
+
+  const rollbackCurrentDesignSystem = useCallback((versionId: string) => {
+    updateDesignSystem((system) => rollbackDesignSystem(system, versionId));
+  }, [updateDesignSystem]);
+
+  const previewComponentPlayground = useCallback((
+    componentId: string,
+    input: { variantId?: string; propValues?: Record<string, unknown>; mode?: string }
+  ) => {
+    if (!canvasGraph) {
+      return;
+    }
+    try {
+      setPlaygroundState(createComponentPlaygroundState({
+        graph: canvasGraph,
+        componentId,
+        ...input
+      }));
+    } catch (error) {
+      appendDiagnostic({
+        id: createLocalId("playground_error"),
+        source: "bridge",
+        severity: "warning",
+        code: "playground_rejected",
+        message: error instanceof Error ? error.message : "Component playground state rejected.",
+        createdAt: new Date().toISOString()
+      });
+    }
+  }, [appendDiagnostic, canvasGraph]);
 
   const addShareLink = useCallback((access: "view" | "comment" | "edit") => {
     const current = projectBundleRef.current;
@@ -1042,8 +1166,25 @@ export function EditorShell() {
                       }
                     }}
                   />
+                  <ComponentPlaygroundPanel
+                    graph={canvasGraph}
+                    designSystem={projectBundle.designSystem}
+                    playgroundState={playgroundState}
+                    onCreatePlaygroundState={previewComponentPlayground}
+                  />
                 </>
               ) : null}
+              <DesignSystemPanel
+                bundle={projectBundle}
+                onExtractCandidates={extractDesignSystem}
+                onApproveItems={approveDesignItems}
+                onRejectItems={rejectDesignItems}
+                onMapToken={mapDesignToken}
+                onAddCodeReference={addCodeReference}
+                onPublish={publishCurrentDesignSystem}
+                onRemix={remixCurrentDesignSystem}
+                onRollback={rollbackCurrentDesignSystem}
+              />
               <section className="tweak-card inspector-card" data-testid="selection-inspector">
                 <div className="inspector-heading">
                   <div>

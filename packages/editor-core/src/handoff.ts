@@ -1,4 +1,5 @@
 import { stableHash } from "./ids.js";
+import { extractDesignSystemCandidates } from "./design-system.js";
 import type {
   AgentRuntime,
   DesignSystem,
@@ -9,34 +10,7 @@ import type {
 } from "./schemas.js";
 
 export function learnDesignSystem(bundle: ProjectBundle, createdAt = new Date().toISOString()): DesignSystem {
-  const normalized = bundle.html.normalized;
-  const colorMatches = Array.from(normalized.matchAll(/#[0-9a-f]{3,8}/gi)).map((match) => match[0].toLowerCase());
-  const uniqueColors = Array.from(new Set(colorMatches)).slice(0, 6);
-  const colors: Record<string, string> = {};
-  uniqueColors.forEach((color, index) => {
-    colors[`color${index + 1}`] = color;
-  });
-
-  if (!colors.color1) {
-    colors.color1 = "#171717";
-  }
-  if (!colors.color2) {
-    colors.color2 = "#ffffff";
-  }
-
-  return {
-    id: `design_system_${stableHash(`${bundle.id}:${bundle.baseRevision}`)}`,
-    name: `${bundle.title} System`,
-    colors,
-    typography: {
-      heading: "Pretendard, Apple SD Gothic Neo, Noto Sans KR, system-ui, sans-serif",
-      body: "Pretendard, Apple SD Gothic Neo, Noto Sans KR, system-ui, sans-serif"
-    },
-    radius: "14px",
-    spacing: "8px",
-    source: "learned",
-    createdAt
-  };
+  return extractDesignSystemCandidates(bundle, createdAt);
 }
 
 export function createShareLink(input: {
@@ -100,7 +74,11 @@ function createHandoff(input: {
       "comments",
       "versions",
       "exportJobs",
-      "designSystem"
+      "designSystem",
+      "designTokens",
+      "codeReferences",
+      "componentPatterns",
+      "designSystemVersions"
     ],
     instructionsPath: "docs/prompts/context-driven-design-agent-prompt.md",
     createdAt

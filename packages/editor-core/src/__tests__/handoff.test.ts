@@ -18,6 +18,7 @@ describe("design system and handoff helpers", () => {
     expect(designSystem.source).toBe("learned");
     expect(designSystem.colors.color1).toMatch(/^#/);
     expect(designSystem.typography.heading).toContain("Pretendard");
+    expect(designSystem.tokens.some((token) => token.name.startsWith("color."))).toBe(true);
   });
 
   it("creates share links with access levels", () => {
@@ -54,5 +55,9 @@ describe("design system and handoff helpers", () => {
     expect(codex.includes).toContain("canvasOperations");
     expect(codex.includes).toContain("components");
     expect(codex.includes).toContain("componentInstances");
+    expect(codex.includes).toContain("designTokens");
+    expect(codex.includes).toContain("codeReferences");
+    expect(codex.includes).toContain("componentPatterns");
+    expect(codex.includes).toContain("designSystemVersions");
   });
 });

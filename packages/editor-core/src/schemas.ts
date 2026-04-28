@@ -294,6 +294,108 @@ export const QualityIssueSchema = z.object({
 });
 export type QualityIssue = z.infer<typeof QualityIssueSchema>;
 
+export const DesignTokenCategorySchema = z.enum([
+  "color",
+  "typography",
+  "spacing",
+  "radius",
+  "shadow",
+  "layout",
+  "component",
+  "motion",
+  "other"
+]);
+export type DesignTokenCategory = z.infer<typeof DesignTokenCategorySchema>;
+
+export const DesignSystemItemStatusSchema = z.enum(["candidate", "approved", "rejected", "published"]);
+export type DesignSystemItemStatus = z.infer<typeof DesignSystemItemStatusSchema>;
+
+export const DesignTokenModeSchema = z.object({
+  mode: z.string().min(1),
+  value: z.string().min(1)
+});
+export type DesignTokenMode = z.infer<typeof DesignTokenModeSchema>;
+
+export const DesignTokenCodeMappingSchema = z.object({
+  cssVariable: z.string().optional(),
+  tailwindClass: z.string().optional(),
+  codeReferenceId: z.string().min(1).optional()
+});
+export type DesignTokenCodeMapping = z.infer<typeof DesignTokenCodeMappingSchema>;
+
+export const DesignTokenSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  category: DesignTokenCategorySchema,
+  value: z.string().min(1),
+  modes: z.array(DesignTokenModeSchema).default([]),
+  description: z.string().optional(),
+  provenance: z.string().min(1),
+  status: DesignSystemItemStatusSchema.default("candidate"),
+  codeMapping: DesignTokenCodeMappingSchema.optional()
+});
+export type DesignToken = z.infer<typeof DesignTokenSchema>;
+
+export const CodeComponentReferenceSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  framework: z.string().min(1),
+  importPath: z.string().min(1),
+  exportName: z.string().min(1),
+  sourcePath: z.string().optional(),
+  sourceUrl: z.string().optional(),
+  docsUrl: z.string().optional(),
+  storybookUrl: z.string().optional(),
+  propMappings: z.record(z.string(), z.string()).default({}),
+  slotMappings: z.record(z.string(), z.string()).default({}),
+  status: DesignSystemItemStatusSchema.default("candidate")
+});
+export type CodeComponentReference = z.infer<typeof CodeComponentReferenceSchema>;
+
+export const DesignComponentPatternSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  sourceObjectId: z.string().min(1).optional(),
+  componentId: z.string().min(1).optional(),
+  variantIds: z.array(z.string().min(1)).default([]),
+  propNames: z.array(z.string().min(1)).default([]),
+  tokenIds: z.array(z.string().min(1)).default([]),
+  codeReferenceId: z.string().min(1).optional(),
+  provenance: z.string().min(1),
+  status: DesignSystemItemStatusSchema.default("candidate")
+});
+export type DesignComponentPattern = z.infer<typeof DesignComponentPatternSchema>;
+
+export const DesignSystemPublishStateSchema = z.enum(["draft", "reviewed", "published"]);
+export type DesignSystemPublishState = z.infer<typeof DesignSystemPublishStateSchema>;
+
+export const DesignSystemVersionSnapshotSchema = z.object({
+  colors: z.record(z.string(), z.string()),
+  typography: z.object({
+    heading: z.string().min(1),
+    body: z.string().min(1)
+  }),
+  radius: z.string().min(1),
+  spacing: z.string().min(1),
+  tokens: z.array(DesignTokenSchema),
+  codeReferences: z.array(CodeComponentReferenceSchema),
+  componentPatterns: z.array(DesignComponentPatternSchema),
+  publishState: DesignSystemPublishStateSchema
+});
+export type DesignSystemVersionSnapshot = z.infer<typeof DesignSystemVersionSnapshotSchema>;
+
+export const DesignSystemVersionSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  tokenCount: z.number().int().nonnegative(),
+  componentPatternCount: z.number().int().nonnegative(),
+  snapshotHash: z.string().min(1),
+  snapshot: DesignSystemVersionSnapshotSchema,
+  createdAt: z.string().min(1)
+});
+export type DesignSystemVersion = z.infer<typeof DesignSystemVersionSchema>;
+
 export const DesignSystemSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -305,7 +407,13 @@ export const DesignSystemSchema = z.object({
   radius: z.string().min(1),
   spacing: z.string().min(1),
   source: z.enum(["manual", "learned", "connected"]),
-  createdAt: z.string().min(1)
+  createdAt: z.string().min(1),
+  tokens: z.array(DesignTokenSchema).default([]),
+  codeReferences: z.array(CodeComponentReferenceSchema).default([]),
+  componentPatterns: z.array(DesignComponentPatternSchema).default([]),
+  versions: z.array(DesignSystemVersionSchema).default([]),
+  publishState: DesignSystemPublishStateSchema.default("draft"),
+  updatedAt: z.string().min(1).optional()
 });
 export type DesignSystem = z.infer<typeof DesignSystemSchema>;
 

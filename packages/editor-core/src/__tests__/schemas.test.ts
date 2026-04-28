@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ProjectBundleSchema } from "../schemas.js";
+import { DesignSystemSchema, ProjectBundleSchema } from "../schemas.js";
 import { PreviewMessageSchema } from "../preview-schemas.js";
 
 describe("schema contracts", () => {
@@ -121,6 +121,147 @@ describe("schema contracts", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("parses legacy design systems with governance defaults", () => {
+    const result = DesignSystemSchema.parse({
+      id: "design_system_legacy",
+      name: "Legacy System",
+      colors: { color1: "#171717" },
+      typography: {
+        heading: "Pretendard",
+        body: "Pretendard"
+      },
+      radius: "14px",
+      spacing: "8px",
+      source: "learned",
+      createdAt: "2026-04-28T00:00:00.000Z"
+    });
+
+    expect(result.tokens).toEqual([]);
+    expect(result.codeReferences).toEqual([]);
+    expect(result.componentPatterns).toEqual([]);
+    expect(result.versions).toEqual([]);
+    expect(result.publishState).toBe("draft");
+  });
+
+  it("accepts governed design-system records", () => {
+    const result = DesignSystemSchema.safeParse({
+      id: "design_system_governed",
+      name: "Governed System",
+      colors: { primary: "#2f9f8f" },
+      typography: {
+        heading: "Pretendard",
+        body: "Pretendard"
+      },
+      radius: "8px",
+      spacing: "4px",
+      source: "connected",
+      createdAt: "2026-04-28T00:00:00.000Z",
+      tokens: [{
+        id: "token_primary",
+        name: "color.primary",
+        category: "color",
+        value: "#2f9f8f",
+        modes: [{ mode: "dark", value: "#6ee7d8" }],
+        provenance: "fixture",
+        status: "approved",
+        codeMapping: {
+          cssVariable: "--brand-primary",
+          tailwindClass: "text-brand-primary"
+        }
+      }],
+      codeReferences: [{
+        id: "code_ref_card",
+        name: "MarketingCard",
+        framework: "react",
+        importPath: "@/components/marketing-card",
+        exportName: "MarketingCard",
+        sourcePath: "apps/web/components/marketing-card.tsx",
+        docsUrl: "https://example.com/docs/marketing-card",
+        storybookUrl: "https://example.com/storybook/marketing-card",
+        propMappings: { headline: "title" },
+        slotMappings: { media: "children" },
+        status: "approved"
+      }],
+      componentPatterns: [{
+        id: "pattern_card",
+        name: "Marketing card",
+        sourceObjectId: "obj_card",
+        componentId: "component_card",
+        variantIds: ["variant_base"],
+        propNames: ["headline"],
+        tokenIds: ["token_primary"],
+        codeReferenceId: "code_ref_card",
+        provenance: "canvas-component",
+        status: "approved"
+      }],
+      versions: [{
+        id: "version_1",
+        label: "Studio System v1",
+        sourceRevision: "rev_test",
+        tokenCount: 1,
+        componentPatternCount: 1,
+        snapshotHash: "hash_1",
+        snapshot: {
+          colors: { primary: "#2f9f8f" },
+          typography: {
+            heading: "Pretendard",
+            body: "Pretendard"
+          },
+          radius: "8px",
+          spacing: "4px",
+          tokens: [{
+            id: "token_primary",
+            name: "color.primary",
+            category: "color",
+            value: "#2f9f8f",
+            modes: [],
+            provenance: "fixture",
+            status: "published"
+          }],
+          codeReferences: [],
+          componentPatterns: [],
+          publishState: "published"
+        },
+        createdAt: "2026-04-28T00:00:00.000Z"
+      }],
+      publishState: "published"
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects invalid governed design-system values", () => {
+    expect(DesignSystemSchema.safeParse({
+      id: "design_system_bad_token",
+      name: "Bad System",
+      colors: {},
+      typography: { heading: "Pretendard", body: "Pretendard" },
+      radius: "8px",
+      spacing: "4px",
+      source: "learned",
+      createdAt: "2026-04-28T00:00:00.000Z",
+      tokens: [{
+        id: "token_bad",
+        name: "bad",
+        category: "not-real",
+        value: "x",
+        provenance: "fixture"
+      }]
+    }).success).toBe(false);
+
+    expect(DesignSystemSchema.safeParse({
+      id: "design_system_bad_state",
+      name: "Bad System",
+      colors: {},
+      typography: { heading: "Pretendard", body: "Pretendard" },
+      radius: "8px",
+      spacing: "4px",
+      source: "learned",
+      createdAt: "2026-04-28T00:00:00.000Z",
+      publishState: "live"
+    }).success).toBe(false);
   });
 
   it("accepts a preview.ready message with a nonce", () => {

@@ -1038,7 +1038,8 @@ button {
   line-height: 1.45;
 }
 
-.field-stack input {
+.field-stack input,
+.field-stack select {
   min-height: 38px;
   width: 100%;
   border: 1px solid var(--line);
@@ -1050,6 +1051,7 @@ button {
 }
 
 .field-stack input:focus,
+.field-stack select:focus,
 .field-stack textarea:focus {
   border-color: rgba(63, 111, 182, 0.58);
   box-shadow: 0 0 0 3px rgba(63, 111, 182, 0.12);
@@ -1078,14 +1080,18 @@ button {
 }
 
 .object-inspector,
-.component-panel {
+.component-panel,
+.design-system-panel,
+.component-playground-panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .object-inspector h2,
-.component-panel h2 {
+.component-panel h2,
+.design-system-panel h2,
+.component-playground-panel h2 {
   margin-bottom: 4px;
 }
 
@@ -1145,6 +1151,104 @@ button {
   font-size: 12px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.system-action-bar,
+.code-ref-grid,
+.playground-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.code-ref-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid #f0ede8;
+  padding-top: 10px;
+}
+
+.system-action-bar button,
+.code-ref-grid button,
+.playground-controls button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.system-action-bar button:disabled,
+.code-ref-grid button:disabled,
+.playground-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.design-token-list,
+.component-pattern-list,
+.code-reference-list,
+.design-system-version-list,
+.playground-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid #f0ede8;
+  padding-top: 10px;
+}
+
+.design-token-list strong,
+.component-pattern-list strong,
+.code-reference-list strong,
+.design-system-version-list strong,
+.playground-preview strong {
+  font-size: 12px;
+}
+
+.design-token-list > span,
+.component-pattern-list span,
+.code-reference-list span,
+.design-system-version-list span,
+.playground-preview span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.token-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(52px, max-content) max-content;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+  color: var(--text);
+  padding: 7px 8px;
+  text-align: left;
+}
+
+.token-row.selected {
+  border-color: rgba(63, 111, 182, 0.58);
+  background: #edf4ff;
+}
+
+.token-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: inherit;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.version-row {
+  border-radius: 8px;
+  background: #f8f6f1;
+  padding: 7px 8px;
 }
 
 .empty-inspector {
@@ -1441,7 +1545,10 @@ button {
   .object-state-row,
   .layout-input-grid,
   .component-controls,
-  .component-controls.state-controls {
+  .component-controls.state-controls,
+  .system-action-bar,
+  .code-ref-grid,
+  .playground-controls {
     grid-template-columns: 1fr;
   }
 
