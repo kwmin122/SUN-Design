@@ -11,6 +11,12 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | 1 | High | CORE-01, CORE-06, CORE-07, CORE-08, CORE-09, CORE-10, SEC-04, KOR-01, KOR-02 |
 | Phase 04 | Responsive Preview and Export Fidelity | 1 | High | PREV-02, EXP-01, EXP-02, EXP-03, EXP-04, EXP-05, EXP-06, KOR-03, QUAL-01 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | 1 | High | DSGN-01, DSGN-02, DSGN-03, EXP-07, EXP-08, AGENT-01, AGENT-02, SHARE-01, SHARE-02 |
+| Phase 06 | Canvas and Component Model | 2 | High | CANVAS-01, CANVAS-02, CANVAS-03, CANVAS-04, CANVAS-05 |
+| Phase 07 | Design System, Tokens, and Code Connect | 2 | High | DSGN-04, DSGN-05, DSGN-06, DSGN-07, DSGN-08 |
+| Phase 08 | Prototyping, Slides, and AI Variations | 2 | High | AI-01, AI-02, AI-03, AI-04, AI-05, PROTO-01, PROTO-02, PROTO-03, SLIDE-01, SLIDE-02, SLIDE-03 |
+| Phase 09 | Context Ingestion, Live Data, and Assets | 2 | High | CTX-01, CTX-02, CTX-03, DATA-01, DATA-02, ASSET-01 |
+| Phase 10 | Dev Mode, Publish, and Export Fidelity | 2 | High | DEV-01, DEV-02, DEV-03, DEV-04, EXP-09, EXP-10, EXP-11, EXP-12, SLIDE-04, SLIDE-05 |
+| Phase 11 | Collaboration, Search, and Governance | 2 | High | HOME-01, HOME-02, HOME-03, COLL-01, COLL-02, COLL-03, COLL-04, QUAL-02, REG-01 |
 
 ## Phase 01 — Safe HTML Document Foundation
 
@@ -127,6 +133,132 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 **Milestone:** 1
 
 **UI hint:** Design-system setup card, project sharing controls, access-level selector, Canva handoff, and an agent handoff menu with Codex, Claude Code, Cursor, local-agent, and web-agent targets.
+
+## Milestone 2 Competitive Parity Reinforcement
+
+**Source:** `.planning/research/COMPETITIVE-GAP-REVIEW.md`
+
+**Goal:** Close the remaining Paper/Claude Design/Figma capability gaps without invalidating the Milestone 1 architecture. Milestone 2 turns the working v1 vertical slice into a professional design workspace: explicit canvas objects, reusable components, governed design systems, real context ingestion, interaction authoring, dev-mode handoff, publish/export fidelity, and collaboration/search governance.
+
+**Rule:** Milestone 2 remains additive. A phase may refine v1 data models, but it must preserve `ProjectBundle + EditGraph + patch log + assets + tweak values` as the durable source-of-truth family.
+
+## Phase 06 — Canvas and Component Model
+
+**Goal:** Promote normalized HTML nodes into explicit canvas objects and reusable component instances while preserving HTML/CSS as the exportable substrate.
+
+**Requirements:** CANVAS-01, CANVAS-02, CANVAS-03, CANVAS-04, CANVAS-05
+
+**Success Criteria:**
+- A user can see and manipulate pages, artboards, frames, sections, component instances, text, image, and vector-like nodes as distinct canvas objects.
+- A layer tree supports select, reorder, group, hide, lock, rename, and object hierarchy inspection.
+- Constraints, snapping, guides, and resize rules persist through reload and export.
+- Flex, CSS Grid, gap, padding, alignment, and breakpoint controls emit typed operations, not live DOM saves.
+- Component instances preserve slots, props, variants, overrides, and state in the stored artifact package.
+
+**Complexity:** High
+
+**Milestone:** 2
+
+**UI hint:** Layer tree, object breadcrumb, alignment/snapping guides, frame controls, component instance inspector, variant/prop controls.
+
+## Phase 07 — Design System, Tokens, and Code Connect
+
+**Goal:** Turn the design-system placeholder into a governed, versioned, code-connected system that can be reused across projects and agents.
+
+**Requirements:** DSGN-04, DSGN-05, DSGN-06, DSGN-07, DSGN-08
+
+**Success Criteria:**
+- A user can review extracted colors, typography, spacing, components, and layout patterns before publishing a design system.
+- A user can publish, remix, version, roll back, and attach project-specific design skills or brand rules.
+- Tokens map to CSS variables, Tailwind classes, and code-component references.
+- Component playground lets the user inspect variants, props, variable modes, and states without mutating the main canvas.
+- Storybook/GitHub/docs links remain visible in design-system records and agent handoff packages.
+
+**Complexity:** High
+
+**Milestone:** 2
+
+**UI hint:** Design-system library, token table, component playground, publish/remix/version controls, source-link inspector.
+
+## Phase 08 — Prototyping, Slides, and AI Variations
+
+**Goal:** Add real prototype interactions, deck authoring, and localized AI variation workflows on top of the canvas model.
+
+**Requirements:** AI-01, AI-02, AI-03, AI-04, AI-05, PROTO-01, PROTO-02, PROTO-03, SLIDE-01, SLIDE-02, SLIDE-03
+
+**Success Criteria:**
+- A user can define click, hover, tap, keyboard, and timed interactions between objects and artboards.
+- Component state can use variables, conditionals, and state sharing across matching components.
+- Presentation mode can preview interactions without losing edit state.
+- Slide decks support slide view, grid view, outline navigation, presenter notes, embedded prototype blocks, comments, polls, voting, or alignment-scale primitives.
+- The user can generate side-by-side variations and selected-region AI edits while preserving surrounding layout and provenance.
+- Canvas-aware agent actions emit typed operations and can be exported as portable prompt/script recipes.
+
+**Complexity:** High
+
+**Milestone:** 2
+
+**UI hint:** Prototype graph panel, interaction inspector, slide/grid toggle, presenter notes, variation compare view, right-click remix action.
+
+## Phase 09 — Context Ingestion, Live Data, and Assets
+
+**Goal:** Replace placeholder context records with real source ingestion, provenance, editable live snapshots, and data-bound content.
+
+**Requirements:** CTX-01, CTX-02, CTX-03, DATA-01, DATA-02, ASSET-01
+
+**Success Criteria:**
+- Images, screenshots, URLs, DOCX, PPTX, XLSX, Figma exports, and codebase folders enter structured project context with validation results.
+- Each project can generate `source-notes.md` and `design-context.md` with source URLs, asset paths, uncertain facts, and usage rights.
+- A live web page or selected region can be captured into editable canvas sections with source provenance.
+- Components can bind to CSV, spreadsheet, API fixture, or static JSON data and preview realistic repeated content.
+- Assets can be cached, relinked, replaced, audited, and served through stable project URLs.
+
+**Complexity:** High
+
+**Milestone:** 2
+
+**UI hint:** Context ingestion queue, source-notes/design-context viewer, web snapshot tool, data-binding panel, asset provenance inspector.
+
+## Phase 10 — Dev Mode, Publish, and Export Fidelity
+
+**Goal:** Add Figma Dev Mode-style inspection, ready-for-dev state, version comparison, real file exports, publish previews, and code-agent roundtrip.
+
+**Requirements:** DEV-01, DEV-02, DEV-03, DEV-04, EXP-09, EXP-10, EXP-11, EXP-12, SLIDE-04, SLIDE-05
+
+**Success Criteria:**
+- A user can inspect selected objects for measurements, spacing, CSS, tokens, accessibility notes, component metadata, and prototype interactions.
+- A user can copy code snippets or token references from the selected object.
+- Frames and components can be marked ready for dev and compared across saved versions.
+- Detected assets can be downloaded with original metadata.
+- HTML, ZIP, PNG, PDF, PPTX, and animation exports materialize real files from stored state and pass deterministic visual-diff checks.
+- A responsive hosted preview or static site can be published from stored artifact state.
+- GitHub/code-agent packages can roundtrip code-side changes back into the artifact package.
+
+**Complexity:** High
+
+**Milestone:** 2
+
+**UI hint:** Dev Mode toggle, inspect panel, code/token drawer, ready-for-dev badges, version diff, publish/export queue.
+
+## Phase 11 — Collaboration, Search, and Governance
+
+**Goal:** Make the workspace navigable and team-ready without losing the local-first path.
+
+**Requirements:** HOME-01, HOME-02, HOME-03, COLL-01, COLL-02, COLL-03, COLL-04, QUAL-02, REG-01
+
+**Success Criteria:**
+- A user can browse recent designs, examples, templates, design systems, folders, tags, and ownership/status metadata.
+- Search can find designs by name, tag, source asset, design system, artifact type, and semantic content.
+- Sharing supports roles, review states, approvals, activity, annotations, implementation notes, and audit logs.
+- Optional real-time collaboration can add presence, follow/spotlight, and conflict handling after single-user operations are stable.
+- Quality gates detect accessibility, contrast, overflow, responsive breakage, source provenance gaps, and generic AI visual patterns.
+- Patches can be replayed across AI-regenerated base revisions with explicit conflict handling.
+
+**Complexity:** High
+
+**Milestone:** 2
+
+**UI hint:** Project browser, smart search, folders/tags, activity/review rail, presence/follow controls, quality-gate dashboard.
 
 ## v1 Requirement Coverage
 

@@ -1,8 +1,8 @@
 {
-  ".planning/PROJECT.md": "b2d545e4cbbc6491e14ca13a6c73e3c74edcea78cdabc149ffae7783a4034f98",
-  ".planning/REQUIREMENTS.md": "191fc16d97f1a36516eb7258c9b25956473fdc4ec31c7bb6eb62a5cb10b6969f",
-  ".planning/ROADMAP.md": "22f8d259d4d2f7e5e1f53ad7937bfeb57924fbad03487ce958246bf12ba39d23",
-  ".planning/STATE.md": "1b63f4abc56c844e23b28c1fcfa30e21edee081af293c9a8820e9df7357f1652",
+  ".planning/PROJECT.md": "4f27084f1094664f38c750ba477b1bcdee18b864bf982c63fe2559f185e81ec2",
+  ".planning/REQUIREMENTS.md": "32b10a075f563cc29ab35ea44403a2cd34248409742748521677312a07906a44",
+  ".planning/ROADMAP.md": "54a828609090700af3e2f86df343ab3f9169a040541ee7a3ec0e8ceeb0a69250",
+  ".planning/STATE.md": "c69bfadb75d891cea912269c320c64f41439fde1300c8efb5b68d4beb2560775",
   ".planning/phases/01-safe-html-document-foundation/01-01-PLAN.md": "51176ca0d9f83cab9bada0375e6f8ec45476c7e283d88b880045dbafcdd691fc",
   ".planning/phases/01-safe-html-document-foundation/01-01-SUMMARY.md": "f06ab28fa4d3aa063183aa5b8524bea2a65629714602b07f2cace94ca8de87b4",
   ".planning/phases/01-safe-html-document-foundation/01-02-PLAN.md": "ee8e7d508e6b3160a3430758922e5de66a47dbe0edbb364fe09b498dbfb9564b",
@@ -28,5 +28,11 @@
   ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-01-PLAN.md": "efae34194b45fe78f88ca639f8cdc9defab617f0d0d4b0507d117955f051766d",
   ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-01-SUMMARY.md": "00824c2c5005eb5c57d6669399538afd6e5ea1c1a050155db21e514a7779aac3",
   ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-CONTEXT.md": "3ef9b47f383909ce40f7bcd825575b8ea793e58c3d415c6e057636b50e677e2c",
-  ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-VERIFICATION.md": "61d43d5c2cf4ba199cafa9df35aefae5fb967adfced018477637bb8e89ada3ba"
+  ".planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-VERIFICATION.md": "61d43d5c2cf4ba199cafa9df35aefae5fb967adfced018477637bb8e89ada3ba",
+  ".planning/phases/06-canvas-and-component-model/06-CONTEXT.md": "9b4ec347538827365f0cac58f8decd0aeb96f49d7ab051da1505c50aa1b7e087",
+  ".planning/phases/07-design-system-tokens-and-code-connect/07-CONTEXT.md": "d531a9131648cb0fbed9eb0d8d8704bfb02c3bd483c29296cffa51d6a6cfaa69",
+  ".planning/phases/08-prototyping-slides-and-ai-variations/08-CONTEXT.md": "338fa543a99b5156b9638a48c3bbb0a09f3c824d71edabc8fbf126e46fb8ac0a",
+  ".planning/phases/09-context-ingestion-live-data-and-assets/09-CONTEXT.md": "b28420e5d885bffb406436cef8436c5cb04c62f370db6f53726e953ebb6d9a9e",
+  ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-CONTEXT.md": "f2e76b7a242fe1237d9e0dbe917009d2937fd3774fae8ab72b8daf5e662b64ca",
+  ".planning/phases/11-collaboration-search-and-governance/11-CONTEXT.md": "8cd9bf1f6d74a09a3dc7659fda071b2c946ff278b8e2cd177f2438c95da89be3"
 }

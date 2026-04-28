@@ -127,6 +127,15 @@ Do not copy leaked prompt text, internal command structures, hidden tool policy,
 | P4 | Deterministic renderer, screenshot/golden export tests, security corpus, broken asset tests |
 | P5 | Only then consider advanced freeform layout, variants, animation export, semantic Figma/PPTX bridge, collaboration |
 
+## Post-v1 Reinforcement Note
+
+Milestone 1 is now complete, so some items that were first-month anti-scope are intentionally promoted into Milestone 2 planning. This does not invalidate the risk analysis. It means Phase 06-11 must add them in sequence after the safe HTML source-of-truth, patch log, preview boundary, and export surfaces exist.
+
+- Layer tree, constraints, auto-layout-like controls, component variants, and Dev Mode belong after the canvas object model is explicit.
+- Collaboration belongs after typed operations, review states, and regeneration conflict handling are stable.
+- Publishing and richer exports belong after deterministic export verification exists.
+- Vector/path parity and full multiplayer remain deferred beyond the first Milestone 2 slices unless they become the narrowest path to the user's goal.
+
 ## Sources Checked
 
 - MDN iframe sandbox and same-origin warnings: https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe

@@ -22,30 +22,24 @@ Coding agents must follow `docs/guides/coding-principles.md`: think before codin
 
 ### Validated
 
-(None yet - ship to validate)
+- Milestone 1 validated the safe HTML document foundation, direct editing/Tweaks loop, prompt creation modes, responsive preview/export surfaces, design-system/share/handoff surfaces, and agent-agnostic artifact package.
 
 ### Active
 
-- [ ] User can submit a prompt and receive a generated or mock-generated HTML artifact.
-- [ ] User can start from a Claude Design-level, agent-agnostic workspace with left Chat/Comments, central canvas, top tool/export/share controls, and right Tweaks.
-- [ ] User can choose prototype, slide deck, template-based, or other artifact creation modes.
-- [ ] User can attach screenshots, images, documents, codebase references, existing design files, and web captures as context.
-- [ ] User can preview the artifact in a sandboxed iframe.
-- [ ] User can select visible editable elements in the preview.
-- [ ] User can edit text and common style properties without touching code.
-- [ ] User can directly manipulate generated text, image, card, section, and slide-like/artboard blocks with constrained PPT/Figma/Paper-style handles.
-- [ ] User can adjust meaningful tweak controls in a right-side panel and see changes apply immediately.
-- [ ] User can persist changes as artifact revisions.
-- [ ] User can export the result as HTML, ZIP, image/PDF, and PPTX in v1, with Canva and agent-agnostic handoff surfaces planned in v1.
-- [ ] User can continue work from Codex, Claude Code, Cursor, local agents, or web agents without changing the core artifact model.
-- [ ] The product uses Korean-first typography and design defaults.
+- [ ] Milestone 2 must close the competitive gaps documented in `.planning/research/COMPETITIVE-GAP-REVIEW.md`.
+- [ ] User can work with explicit canvas objects: pages, artboards, frames, sections, layers, component instances, slots, variants, props, overrides, and state.
+- [ ] User can govern design systems with tokens, code references, publish/remix/version flows, and component playground behavior.
+- [ ] User can author prototype interactions, slide decks, presenter notes, embedded prototypes, and localized AI variations.
+- [ ] User can ingest real context from assets, documents, URLs, Figma exports, codebase folders, live web snapshots, and data sources with source notes.
+- [ ] User can inspect, publish, export, and hand off artifacts through a Dev Mode-style surface with deterministic fidelity checks.
+- [ ] User can navigate a real workspace with project browser, folders, tags, search, review states, annotations, quality gates, and later collaboration.
 
 ### Out of Scope
 
-- Full Figma vector editor parity - too broad before proving the HTML editing loop.
-- Multi-user collaboration - valuable later, not needed for first proof.
-- Marketplace or public sharing platform - distribution layer deferred.
-- Full editable PPTX round trip - v1 supports PPTX export/handoff first; full native PowerPoint authoring is later.
+- Full Figma vector editor parity - too broad before proving component/frame/canvas parity.
+- Full multiplayer CRDT editing - valuable later, after single-user typed operations and conflict handling are stable.
+- Marketplace or public sharing platform - distribution layer deferred until project browser and asset provenance are real.
+- Full editable PPTX round trip - Phase 10 targets a strict supported subset first; full native PowerPoint authoring is later.
 - Verbatim use of leaked Claude Design prompts - legal and ethical risk.
 
 ## Key Decisions
@@ -63,13 +57,15 @@ Coding agents must follow `docs/guides/coding-principles.md`: think before codin
 | Claude Design capability parity | Official and Korean reference checks define v1 parity surfaces: Chat/Comments, canvas, top tools, Tweaks, context attachments, inline comments, live knobs, versioning, design systems, sharing, exports, Canva, and agent handoff. | Accepted |
 | Agent-agnostic runtime | Huashu Design shows the value of skill-style portability. K-Design Studio should provide a product UI while keeping prompts, artifact packages, and handoffs portable across Codex, Claude Code, Cursor, and similar agents. | Accepted |
 | Coding principles | Implementation agents must follow `docs/guides/coding-principles.md` so changes stay thoughtful, simple, surgical, and verifiable. | Accepted |
+| Competitive parity reinforcement | Official Claude Design, Paper, and Figma checks found that v2 must add professional canvas/component modeling, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, dev-mode/publish fidelity, and collaboration/search/governance. | Accepted |
 
 ## Context
 
 **Target users:** Korean AI-native builders, designers, and small teams who want polished generated design artifacts but need direct control after generation.
-**Current alternative:** Use Claude Design, use an HTML-generating skill such as Huashu Design, hand-edit generated HTML, or move screenshots into Figma/Canva.
-**v1 deadline:** Not set.
-**Constraints:** Solo-builder scope, current folder is greenfield, prioritize proof of the core loop before product sprawl while preserving the Claude Design-level product quality bar.
+**Current alternative:** Use Claude Design, Paper, Figma, Figma Make/Sites/Slides, an HTML-generating skill such as Huashu Design, hand-edit generated HTML, or move screenshots into Figma/Canva.
+**v1 deadline:** Milestone 1 source tree complete; independent verification remains the final external confidence step.
+**v2 direction:** Competitive parity reinforcement across Phase 06-11.
+**Constraints:** Solo-builder scope, preserve the HTML-first artifact model, avoid proprietary prompt cloning, and grow toward Paper/Claude/Figma-level completeness without introducing throwaway architecture.
 
 ## Office Hours Summary
 
@@ -106,4 +102,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-27 after agent-agnostic north star sync*
+*Last updated: 2026-04-28 after competitive parity reinforcement*

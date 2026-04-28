@@ -83,6 +83,17 @@ Build the first vertical slice around one artifact:
 
 Defer: multiplayer, public marketplace, full layer tree, advanced freeform drag/layout authoring, semantic editable Figma/PPTX round-trip, CMS, publishing, and complex code editing.
 
+## Milestone 2 Competitive Parity Update
+
+The 2026-04-28 official Claude Design, Paper, and Figma review changes the post-v1 plan. The v1 deferrals above remain correct for Milestone 1, but they now become explicit Milestone 2 reinforcement work instead of vague "later" items:
+
+- Phase 06: canvas object model, layer tree, constraints, snapping, CSS flex/grid controls, component instances, variants, props, overrides, and state.
+- Phase 07: design-system governance, tokens, Tailwind/CSS/code-component mapping, component playground, and source links.
+- Phase 08: prototype interactions, component state variables/conditionals, slide/grid view, presenter notes, embedded prototypes, presentation feedback, selected-region AI edits, and side-by-side variations.
+- Phase 09: real context ingestion, generated source/design context notes, live web snapshots, data bindings, and asset provenance.
+- Phase 10: Dev Mode inspect/code/token surface, ready-for-dev states, version diff, real exports, publish previews, and code-agent roundtrip.
+- Phase 11: project browser, nested folders/tags, smart search, sharing/review/audit records, quality gates, and regeneration conflict handling.
+
 ## Open Questions for Planning
 
 - Should v1 generation require a structured artifact contract from the model, or should the app normalize arbitrary HTML best-effort?
@@ -98,6 +109,11 @@ Defer: multiplayer, public marketplace, full layer tree, advanced freeform drag/
 - Figma Help: [Create and edit a Figma Make file](https://help.figma.com/hc/en-us/articles/31304485164695-Create-and-edit-a-Figma-Make-file)
 - Figma Help: [Design, prototype, and explore layer properties in the right sidebar](https://help.figma.com/hc/en-us/articles/360039832014-Design-prototype-and-explore-layer-properties-in-the-right-sidebar)
 - Paper: [Paper - design, share, ship](https://paper.design/)
+- Paper: [Paper Roadmap](https://paper.design/roadmap)
+- Figma: [Dev Mode](https://www.figma.com/dev-mode/)
+- Figma Help: [Explore Figma Slides](https://help.figma.com/hc/en-us/articles/24170630629911-Explore-Figma-Slides)
+- Figma: [Publish your designs on the web with Figma Sites](https://www.figma.com/blog/introducing-figma-sites/)
+- Figma: [Figma Make](https://www.figma.com/make/)
 - Framer: [Website builder overview](https://www.framer.com/)
 - Framer: [Workshop AI component generator](https://www.framer.com/workshop/)
 - Claude Code Docs: [Extend Claude with skills](https://code.claude.com/docs/en/skills)

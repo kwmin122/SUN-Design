@@ -27,6 +27,17 @@ The quality benchmark starts at Claude Design-level product completeness and the
 - Prompts/skills: portable Markdown/project files, not Claude-only hidden prompts or Claude-only extension points.
 - Provider adapters: replaceable. No core schema may assume Anthropic-only APIs, Claude Code-only tools, or a single runtime.
 
+## Competitive Parity Contract
+
+Milestone 1 proves the narrow vertical slice. The next product bar must explicitly close the gaps documented in `.planning/research/COMPETITIVE-GAP-REVIEW.md`:
+
+- Paper-level HTML/CSS canvas continuity: code components, CSS Grid/flex semantics, Tailwind/class semantics, scriptable canvas operations, and agent-readable source of truth.
+- Figma-level canvas fundamentals: pages/artboards/frames, layers, constraints, snapping, auto layout, component instances, variants, props, overrides, variables, and interactive component states.
+- Claude Design-level creation workflow: project context, design-system extraction, side-by-side variations, selected-region AI edits, design review, export/share/handoff, and organization design-system reuse.
+- Figma Slides-level deck workflows: slide/grid view, presenter notes, embedded prototypes, live presentation state, and export fidelity.
+- Figma Dev Mode-level handoff: inspect surface, measurements, token/code mapping, component playground, code links, readiness states, version diff, and asset download/export records.
+- Figma Sites/Figma Make-level publishing and functional prototype direction: responsive publish previews, app logic stubs, data bindings, and GitHub/code-agent roundtrip.
+
 ## Document Consistency Rule
 
 This file is the first source to check when a project document differs. `CLAUDE.md`, `.planning/PROJECT.md`, `.planning/REQUIREMENTS.md`, `.planning/ROADMAP.md`, `.planning/STATE.md`, phase context files, phase plans, and research docs must all preserve the same product intent:
@@ -56,3 +67,8 @@ Phase 01 does not implement real AI generation, semantic direct visual editing, 
   - <https://daleseo.com/claude-design/>
 - Agent-agnostic design-skill reference: <https://github.com/alchaincyf/huashu-design>
 - Editable web-standard canvas reference: <https://paper.design/>
+- Paper roadmap: <https://paper.design/roadmap>
+- Figma Dev Mode: <https://www.figma.com/dev-mode/>
+- Figma Slides: <https://help.figma.com/hc/en-us/articles/24170630629911-Explore-Figma-Slides>
+- Figma Sites: <https://www.figma.com/blog/introducing-figma-sites/>
+- Figma Make: <https://www.figma.com/make/>

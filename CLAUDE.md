@@ -14,9 +14,11 @@ Canonical product intent: `.planning/PRODUCT-NORTH-STAR.md`. Claude Design is th
 
 Mandatory coding principles: `docs/guides/coding-principles.md`. Every coding agent must think before coding, prefer simplicity, make surgical changes, and execute against verifiable success criteria.
 
-Current phase: Phase 01 — Safe HTML Document Foundation
-Phase status: executed - awaiting verification
-Next SUNCO action: `/sunco:verify 1`
+Current phase: Phase 06 — Canvas and Component Model
+Phase status: context only; Milestone 1 is complete and pushed
+Next SUNCO action: `/sunco:discuss 6`
+
+Competitive parity plan: `.planning/research/COMPETITIVE-GAP-REVIEW.md`. Official Claude Design, Paper, and Figma checks showed the next bar is professional canvas/component modeling, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, Dev Mode/publish/export fidelity, and collaboration/search/governance across Phase 06-11.
 
 ## Planned Stack
 
@@ -46,6 +48,7 @@ Next SUNCO action: `/sunco:verify 1`
 | Claude Design capability parity | The product baseline includes Chat/Comments, canvas, top Share/Export/tool controls, right Tweaks, context attachments, inline comments, live knobs/sliders, versions, design systems, sharing permissions, Canva handoff, and agent handoff. |
 | Agent-agnostic runtime | Prompts, project files, artifact packages, and handoff flows must work across Codex, Claude Code, Cursor, and similar agents instead of assuming Claude Code-only tooling. |
 | Coding principles | All implementation must follow `docs/guides/coding-principles.md`: think first, keep it simple, change surgically, and verify against concrete success criteria. |
+| Competitive parity reinforcement | Phase 06-11 close Paper/Claude Design/Figma gaps without replacing the HTML-first source-of-truth family. |
 
 ## File Conventions
 
@@ -91,8 +94,8 @@ This prompt is not a general engineering prompt. It is the production standard f
 
 ## Current Phase
 
-Phase 01: Safe HTML Document Foundation
+Phase 06: Canvas and Component Model
 
-Goal: build the core document model and sandboxed preview path for one imported or mock-generated HTML artifact, including normalization, persistence, bridge validation, and error reporting.
+Goal: promote normalized HTML nodes into explicit canvas objects and reusable component instances while preserving HTML/CSS as the exportable substrate.
 
-Phase 01 must close only when a single artifact can be sanitized, normalized with stable IDs, rendered in a sandboxed iframe, persisted, reloaded, and monitored for preview errors.
+Phase 06 should not start implementation until `/sunco:discuss 6` and `/sunco:plan 6` are complete. It should preserve Milestone 1's `ProjectBundle + EditGraph + patch log + assets + tweak values` source-of-truth family.

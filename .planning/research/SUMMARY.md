@@ -50,3 +50,9 @@
 - AI asset hallucination and licensing: route assets through resolver checks, cache verified files, record source/license metadata, and use explicit placeholder states for unknown or broken assets.
 - Legal contamination risk: keep a clean-room rule; do not copy leaked prompts, proprietary command structures, names, templates, or restricted repos; log public sources and original decisions.
 - Solo-builder overreach: force the first month around one vertical slice: generate/import HTML, select/edit constrained parts, persist patches, and export trusted HTML/PNG/PDF.
+
+## Competitive gap review update
+
+- 2026-04-28 review added `.planning/research/COMPETITIVE-GAP-REVIEW.md`.
+- The main gaps versus Claude Design, Paper, and Figma are professional canvas/component modeling, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, dev-mode/publish fidelity, and collaboration/search/governance.
+- These gaps are mapped as additive Milestone 2 phases so Milestone 1 remains complete rather than being reopened.

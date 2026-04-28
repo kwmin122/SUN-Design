@@ -12,14 +12,20 @@
 | Git branching | milestone |
 | Repository | https://github.com/kwmin122/SUN-Design |
 | Branch | main |
-| Roadmap status | v1 complete |
+| Roadmap status | v1 complete; v2 competitive parity reinforcement added |
 | Phase 01 status | complete |
 | Phase 02 status | complete |
 | Phase 03 status | complete |
 | Phase 04 status | complete |
 | Phase 05 status | complete |
-| Requirement coverage | 49/49 v1 requirements mapped exactly once |
-| Next action | `/sunco:milestone complete` or independent verification |
+| Phase 06 status | context |
+| Phase 07 status | context |
+| Phase 08 status | context |
+| Phase 09 status | context |
+| Phase 10 status | context |
+| Phase 11 status | context |
+| Requirement coverage | 49/49 v1 complete; 46 v2 reinforcement requirements mapped to Phase 06-11 |
+| Next action | independent verification, then `/sunco:discuss 6` |
 
 ## Phase Queue
 
@@ -30,10 +36,16 @@
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | complete | 9 |
 | Phase 04 | Responsive Preview and Export Fidelity | complete | 9 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
+| Phase 06 | Canvas and Component Model | context | 5 |
+| Phase 07 | Design System, Tokens, and Code Connect | context | 5 |
+| Phase 08 | Prototyping, Slides, and AI Variations | context | 11 |
+| Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
+| Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
+| Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active phase remains in Milestone 1. Phase 05 closed the remaining v1 product surfaces: design-system setup/inheritance, share permissions, Canva handoff surface, and agent-agnostic portable handoff.
+No active implementation phase is currently executing. Milestone 1 remains complete. Milestone 2 competitive parity reinforcement has context stubs for Phase 06-11; the next planning step is `/sunco:discuss 6`.
 
 ## Key Decisions Carried Forward
 
@@ -51,6 +63,7 @@ No active phase remains in Milestone 1. Phase 05 closed the remaining v1 product
 - The product must go beyond Claude Design by making generated results directly editable as constrained PPT/Figma/Paper-style canvas objects: text, images, cards, sections, and slide-like/artboard blocks can be selected, moved, resized, reordered, aligned, restyled, commented on, and persisted as typed operations.
 - Runtime portability is required: Codex, Claude Code, Cursor, local agents, and web agents must all be able to continue from the same portable artifact package.
 - Coding agents must follow `docs/guides/coding-principles.md`: think before coding, keep the solution simple, make surgical changes, and verify against concrete success criteria.
+- Competitive parity now means closing the documented Paper/Claude Design/Figma gaps: canvas/component model, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, dev-mode/publish fidelity, collaboration/search/governance.
 
 ## Blockers
 
@@ -86,10 +99,14 @@ No active phase remains in Milestone 1. Phase 05 closed the remaining v1 product
 - Post-verification quality pass fixed the 768px tablet overflow, wired top Share/Export/Zoom/Present primary actions, and moved the shell away from a one-note beige palette toward a sharper canvas-tool surface.
 - Post-verification Tweaks pass made the right rail artifact-aware: fixture, SaaS landing, pitch deck, mobile app, and generic imported HTML now show different Tweaks labels and materialize typed patches against relevant generated/source nodes instead of applying one feed-only control model everywhere.
 - All 49 v1 requirements are now marked complete in `.planning/REQUIREMENTS.md`.
+- Competitive gap review on 2026-04-28 checked official Claude Design, Paper, and Figma sources and added `.planning/research/COMPETITIVE-GAP-REVIEW.md`.
+- Reinforcement added 46 planned v2 requirements and six context-phase stubs: Phase 06 Canvas and Component Model, Phase 07 Design System/Tokens/Code Connect, Phase 08 Prototyping/Slides/AI Variations, Phase 09 Context Ingestion/Live Data/Assets, Phase 10 Dev Mode/Publish/Export Fidelity, and Phase 11 Collaboration/Search/Governance.
+- `impact-analysis --changed .planning/REQUIREMENTS.md` flagged existing Phase 01-05 docs because the requirements file changed. This is acknowledged as additive v2 reinforcement only; no Phase 01-05 replan is required unless a later implementation conflicts with completed v1 behavior.
+- Rollback point before reinforcement: `sunco/rollback/2026-04-28T01-05-40-before-competitive-reinforce`.
 
 ---
-*Last updated: 2026-04-28 after dynamic Tweaks remediation*
-- **phase**: 5
-- **last_updated**: 2026-04-28T09:40:35.000+09:00
-- **status**: milestone-1-complete
-- **next_action**: Run independent verification or /sunco:milestone complete
+*Last updated: 2026-04-28 after competitive parity reinforcement*
+- **phase**: 6
+- **last_updated**: 2026-04-28T10:11:04.000+09:00
+- **status**: milestone-1-complete; milestone-2-context-ready
+- **next_action**: Run independent verification, then `/sunco:discuss 6`

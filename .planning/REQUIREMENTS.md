@@ -82,15 +82,74 @@
 
 ## v2 Requirements
 
+### Workspace and Project Organization
+
+- [ ] **HOME-01**: User can browse recent designs, examples, templates, design systems, and project folders from a first-class project home.
+- [ ] **HOME-02**: User can search designs by name, tag, source asset, design system, artifact type, and semantic content.
+- [ ] **HOME-03**: User can organize projects with nested folders, tags, ownership, and lifecycle status.
+
+### Canvas and Layout
+
+- [ ] **CANVAS-01**: User can work with pages, artboards, frames, sections, component instances, and primitive text/image/vector nodes as explicit canvas objects.
+- [ ] **CANVAS-02**: User can use a visible layer tree to select, reorder, group, hide, lock, and rename canvas objects.
+- [ ] **CANVAS-03**: User can apply constraints, snapping, guides, and resize rules that persist through reload and export.
+- [ ] **CANVAS-04**: User can edit CSS flex, auto-layout-like behavior, CSS Grid, gap, padding, alignment, and breakpoints through structured controls.
+- [ ] **CANVAS-05**: User can create and edit reusable component instances with slots, props, variants, overrides, and state.
+
+### Design Systems, Tokens, and Code Connection
+
+- [ ] **DSGN-04**: User can maintain project-level design skills, brand rules, reusable presets, and artifact-specific style rules beyond the core design-system setup.
+- [ ] **DSGN-05**: User can publish, remix, version, and roll back a design system after reviewing extracted colors, typography, spacing, components, and layout patterns.
+- [ ] **DSGN-06**: User can map design tokens to CSS variables, Tailwind classes, and code-component references.
+- [ ] **DSGN-07**: User can open a component playground to test component variants, props, variable modes, and states without mutating the main canvas.
+- [ ] **DSGN-08**: User can attach Storybook, GitHub, docs, and code references to design-system components and preserve those links in handoff.
+
+### AI and Variations
+
 - [ ] **AI-01**: User can ask the AI to rewrite or restyle only a selected region.
 - [ ] **AI-02**: User can compare multiple generated visual directions side by side.
-- [ ] **EXP-09**: User can export rasterized PPTX slides from artboards.
-- [ ] **EXP-10**: User can export editable PPTX for a strict subset of text, image, and shape nodes.
-- [ ] **EXP-11**: User can export MP4/GIF for authored animation templates.
-- [ ] **COLL-01**: Multiple users can comment or collaborate on the same document.
-- [ ] **DSGN-04**: User can maintain project-level design skills, brand rules, and reusable presets beyond the core design-system setup.
+- [ ] **AI-03**: User can right-click or otherwise target an object and request a localized remix that preserves surrounding layout and source provenance.
+- [ ] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits.
+- [ ] **AI-05**: User can export a portable prompt/script recipe that another agent runtime can replay against the same artifact package.
+
+### Prototyping and Slides
+
+- [ ] **PROTO-01**: User can define click, hover, tap, keyboard, and timed prototype interactions between canvas objects and artboards.
+- [ ] **PROTO-02**: User can model component state with variables, conditionals, and state sharing across matching components.
+- [ ] **PROTO-03**: User can preview interactive prototypes in presentation mode without losing edit state.
+- [ ] **SLIDE-01**: User can create a slide deck with slide view, grid view, speaker/presenter notes, and deck outline navigation.
+- [ ] **SLIDE-02**: User can embed playable prototype blocks or live canvas objects inside a slide.
+- [ ] **SLIDE-03**: User can collect presentation feedback through comments, polls, voting, or alignment-scale primitives.
+- [ ] **SLIDE-04**: User can export rasterized PPTX slides from artboards.
+- [ ] **SLIDE-05**: User can export editable PPTX for a strict subset of text, image, and shape nodes.
+
+### Context, Data, and Assets
+
+- [ ] **CTX-01**: User can ingest real screenshots, images, URLs, DOCX, PPTX, XLSX, Figma exports, and codebase folders into structured project context.
+- [ ] **CTX-02**: User gets generated `source-notes.md` and `design-context.md` files that record official sources, asset paths, uncertain facts, and usage rights.
+- [ ] **CTX-03**: User can capture a live web page or selected region into editable canvas sections with source provenance.
 - [ ] **DATA-01**: Documents can sync between local storage and a hosted account.
-- [ ] **LAY-01**: User can perform advanced freeform layout authoring beyond the constrained v1 direct-manipulation subset.
+- [ ] **DATA-02**: User can bind components to CSV, spreadsheet, API fixture, or static JSON data and preview realistic repeated content.
+- [ ] **ASSET-01**: User can cache, replace, relink, and audit project assets with stable URLs, source notes, and license/provenance metadata.
+
+### Dev Mode, Publish, and Export
+
+- [ ] **DEV-01**: User can inspect selected objects for measurements, spacing, CSS, tokens, accessibility notes, component metadata, and prototype interactions.
+- [ ] **DEV-02**: User can copy code snippets or token references that correspond to the selected design object.
+- [ ] **DEV-03**: User can mark frames or components as ready for dev and compare changes across saved versions.
+- [ ] **DEV-04**: User can download detected assets and inspect original asset metadata from the dev surface.
+- [ ] **EXP-09**: User can publish a responsive hosted preview or static site from stored artifact state.
+- [ ] **EXP-10**: User can export real files for HTML, ZIP, PNG, PDF, and PPTX with deterministic visual-diff verification.
+- [ ] **EXP-11**: User can export MP4/GIF for authored animation templates.
+- [ ] **EXP-12**: User can export a GitHub/code-agent package and roundtrip code-side changes back into the artifact package.
+
+### Collaboration and Governance
+
+- [ ] **COLL-01**: Multiple users can comment or collaborate on the same document.
+- [ ] **COLL-02**: User can see presence, follow/spotlight another collaborator, and review activity history.
+- [ ] **COLL-03**: User can use role-based sharing, review states, approval status, and audit log records.
+- [ ] **COLL-04**: User can attach annotations and implementation notes to frames, components, and selected layers.
+- [ ] **QUAL-02**: User can run quality gates for accessibility, contrast, overflow, responsive breakage, source provenance, and generic AI visual patterns.
 - [ ] **REG-01**: Patches can be replayed across AI-regenerated base revisions with conflict handling.
 
 ---
@@ -161,3 +220,54 @@
 | DSGN-03 | Phase 05 | complete |
 | SHARE-01 | Phase 05 | complete |
 | SHARE-02 | Phase 05 | complete |
+
+## v2 Traceability
+
+| REQ-ID | Target Phase | Status |
+|--------|--------------|--------|
+| HOME-01 | Phase 11 | planned |
+| HOME-02 | Phase 11 | planned |
+| HOME-03 | Phase 11 | planned |
+| CANVAS-01 | Phase 06 | planned |
+| CANVAS-02 | Phase 06 | planned |
+| CANVAS-03 | Phase 06 | planned |
+| CANVAS-04 | Phase 06 | planned |
+| CANVAS-05 | Phase 06 | planned |
+| DSGN-04 | Phase 07 | planned |
+| DSGN-05 | Phase 07 | planned |
+| DSGN-06 | Phase 07 | planned |
+| DSGN-07 | Phase 07 | planned |
+| DSGN-08 | Phase 07 | planned |
+| AI-01 | Phase 08 | planned |
+| AI-02 | Phase 08 | planned |
+| AI-03 | Phase 08 | planned |
+| AI-04 | Phase 08 | planned |
+| AI-05 | Phase 08 | planned |
+| PROTO-01 | Phase 08 | planned |
+| PROTO-02 | Phase 08 | planned |
+| PROTO-03 | Phase 08 | planned |
+| SLIDE-01 | Phase 08 | planned |
+| SLIDE-02 | Phase 08 | planned |
+| SLIDE-03 | Phase 08 | planned |
+| SLIDE-04 | Phase 10 | planned |
+| SLIDE-05 | Phase 10 | planned |
+| CTX-01 | Phase 09 | planned |
+| CTX-02 | Phase 09 | planned |
+| CTX-03 | Phase 09 | planned |
+| DATA-01 | Phase 09 | planned |
+| DATA-02 | Phase 09 | planned |
+| ASSET-01 | Phase 09 | planned |
+| DEV-01 | Phase 10 | planned |
+| DEV-02 | Phase 10 | planned |
+| DEV-03 | Phase 10 | planned |
+| DEV-04 | Phase 10 | planned |
+| EXP-09 | Phase 10 | planned |
+| EXP-10 | Phase 10 | planned |
+| EXP-11 | Phase 10 | planned |
+| EXP-12 | Phase 10 | planned |
+| COLL-01 | Phase 11 | planned |
+| COLL-02 | Phase 11 | planned |
+| COLL-03 | Phase 11 | planned |
+| COLL-04 | Phase 11 | planned |
+| QUAL-02 | Phase 11 | planned |
+| REG-01 | Phase 11 | planned |

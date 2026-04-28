@@ -112,14 +112,27 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 
 ## Out of Scope
 
-- Full Figma vector editing.
-- Multi-user collaboration.
-- Marketplace/templates store.
-- Real-time multiplayer cursors.
+- Full Figma vector editing before component/frame/canvas parity.
+- Multi-user collaboration before single-user typed operations and conflict handling are stable.
+- Marketplace/templates store before project browser, source provenance, and asset governance are real.
+- Real-time multiplayer cursors before role/review/activity primitives.
 - Native desktop app packaging.
 - Automatic Figma export.
-- Full PPTX layer-perfect round trip and semantic editable Figma/PPTX round-trip.
+- Full PPTX layer-perfect round trip and semantic editable Figma/PPTX round-trip before the strict supported subset.
 - Running leaked Claude Design prompts verbatim.
+
+## Competitive Parity Addendum
+
+Official Claude Design, Paper, and Figma checks on 2026-04-28 added the Milestone 2 reinforcement plan in `.planning/research/COMPETITIVE-GAP-REVIEW.md`.
+
+Milestone 1 remains the validated vertical slice. Milestone 2 must add:
+
+- Paper-style HTML/CSS canvas continuity: code components, CSS Grid/flex semantics, Tailwind/class semantics, scriptable canvas operations, live data, and agent-readable source of truth.
+- Figma-style canvas fundamentals: pages, artboards, frames, layer tree, constraints, snapping, auto layout, component instances, variants, props, overrides, variables, and interactive component state.
+- Claude Design-style context and iteration: design-system extraction, real project context ingestion, side-by-side variations, selected-region AI edits, design review, export/share/handoff, and organization-level reuse.
+- Figma Slides-style deck workflows: slide/grid view, presenter notes, embedded prototypes, presentation state, and audience feedback primitives.
+- Figma Dev Mode-style handoff: inspect surface, measurements, token/code mapping, component playground, code links, ready-for-dev states, version diff, and asset download records.
+- Figma Sites/Make-style publishing and functional prototype direction: responsive publish previews, app logic stubs, data bindings, and GitHub/code-agent roundtrip.
 
 ## Risks and Assumptions
 
@@ -150,6 +163,7 @@ The artifact source is durable. Editor state is ephemeral except when patches ar
 | runtime-agnostic handoff | user directive / Huashu-style portability reference |
 | Korean-first design behavior | user directive / brainstorming |
 | avoid full Figma clone in v1 | brainstorming scope control |
+| Milestone 2 competitive parity | official Claude Design / Paper / Figma review on 2026-04-28 |
 
 ## Self Review
 
