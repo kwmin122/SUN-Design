@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 08 planned |
+| Current phase | Phase 08 shipped |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -20,12 +20,12 @@
 | Phase 05 status | complete |
 | Phase 06 status | shipped |
 | Phase 07 status | shipped |
-| Phase 08 status | planned |
+| Phase 08 status | shipped |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
-| Requirement coverage | 49/49 v1 complete; 10/46 v2 requirements complete; 36 v2 requirements mapped to Phase 08-11 |
-| Next action | `/sunco:execute 8` |
+| Requirement coverage | 49/49 v1 complete; 21/46 v2 requirements complete; 25 v2 requirements mapped to Phase 09-11 |
+| Next action | `/sunco:research 9` |
 
 ## Phase Queue
 
@@ -38,14 +38,14 @@
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
 | Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
-| Phase 08 | Prototyping, Slides, and AI Variations | planned | 11 |
+| Phase 08 | Prototyping, Slides, and AI Variations | shipped | 11 |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is planned for prototype interactions, slide decks, presentation preview, selected-region variations, and portable agent recipes; the next step is `/sunco:execute 8`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototype interactions, slide decks, presentation preview, selected-region variations, and portable agent recipes. The next step is `/sunco:research 9`.
 
 ## Key Decisions Carried Forward
 
@@ -122,10 +122,14 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 07 formal verification passed in `.planning/phases/07-design-system-tokens-and-code-connect/07-VERIFICATION.md`. The completion boundary remains explicit: Phase 07 is a verified governed design-system/code-connect foundation, not the final Paper/Figma/Claude Design-level product.
 - Phase 07 shipped direct-to-main in `2f96ccb` / remote `2f96ccb4dd341cf1b503c9543cf8c06eb7abd424`. A PR was not created because the verified work was already committed and pushed on `main`.
 - Phase 08 research and execution plans were created in `.planning/phases/08-prototyping-slides-and-ai-variations/`: Wave 1 core prototype/slide/variation/recipe model and Wave 2 web workflows for prototype authoring, presentation mode, slide decks, variation compare, and agent recipe export.
+- Phase 08 Wave 1 completed in `883da9a`: editor-core prototype graph, presentation state, slide deck, variation set, agent recipe schemas/helpers, handoff includes, and unit coverage.
+- Phase 08 Wave 2 completed in `350cc0a`: web prototype panel, presentation mode, slide deck panel, variation compare panel, editor-shell wiring, responsive styling, and browser workflow coverage.
+- Phase 08 formal verification passed in `.planning/phases/08-prototyping-slides-and-ai-variations/08-VERIFICATION.md`. Gates passed: `pnpm lint`, `pnpm typecheck`, `pnpm test` (15 files, 74 tests), `pnpm e2e` (22 browser tests), and Playwright visual smoke at 1440/768/390 px with no body overflow.
+- Phase 08 implementation shipped direct-to-main through `350cc0a`. This is a verified prototype/slide/variation/agent-recipe foundation, not the final Paper/Figma/Claude Design-level product. Phase 09-11 continue the parity target.
 
 ---
-*Last updated: 2026-04-28 after Phase 08 planning*
+*Last updated: 2026-04-28 after Phase 08 verification and shipping*
 - **phase**: 8
-- **last_updated**: 2026-04-28T15:24:00+09:00
-- **status**: planned
-- **next_action**: `/sunco:execute 8`
+- **last_updated**: 2026-04-28T15:59:00+09:00
+- **status**: shipped
+- **next_action**: `/sunco:research 9`

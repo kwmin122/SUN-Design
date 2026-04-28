@@ -106,20 +106,20 @@
 
 ### AI and Variations
 
-- [ ] **AI-01**: User can ask the AI to rewrite or restyle only a selected region.
-- [ ] **AI-02**: User can compare multiple generated visual directions side by side.
-- [ ] **AI-03**: User can right-click or otherwise target an object and request a localized remix that preserves surrounding layout and source provenance.
-- [ ] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits.
-- [ ] **AI-05**: User can export a portable prompt/script recipe that another agent runtime can replay against the same artifact package.
+- [x] **AI-01**: User can ask the AI to rewrite or restyle only a selected region.
+- [x] **AI-02**: User can compare multiple generated visual directions side by side.
+- [x] **AI-03**: User can right-click or otherwise target an object and request a localized remix that preserves surrounding layout and source provenance.
+- [x] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits.
+- [x] **AI-05**: User can export a portable prompt/script recipe that another agent runtime can replay against the same artifact package.
 
 ### Prototyping and Slides
 
-- [ ] **PROTO-01**: User can define click, hover, tap, keyboard, and timed prototype interactions between canvas objects and artboards.
-- [ ] **PROTO-02**: User can model component state with variables, conditionals, and state sharing across matching components.
-- [ ] **PROTO-03**: User can preview interactive prototypes in presentation mode without losing edit state.
-- [ ] **SLIDE-01**: User can create a slide deck with slide view, grid view, speaker/presenter notes, and deck outline navigation.
-- [ ] **SLIDE-02**: User can embed playable prototype blocks or live canvas objects inside a slide.
-- [ ] **SLIDE-03**: User can collect presentation feedback through comments, polls, voting, or alignment-scale primitives.
+- [x] **PROTO-01**: User can define click, hover, tap, keyboard, and timed prototype interactions between canvas objects and artboards.
+- [x] **PROTO-02**: User can model component state with variables, conditionals, and state sharing across matching components.
+- [x] **PROTO-03**: User can preview interactive prototypes in presentation mode without losing edit state.
+- [x] **SLIDE-01**: User can create a slide deck with slide view, grid view, speaker/presenter notes, and deck outline navigation.
+- [x] **SLIDE-02**: User can embed playable prototype blocks or live canvas objects inside a slide.
+- [x] **SLIDE-03**: User can collect presentation feedback through comments, polls, voting, or alignment-scale primitives.
 - [ ] **SLIDE-04**: User can export rasterized PPTX slides from artboards.
 - [ ] **SLIDE-05**: User can export editable PPTX for a strict subset of text, image, and shape nodes.
 
@@ -238,17 +238,17 @@
 | DSGN-06 | Phase 07 | complete |
 | DSGN-07 | Phase 07 | complete |
 | DSGN-08 | Phase 07 | complete |
-| AI-01 | Phase 08 | planned |
-| AI-02 | Phase 08 | planned |
-| AI-03 | Phase 08 | planned |
-| AI-04 | Phase 08 | planned |
-| AI-05 | Phase 08 | planned |
-| PROTO-01 | Phase 08 | planned |
-| PROTO-02 | Phase 08 | planned |
-| PROTO-03 | Phase 08 | planned |
-| SLIDE-01 | Phase 08 | planned |
-| SLIDE-02 | Phase 08 | planned |
-| SLIDE-03 | Phase 08 | planned |
+| AI-01 | Phase 08 | complete |
+| AI-02 | Phase 08 | complete |
+| AI-03 | Phase 08 | complete |
+| AI-04 | Phase 08 | complete |
+| AI-05 | Phase 08 | complete |
+| PROTO-01 | Phase 08 | complete |
+| PROTO-02 | Phase 08 | complete |
+| PROTO-03 | Phase 08 | complete |
+| SLIDE-01 | Phase 08 | complete |
+| SLIDE-02 | Phase 08 | complete |
+| SLIDE-03 | Phase 08 | complete |
 | SLIDE-04 | Phase 10 | planned |
 | SLIDE-05 | Phase 10 | planned |
 | CTX-01 | Phase 09 | planned |
