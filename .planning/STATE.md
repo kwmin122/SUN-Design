@@ -126,11 +126,12 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 Wave 2 completed in `350cc0a`: web prototype panel, presentation mode, slide deck panel, variation compare panel, editor-shell wiring, responsive styling, and browser workflow coverage.
 - Phase 08 initial verification passed the automated gates, but external adversarial review correctly found that persisted Phase 08 references were not validated on load and AI-01 through AI-04 were overclaimed as complete.
 - Phase 08 remediation added persisted-state reference integrity validation for prototype interactions, presentation state, slide decks, variation sets, and agent recipes. It also validates direct prototype playback before state transition.
+- Phase 08 follow-up hardening tightened transient presentation helpers too: `createPresentationState` and `playPrototypeInteraction` now reject missing active objects, missing interactions, missing prototype variables, and invalid component-state object references before preview state can advance.
 - Phase 08 status is corrected to foundation-complete with ship held: PROTO-01 through PROTO-03, SLIDE-01 through SLIDE-03, and AI-05 are complete; AI-01 through AI-04 remain foundation-only until real canvas-aware agent/model-generated typed operation ingestion exists.
 
 ---
 *Last updated: 2026-04-28 after Phase 08 persisted-state remediation and AI claim correction*
 - **phase**: 8
-- **last_updated**: 2026-04-28T19:45:00+09:00
+- **last_updated**: 2026-04-28T20:37:00+09:00
 - **status**: foundation-complete; ship held
 - **next_action**: `/sunco:discuss 8 --gaps-only`

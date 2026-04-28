@@ -1,6 +1,9 @@
 import { ensureCanvasGraph } from "./canvas-graph.js";
 import { stableHash } from "./ids.js";
-import { assertPrototypeInteractionIntegrity } from "./integrity.js";
+import {
+  assertPresentationStateIntegrity,
+  assertPrototypeInteractionIntegrity
+} from "./integrity.js";
 import {
   ComponentStateRuleSchema,
   PresentationStateSchema,
@@ -151,7 +154,7 @@ export function createPresentationState(
   input: Partial<PresentationState> = {}
 ): PresentationState {
   const current = ensurePrototypeGraph(bundle);
-  return PresentationStateSchema.parse({
+  const state = PresentationStateSchema.parse({
     mode: "present",
     activeObjectId: input.activeObjectId ?? current.canvasGraph?.rootObjectIds[0],
     activeSlideId: input.activeSlideId,
@@ -163,6 +166,8 @@ export function createPresentationState(
     history: input.history ?? [],
     startedAt: input.startedAt ?? new Date().toISOString()
   });
+  assertPresentationStateIntegrity(current, state);
+  return state;
 }
 
 export function playPrototypeInteraction(
@@ -175,6 +180,7 @@ export function playPrototypeInteraction(
   if (!interaction) {
     throw new Error(`Unknown prototype interaction: ${interactionId}`);
   }
+  assertPresentationStateIntegrity(current, state);
   assertPrototypeInteractionIntegrity(current, interaction);
   if (!conditionsPass(current.prototypeGraph!.variables, state.variableValues, interaction.conditions)) {
     return state;
@@ -199,7 +205,7 @@ export function playPrototypeInteraction(
     componentStates[interaction.targetObjectId] = asComponentState(interaction.value ?? "default");
   }
 
-  return PresentationStateSchema.parse({
+  const nextState = PresentationStateSchema.parse({
     ...state,
     mode: "present",
     activeObjectId,
@@ -208,6 +214,8 @@ export function playPrototypeInteraction(
     componentStates,
     history: [...state.history, interaction.id]
   });
+  assertPresentationStateIntegrity(current, nextState);
+  return nextState;
 }
 
 function validateInteraction(bundle: ProjectBundle, input: PrototypeInteractionInput): void {

@@ -40,7 +40,7 @@ Phase 08 is verified as a high-quality foundation for prototype interactions, sl
 | `pnpm lint` | PASS |
 | `pnpm typecheck` | PASS |
 | `pnpm --filter @kdesign/editor-core test -- src/__tests__/persistence.test.ts src/__tests__/prototype.test.ts src/__tests__/slides.test.ts src/__tests__/variations.test.ts` | PASS: 14 files, 69 tests after remediation |
-| `pnpm test` | PASS: 15 files, 77 tests after remediation |
+| `pnpm test` | PASS: 15 files, 78 tests after remediation |
 | `pnpm e2e` | PASS: 22 browser tests |
 | Playwright visual smoke at 1440/768/390 px | PASS: no body horizontal overflow; Phase 08 panels rendered |
 
@@ -93,8 +93,10 @@ Adversarial coverage:
 - Added `packages/editor-core/src/integrity.ts`.
 - `parseProjectBundleJson` now ensures the canvas graph and then validates Phase 08 reference integrity before returning a bundle.
 - `serializeProjectBundle` validates graph-backed bundles before writing JSON.
+- `createPresentationState` and `playPrototypeInteraction` validate transient presentation state against the current bundle before returning or advancing preview state.
 - `playPrototypeInteraction` validates the stored interaction against the current bundle before applying a preview transition.
 - Added persisted-state regression coverage for missing prototype source/target objects, missing slide canvas/prototype references, invalid variation references, and invalid agent recipe targets.
+- Added helper-level regression coverage for missing presentation active objects, missing interactions, missing variables, and invalid component-state object references.
 - Corrected `.planning/REQUIREMENTS.md`, `.planning/STATE.md`, roadmap, context, plans, and summaries so AI-01 through AI-04 are foundation-only rather than complete.
 
 ### Layer 6 - Competitive Parity Boundary

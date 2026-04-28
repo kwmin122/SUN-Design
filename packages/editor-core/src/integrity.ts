@@ -1,6 +1,7 @@
 import type {
   AgentRecipe,
   CanvasOperation,
+  PresentationState,
   ProjectBundle,
   PrototypeCondition,
   PrototypeInteraction,
@@ -82,11 +83,13 @@ export function assertPrototypeInteractionIntegrity(
 }
 
 function assertPresentationIntegrity(bundle: ProjectBundle): void {
-  const state = bundle.presentationState;
-  if (!state) {
+  if (!bundle.presentationState) {
     return;
   }
+  assertPresentationStateIntegrity(bundle, bundle.presentationState);
+}
 
+export function assertPresentationStateIntegrity(bundle: ProjectBundle, state: PresentationState): void {
   const variableIds = new Set(bundle.prototypeGraph?.variables.map((variable) => variable.id) ?? []);
   const interactionIds = new Set(bundle.prototypeGraph?.interactions.map((interaction) => interaction.id) ?? []);
 

@@ -12,7 +12,7 @@ import {
   ensurePrototypeGraph,
   playPrototypeInteraction
 } from "../prototype.js";
-import { ProjectBundleSchema, type ProjectBundle } from "../schemas.js";
+import { PresentationStateSchema, ProjectBundleSchema, type ProjectBundle } from "../schemas.js";
 
 function createPrototypeBundle(): {
   bundle: ProjectBundle;
@@ -211,5 +211,49 @@ describe("prototype helpers", () => {
       variableBindings: {}
     })).toThrow("Unknown component variant");
     expect(() => playPrototypeInteraction(bundle, state, "proto_ix_bad_state")).toThrow("invalid component state");
+  });
+
+  it("rejects corrupt presentation state before helper playback", () => {
+    const fixture = createPrototypeBundle();
+    let bundle = ensurePrototypeGraph(fixture.bundle, "2026-04-28T00:00:00.000Z");
+    bundle = addPrototypeVariable(bundle, {
+      id: "proto_var_overlay",
+      name: "Overlay open",
+      kind: "boolean",
+      defaultValue: false
+    });
+    bundle = addPrototypeInteraction(bundle, {
+      id: "proto_ix_click",
+      sourceObjectId: fixture.sourceObjectId,
+      trigger: "click",
+      action: "navigateTo",
+      targetObjectId: fixture.targetObjectId
+    });
+
+    expect(() => createPresentationState(bundle, {
+      activeObjectId: "missing-object"
+    })).toThrow("Presentation active object references missing canvas object");
+
+    expect(() => createPresentationState(bundle, {
+      activeObjectId: fixture.sourceObjectId,
+      activeInteractionId: "missing-interaction"
+    })).toThrow("Presentation state references missing interaction");
+
+    expect(() => createPresentationState(bundle, {
+      activeObjectId: fixture.sourceObjectId,
+      variableValues: { "missing-variable": true }
+    })).toThrow("Presentation state references missing prototype variable");
+
+    const state = createPresentationState(bundle, {
+      activeObjectId: fixture.sourceObjectId,
+      startedAt: "2026-04-28T00:00:00.000Z"
+    });
+    const corruptState = PresentationStateSchema.parse({
+      ...state,
+      componentStates: { "missing-object": "hover" }
+    });
+
+    expect(() => playPrototypeInteraction(bundle, corruptState, "proto_ix_click"))
+      .toThrow("Presentation component state references missing canvas object");
   });
 });
