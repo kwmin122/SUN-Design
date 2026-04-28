@@ -1294,15 +1294,168 @@ button {
 }
 
 .export-card,
-.handoff-card {
+.handoff-card,
+.prototype-panel,
+.presentation-mode,
+.slide-deck-panel,
+.variation-compare-panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .export-card h2,
-.handoff-card h2 {
+.handoff-card h2,
+.prototype-panel h2,
+.presentation-mode h2,
+.slide-deck-panel h2,
+.variation-compare-panel h2 {
   margin-bottom: 0;
+}
+
+.prototype-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.prototype-interaction-list,
+.slide-outline,
+.slide-grid-preview,
+.slide-feedback-list,
+.variation-direction-list,
+.agent-recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border-top: 1px solid #f0ede8;
+  padding-top: 10px;
+}
+
+.prototype-interaction-list strong,
+.slide-feedback-list strong,
+.agent-recipe-list strong {
+  font-size: 12px;
+}
+
+.prototype-interaction-list span,
+.slide-outline span,
+.slide-grid-preview span,
+.slide-feedback-list span,
+.agent-recipe-list span,
+.selected-region-summary span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.presentation-stage,
+.selected-region-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfaf7;
+  padding: 10px;
+}
+
+.presentation-stage strong,
+.selected-region-summary strong {
+  min-width: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.presentation-stage span {
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.presentation-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.presentation-actions button,
+.presentation-actions select {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.presentation-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.slide-grid-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.slide-grid-preview span,
+.slide-outline span {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+  padding: 7px 8px;
+}
+
+.slide-notes textarea {
+  min-height: 92px;
+}
+
+.variation-direction-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.variation-direction-card {
+  min-width: 0;
+  min-height: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfaf7;
+  color: var(--text);
+  padding: 10px;
+  text-align: left;
+}
+
+.variation-direction-card.active {
+  border-color: rgba(63, 111, 182, 0.58);
+  background: #edf4ff;
+}
+
+.variation-direction-card strong,
+.variation-direction-card span,
+.variation-direction-card small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.variation-direction-card strong {
+  font-size: 13px;
+}
+
+.variation-direction-card span,
+.variation-direction-card small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .export-actions,
@@ -1548,7 +1701,11 @@ button {
   .component-controls.state-controls,
   .system-action-bar,
   .code-ref-grid,
-  .playground-controls {
+  .playground-controls,
+  .prototype-grid,
+  .presentation-actions,
+  .variation-direction-list,
+  .slide-grid-preview {
     grid-template-columns: 1fr;
   }
 

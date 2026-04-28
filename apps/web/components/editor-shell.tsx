@@ -23,29 +23,47 @@ import {
   ZoomIn
 } from "lucide-react";
 import type {
+  AgentRuntime,
   BundleVersion,
   CanvasComment,
   CanvasConstraints,
   CanvasOperation,
+  ComponentStateRule,
   ContextAttachment,
   CreationMode,
   EditPatch,
   ExportKind,
   FidelityTarget,
   KoreanPreset,
+  PresentationState,
   PreviewDevice,
   PreviewError,
   PreviewNodeRect,
-  ProjectBundle
+  PrototypeActionKind,
+  PrototypeInteraction,
+  PrototypeTrigger,
+  PrototypeVariable,
+  ProjectBundle,
+  SlideDeck,
+  SlideFeedback
 } from "@kdesign/editor-core";
 import {
   BASIC_LANDING_FIXTURE_HTML,
   ProjectBundleSchema,
   addCodeComponentReference,
+  addComponentStateRule,
+  addPrototypeInteraction,
+  addPrototypeVariable,
+  addSlide,
+  addSlideBlock,
+  addSlideFeedback,
   approveDesignSystemItems,
   applyCanvasOperationToBundle,
   applyEditPatchToBundle,
   applyEditPatchesToBundle,
+  createPresentationState,
+  createSelectedRegionRemix,
+  createSlideDeck,
   createGeneratedProjectBundle,
   createMockContextAttachment,
   createExportJob,
@@ -55,16 +73,21 @@ import {
   createShareLink,
   deriveCanvasGraph,
   ensureCanvasGraph,
+  exportAgentRecipe,
   extractDesignSystemCandidates,
   findCanvasObjectByNodeId,
   learnDesignSystem,
   listCanvasObjects,
   mapTokenToCode,
+  playPrototypeInteraction,
   publishDesignSystem,
+  promoteVariationDirection,
   rejectDesignSystemItems,
   remixDesignSystem,
   rollbackDesignSystem,
   runKoreanQualityAudit,
+  setSlideDeckView,
+  setSlideNotes,
   findNodeIdsByClass,
   normalizeHtml
 } from "@kdesign/editor-core";
@@ -77,6 +100,10 @@ import { CanvasObjectInspector } from "./canvas-object-inspector";
 import { ComponentInstancePanel } from "./component-instance-panel";
 import { ComponentPlaygroundPanel, type ComponentPlaygroundState } from "./component-playground-panel";
 import { DesignSystemPanel } from "./design-system-panel";
+import { PresentationMode } from "./presentation-mode";
+import { PrototypePanel } from "./prototype-panel";
+import { SlideDeckPanel } from "./slide-deck-panel";
+import { VariationComparePanel } from "./variation-compare-panel";
 import {
   clearLocalProjectBundle,
   loadLocalProjectBundle,
@@ -244,6 +271,7 @@ export function EditorShell() {
   const [undoStack, setUndoStack] = useState<ProjectBundle[]>([]);
   const [redoStack, setRedoStack] = useState<ProjectBundle[]>([]);
   const [playgroundState, setPlaygroundState] = useState<ComponentPlaygroundState | null>(null);
+  const [presentationState, setPresentationState] = useState<PresentationState | null>(null);
 
   useEffect(() => {
     projectBundleRef.current = projectBundle;
@@ -744,6 +772,245 @@ export function EditorShell() {
     }
   }, [appendDiagnostic, canvasGraph]);
 
+  const reportWorkflowError = useCallback((code: string, error: unknown) => {
+    appendDiagnostic({
+      id: createLocalId("workflow_error"),
+      source: "bridge",
+      severity: "warning",
+      code,
+      message: error instanceof Error ? error.message : "Workflow update rejected.",
+      createdAt: new Date().toISOString()
+    });
+  }, [appendDiagnostic]);
+
+  const createPrototypeVariable = useCallback((input: {
+    name: string;
+    kind: PrototypeVariable["kind"];
+    defaultValue: unknown;
+    sharedComponentId?: string;
+  }) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(addPrototypeVariable(current, input), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("prototype_variable_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createPrototypeInteraction = useCallback((input: {
+    sourceObjectId: string;
+    trigger: PrototypeTrigger;
+    action: PrototypeActionKind;
+    targetObjectId?: string;
+    variableId?: string;
+    value?: unknown;
+    key?: string;
+    delayMs?: number;
+    conditions?: PrototypeInteraction["conditions"];
+  }) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(addPrototypeInteraction(current, input), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("prototype_interaction_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createPrototypeStateRule = useCallback((input: Omit<ComponentStateRule, "id" | "conditions" | "variableBindings"> & {
+    variableBindings?: ComponentStateRule["variableBindings"];
+  }) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(addComponentStateRule(current, input), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("prototype_state_rule_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const startPresentationPreview = useCallback((activeObjectId?: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      setPresentationState(createPresentationState(current, {
+        activeObjectId: activeObjectId ?? selectedObjectId ?? undefined,
+        activeSlideId: current.slideDecks[0]?.activeSlideId,
+        startedAt: new Date().toISOString()
+      }));
+    } catch (error) {
+      reportWorkflowError("presentation_state_rejected", error);
+    }
+  }, [reportWorkflowError, selectedObjectId]);
+
+  const playPresentationPreview = useCallback((interactionId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const baseState = presentationState ?? createPresentationState(current, {
+        activeObjectId: selectedObjectId ?? undefined,
+        activeSlideId: current.slideDecks[0]?.activeSlideId,
+        startedAt: new Date().toISOString()
+      });
+      setPresentationState(playPrototypeInteraction(current, baseState, interactionId));
+    } catch (error) {
+      reportWorkflowError("presentation_playback_rejected", error);
+    }
+  }, [presentationState, reportWorkflowError, selectedObjectId]);
+
+  const createDeck = useCallback((title: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(createSlideDeck(current, { title }), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("slide_deck_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createSlide = useCallback((deckId: string, title: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(addSlide(current, deckId, { title }), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("slide_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const updateSlideView = useCallback((deckId: string, view: SlideDeck["view"]) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(setSlideDeckView(current, deckId, view), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("slide_view_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const savePresenterNotes = useCallback((deckId: string, slideId: string, notes: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(setSlideNotes(current, deckId, slideId, notes), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("slide_notes_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const embedSlideCanvasObject = useCallback((deckId: string, slideId: string, objectId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(addSlideBlock(current, deckId, slideId, {
+        kind: "canvasObject",
+        objectId
+      }), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("slide_block_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const embedSlidePrototypeBlock = useCallback((deckId: string, slideId: string, interactionId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(addSlideBlock(current, deckId, slideId, {
+        kind: "prototypeBlock",
+        interactionId
+      }), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("slide_prototype_block_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createSlideFeedback = useCallback((deckId: string, slideId: string, input: {
+    kind: SlideFeedback["kind"];
+    author: string;
+    body?: string;
+    choices?: string[];
+    targetId?: string;
+    value?: number;
+  }) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(addSlideFeedback(current, deckId, slideId, input), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("slide_feedback_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createLocalizedRemix = useCallback((remixPrompt: string, targetObjectId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(createSelectedRegionRemix(current, {
+        targetObjectId,
+        prompt: remixPrompt
+      }), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("variation_remix_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const promoteLocalizedVariation = useCallback((variationSetId: string, directionId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(promoteVariationDirection(current, variationSetId, directionId), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("variation_promotion_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createAgentRecipe = useCallback((input: {
+    runtime: AgentRuntime;
+    targetObjectId: string;
+    prompt: string;
+    variationSetId?: string;
+    directionId?: string;
+  }) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      commitBundle(exportAgentRecipe(current, input), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("agent_recipe_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
   const addShareLink = useCallback((access: "view" | "comment" | "edit") => {
     const current = projectBundleRef.current;
     if (!current) {
@@ -1171,6 +1438,42 @@ export function EditorShell() {
                     designSystem={projectBundle.designSystem}
                     playgroundState={playgroundState}
                     onCreatePlaygroundState={previewComponentPlayground}
+                  />
+                  <PrototypePanel
+                    bundle={projectBundle}
+                    graph={canvasGraph}
+                    selectedObjectId={selectedObjectId}
+                    onAddVariable={createPrototypeVariable}
+                    onAddInteraction={createPrototypeInteraction}
+                    onAddStateRule={createPrototypeStateRule}
+                  />
+                  <PresentationMode
+                    bundle={projectBundle}
+                    graph={canvasGraph}
+                    state={presentationState}
+                    selectedObjectId={selectedObjectId}
+                    onStart={startPresentationPreview}
+                    onPlay={playPresentationPreview}
+                  />
+                  <SlideDeckPanel
+                    bundle={projectBundle}
+                    graph={canvasGraph}
+                    selectedObjectId={selectedObjectId}
+                    onCreateDeck={createDeck}
+                    onAddSlide={createSlide}
+                    onSetView={updateSlideView}
+                    onSaveNotes={savePresenterNotes}
+                    onEmbedSelectedObject={embedSlideCanvasObject}
+                    onEmbedPrototypeBlock={embedSlidePrototypeBlock}
+                    onAddFeedback={createSlideFeedback}
+                  />
+                  <VariationComparePanel
+                    bundle={projectBundle}
+                    graph={canvasGraph}
+                    selectedObjectId={selectedObjectId}
+                    onCreateRemix={createLocalizedRemix}
+                    onPromote={promoteLocalizedVariation}
+                    onExportRecipe={createAgentRecipe}
                   />
                 </>
               ) : null}
