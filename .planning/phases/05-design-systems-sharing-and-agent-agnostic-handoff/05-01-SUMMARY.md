@@ -27,7 +27,7 @@
 | `pnpm typecheck` | PASS |
 | `pnpm lint` | PASS |
 | `pnpm test` | PASS: 8 files, 31 tests |
-| `pnpm e2e` | PASS: 13 browser tests |
+| `pnpm e2e` | PASS: 14 browser tests |
 | Playwright visual smoke | PASS: `.tmp-screenshots/phase-05-handoff-panel.png`, no console errors |
 
 ## Browser Path Coverage
@@ -38,6 +38,9 @@
 - PASS: Codex, Claude Code, Cursor, local-agent, and web-agent handoff packages are created and persisted.
 - PASS: Stored local state contains `designSystem`, `shareLinks`, `handoffPackages`, and portable instruction references.
 - PASS: Reloading the page rehydrates design-system, share-link, and handoff UI from stored local state.
+- PASS: 768px tablet viewport has no horizontal body overflow after top toolbar wrapping.
+- PASS: Top Share, Export, Zoom, and Present controls are functional and covered by browser tests.
+- PASS: Visual smoke captured updated tablet and present-mode states in `.tmp-screenshots/quality-fix-tablet-768.png` and `.tmp-screenshots/quality-fix-present-desktop.png`.
 
 ## Tooling Notes
 

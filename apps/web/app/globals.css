@@ -1,15 +1,16 @@
 :root {
-  --bg: #f7f5f0;
-  --panel: #fffdf8;
-  --panel-2: #f1eee7;
-  --line: #e4ddd3;
-  --line-strong: #d5cabc;
-  --text: #2d2924;
-  --muted: #8a8379;
-  --accent: #c98265;
-  --accent-strong: #b97156;
-  --blue: #5277ae;
-  --ok: #317457;
+  --bg: #f3f6f8;
+  --panel: #ffffff;
+  --panel-2: #edf2f7;
+  --line: #dfe6ee;
+  --line-strong: #cbd6e2;
+  --text: #1e2430;
+  --muted: #687385;
+  --accent: #d76f4f;
+  --accent-strong: #ad5139;
+  --blue: #3f6fb6;
+  --teal: #2c9b8d;
+  --ok: #24765c;
   --danger: #b94a43;
 }
 
@@ -43,7 +44,7 @@ button {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
-  background: #fbfaf7;
+  background: #f7f9fb;
 }
 
 .chat-rail {
@@ -51,7 +52,7 @@ button {
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--line-strong);
-  background: #f3f0e9;
+  background: #edf2f6;
 }
 
 .chat-tabs {
@@ -100,8 +101,8 @@ button {
   margin: 12px 12px 0;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 8px 24px rgba(45, 41, 36, 0.06);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 28px rgba(30, 36, 48, 0.07);
 }
 
 .product-card {
@@ -241,11 +242,11 @@ button {
 }
 
 .agent-card.searching {
-  background: #ece9e2;
+  background: #e9eef5;
 }
 
 .agent-card.done {
-  background: #f8f4ed;
+  background: #f7f9fc;
 }
 
 .agent-card-title {
@@ -396,7 +397,7 @@ button {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #fbfaf7;
+  background: #f7f9fb;
 }
 
 .file-bar {
@@ -407,7 +408,7 @@ button {
   gap: 16px;
   padding: 0 12px;
   border-bottom: 1px solid var(--line-strong);
-  background: #f6f3ec;
+  background: #f5f8fb;
 }
 
 .file-tabs,
@@ -471,7 +472,7 @@ button {
   gap: 14px;
   padding: 0 16px;
   border-bottom: 1px solid var(--line);
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.94);
 }
 
 .tool-spacer {
@@ -523,15 +524,15 @@ button {
 }
 
 .mode-tools button.active {
-  border-color: var(--line-strong);
-  background: #f7f4ed;
+  border-color: rgba(63, 111, 182, 0.36);
+  background: #edf4ff;
   color: var(--text);
 }
 
 .device-tools {
   border: 1px solid var(--line);
   border-radius: 10px;
-  background: #f0ede7;
+  background: #eef3f8;
   padding: 3px;
 }
 
@@ -571,8 +572,8 @@ button {
   flex-direction: column;
   padding: 22px 26px;
   background:
-    radial-gradient(circle at 18% 18%, rgba(201, 130, 101, 0.08), transparent 32%),
-    #fbfaf7;
+    linear-gradient(135deg, rgba(63, 111, 182, 0.09), rgba(44, 155, 141, 0.07) 48%, rgba(215, 111, 79, 0.08)),
+    #f7f9fb;
   overflow: auto;
 }
 
@@ -626,8 +627,10 @@ button {
   border: 1px solid var(--line-strong);
   border-radius: 16px;
   background: #ffffff;
-  box-shadow: 0 14px 36px rgba(45, 41, 36, 0.08);
+  box-shadow: 0 18px 44px rgba(30, 36, 48, 0.11);
   overflow: hidden;
+  transform: scale(var(--preview-zoom, 1));
+  transform-origin: top center;
 }
 
 .preview-frame-wrap.preview-desktop {
@@ -706,7 +709,7 @@ button {
   gap: 14px;
   padding: 22px 16px;
   border-left: 1px solid var(--line-strong);
-  background: #f7f4ef;
+  background: #f1f5f8;
   overflow: auto;
 }
 
@@ -715,7 +718,7 @@ button {
   border: 1px solid var(--line);
   border-radius: 14px;
   background: #ffffff;
-  box-shadow: 0 8px 22px rgba(45, 41, 36, 0.06);
+  box-shadow: 0 10px 26px rgba(30, 36, 48, 0.07);
 }
 
 .tweak-card {
@@ -988,6 +991,23 @@ button {
   color: var(--muted);
 }
 
+.studio-editor.present-mode {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.studio-editor.present-mode .chat-rail,
+.studio-editor.present-mode .tweaks-rail {
+  display: none;
+}
+
+.studio-editor.present-mode .canvas-grid.tweaks-open {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.studio-editor.present-mode .canvas-surface {
+  padding: 16px 22px;
+}
+
 @media (max-width: 1160px) {
   .studio-editor {
     grid-template-columns: 300px minmax(0, 1fr);
@@ -1003,7 +1023,7 @@ button {
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 920px) {
   .studio-editor {
     grid-template-columns: 1fr;
   }
@@ -1029,9 +1049,16 @@ button {
   }
 
   .file-tabs,
+  .publish-actions,
+  .history-tools,
+  .device-tools,
   .mode-tools {
     width: 100%;
     overflow-x: auto;
+  }
+
+  .studio-toolbar {
+    gap: 10px;
   }
 
   .tool-spacer {

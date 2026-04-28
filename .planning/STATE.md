@@ -83,11 +83,12 @@ No active phase remains in Milestone 1. Phase 05 closed the remaining v1 product
 - Phase 04 verification passed in `.planning/phases/04-responsive-preview-and-export-fidelity/04-VERIFICATION.md`.
 - Phase 05 completed design-system learning, share access records, Canva handoff, and portable handoff packages for Codex, Claude Code, Cursor, local agents, and web agents.
 - Phase 05 verification passed in `.planning/phases/05-design-systems-sharing-and-agent-agnostic-handoff/05-VERIFICATION.md`.
+- Post-verification quality pass fixed the 768px tablet overflow, wired top Share/Export/Zoom/Present primary actions, and moved the shell away from a one-note beige palette toward a sharper canvas-tool surface.
 - All 49 v1 requirements are now marked complete in `.planning/REQUIREMENTS.md`.
 
 ---
-*Last updated: 2026-04-27 after Phase 05 verification*
+*Last updated: 2026-04-28 after Phase 05 quality remediation*
 - **phase**: 5
-- **last_updated**: 2026-04-27T23:10:00.000+09:00
+- **last_updated**: 2026-04-28T09:20:00.000+09:00
 - **status**: milestone-1-complete
 - **next_action**: Run independent verification or /sunco:milestone complete

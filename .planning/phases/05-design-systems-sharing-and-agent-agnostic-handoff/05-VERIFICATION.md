@@ -1,18 +1,18 @@
 # Phase 05 Verification Results
 
-Generated: 2026-04-27
+Generated: 2026-04-28
 
 ## Summary
 
 | Layer | Name | Result | Notes |
 |-------|------|--------|-------|
 | 1 | Multi-agent review | PASS | Correctness and security reviews returned no FAIL findings. Rehydrate coverage and path hardening WARNs were addressed. |
-| 2 | Guardrails | PASS | Lint, typecheck, unit tests, and browser tests passed. |
+| 2 | Guardrails | PASS | Lint, typecheck, unit tests, browser tests, and tablet overflow regression passed. |
 | 3 | BDD criteria | PASS | 3/3 plan-level criteria met. |
 | 4 | Permission audit | PASS | Modified files stayed inside Phase 05 scope plus expected planning state updates; no network or secret changes found. |
 | 5 | Adversarial | PASS | Share/handoff records remain local metadata; schemas restrict share URL namespace and repo-relative instruction paths. |
 | 6 | Cross-model | PASS | Same-run skeptical review found no structural blocker after WARN remediation. |
-| 7 | Human eval | PASS | Auto-run visual smoke captured Phase 05 handoff panel and confirmed no browser console errors. |
+| 7 | Human eval | PASS | Visual smoke captured tablet and present-mode states and confirmed no browser console errors. |
 
 ## Overall: PASS
 
@@ -34,7 +34,7 @@ All 7 layers passed. Ready to ship.
 | `pnpm typecheck` | PASS |
 | `pnpm lint` | PASS |
 | `pnpm test` | PASS: 8 files, 31 tests |
-| `pnpm e2e` | PASS: 13 browser tests |
+| `pnpm e2e` | PASS: 14 browser tests |
 
 ### Layer 3 — BDD Criteria
 
@@ -43,6 +43,8 @@ All 7 layers passed. Ready to ship.
 | All v1 phases have verification docs. | PASS | Phase 01 through Phase 05 each has `*-VERIFICATION.md`. |
 | Stored project state can represent the full Claude Design-level and beyond-Paper-style local contract. | PASS | `ProjectBundleSchema` stores design systems, share links, handoff packages, edits, comments, versions, export jobs, and quality issues. |
 | No external service lock-in is introduced. | PASS | Handoff targets cover Canva, Codex, Claude Code, Cursor, local agents, and web agents without external API calls. |
+| Tablet viewport does not horizontally overflow. | PASS | Playwright measured `bodyScrollWidth=768`, `bodyClientWidth=768`, `.mode-tools.right=758` at 768px. |
+| Top primary actions are not inert. | PASS | Share creates a view link, Export creates an HTML job, Zoom changes preview scale to 90%, and Present hides side rails. |
 
 ### Layer 4 — Permission Audit
 
@@ -56,6 +58,8 @@ All 7 layers passed. Ready to ship.
 - Attempted bypass: schema-valid share links with arbitrary URL schemes. Result: blocked by `ShareLinkSchema.url` regex.
 - Attempted bypass: instruction paths with absolute paths, schemes, or traversal. Result: blocked by `HandoffPackageSchema.instructionsPath` refinement.
 - Attempted persistence failure: create Phase 05 records, reload page, and verify UI rehydrates stored state. Result: PASS in Playwright.
+- Attempted tablet layout failure: force 768px viewport and measure body scroll width plus toolbar right edge. Result: PASS.
+- Attempted inert primary action failure: click top Share, Export, Zoom, and Present controls. Result: PASS.
 
 ### Layer 6 — Cross-model
 
@@ -63,7 +67,7 @@ Cross-model provider execution was not available in this local run. The fallback
 
 ### Layer 7 — Human Eval
 
-- Playwright visual smoke captured `.tmp-screenshots/phase-05-handoff-panel.png`.
+- Playwright visual smoke captured `.tmp-screenshots/quality-fix-tablet-768.png` and `.tmp-screenshots/quality-fix-present-desktop.png`.
 - Browser smoke result: PASS, no console errors.
 - Computer Use remained blocked by macOS Apple event error `-1743`; Playwright was used for direct browser path verification.
 

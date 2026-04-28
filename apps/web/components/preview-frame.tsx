@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 import type { PreviewDevice, PreviewError, PreviewNodeRect, ProjectBundle } from "@kdesign/editor-core";
 import { buildPreviewDocument } from "@kdesign/preview-runtime";
 
@@ -19,6 +19,7 @@ type PreviewFrameProps = {
   selectedNode: PreviewNodeRect | undefined;
   hoveredNode: PreviewNodeRect | undefined;
   device: PreviewDevice;
+  zoom: number;
 };
 
 export function PreviewFrame({
@@ -33,7 +34,8 @@ export function PreviewFrame({
   onNodeHovered,
   selectedNode,
   hoveredNode,
-  device
+  device,
+  zoom
 }: PreviewFrameProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const srcDoc = useMemo(() => buildPreviewDocument({ bundle, nonce }), [bundle, nonce]);
@@ -90,7 +92,11 @@ export function PreviewFrame({
   ]);
 
   return (
-    <div className={`preview-frame-wrap preview-${device}`} data-testid="preview-frame-wrap">
+    <div
+      className={`preview-frame-wrap preview-${device}`}
+      data-testid="preview-frame-wrap"
+      style={{ "--preview-zoom": `${zoom / 100}` } as CSSProperties}
+    >
       <iframe
         ref={iframeRef}
         title="Sandboxed design preview"

@@ -125,6 +125,8 @@ export function EditorShell() {
   const [activePreset, setActivePreset] = useState<KoreanPreset>("saasLanding");
   const [contextAttachments, setContextAttachments] = useState<ContextAttachment[]>([]);
   const [previewDevice, setPreviewDevice] = useState<PreviewDevice>("desktop");
+  const [previewZoom, setPreviewZoom] = useState<100 | 90 | 75>(100);
+  const [presentMode, setPresentMode] = useState(false);
   const [nodeRects, setNodeRects] = useState<Record<string, PreviewNodeRect>>({});
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
@@ -468,6 +470,20 @@ export function EditorShell() {
     }), { trackUndo: true });
   }, [commitBundle]);
 
+  const createTopShareLink = useCallback(() => {
+    addShareLink("view");
+    setTweaksEnabled(true);
+  }, [addShareLink]);
+
+  const createTopExport = useCallback(() => {
+    createExport("html");
+    setTweaksEnabled(true);
+  }, [createExport]);
+
+  const cyclePreviewZoom = useCallback(() => {
+    setPreviewZoom((current) => current === 100 ? 90 : current === 90 ? 75 : 100);
+  }, []);
+
   const setFeedColumns = (feedColumns: FixtureTweaks["feedColumns"]) => {
     rebuildWithTweaks({ ...tweaks, feedColumns });
   };
@@ -494,7 +510,7 @@ export function EditorShell() {
   }
 
   return (
-    <main className="studio-editor">
+    <main className={presentMode ? "studio-editor present-mode" : "studio-editor"}>
       <aside className="chat-rail" aria-label="Agent chat and comments">
         <div className="chat-tabs">
           <button className={chatTab === "chat" ? "active" : ""} type="button" onClick={() => setChatTab("chat")}>
@@ -662,8 +678,8 @@ export function EditorShell() {
             <button className="active" type="button">Phase 01 Fixture.html ×</button>
           </nav>
           <div className="publish-actions">
-            <button type="button"><Share2 size={15} /> Share</button>
-            <button className="export-button" type="button"><Download size={15} /> Export</button>
+            <button type="button" onClick={createTopShareLink}><Share2 size={15} /> Share</button>
+            <button className="export-button" type="button" onClick={createTopExport}><Download size={15} /> Export</button>
             <span className="avatar">KD</span>
           </div>
         </header>
@@ -716,8 +732,12 @@ export function EditorShell() {
             <button className={toolMode === "draw" ? "active" : ""} type="button" onClick={() => setToolMode("draw")}>
               <Pencil size={15} /> Draw
             </button>
-            <button type="button"><ZoomIn size={15} /> 100%</button>
-            <button type="button">Present <ChevronDown size={15} /></button>
+            <button className={previewZoom === 100 ? "" : "active"} type="button" onClick={cyclePreviewZoom}>
+              <ZoomIn size={15} /> {previewZoom}%
+            </button>
+            <button className={presentMode ? "active" : ""} type="button" onClick={() => setPresentMode((current) => !current)}>
+              {presentMode ? "Exit present" : "Present"} <ChevronDown size={15} />
+            </button>
           </div>
         </div>
 
@@ -745,6 +765,7 @@ export function EditorShell() {
               selectedNode={selectedRect}
               hoveredNode={hoveredRect}
               device={previewDevice}
+              zoom={previewZoom}
             />
           </div>
 
