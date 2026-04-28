@@ -2,7 +2,7 @@
 
 ## Summary
 
-K-Design Studio v1 is planned as one milestone with five standard-granularity phases. The sequence proves the safe HTML editing loop first, then layers PPT/Figma/Paper-style direct manipulation, Claude Design-level creation modes and context, export fidelity, and the remaining design-system/share/agent-agnostic handoff surfaces. The canonical product north star is `.planning/PRODUCT-NORTH-STAR.md`.
+K-Design Studio v1 is planned as one milestone with five standard-granularity phases. The sequence proves the safe HTML editing loop first, then layers PPT/Figma/Paper-style direct manipulation, Claude Design-level creation modes and context, export fidelity, and the remaining design-system/share/agent-agnostic handoff surfaces. The final product target is Claude Design / Paper / Figma-level competitive parity, with stronger agent-agnostic handoff and direct editability. The canonical product north star is `.planning/PRODUCT-NORTH-STAR.md`.
 
 | Phase | Name | Milestone | Complexity | v1 Requirements |
 |-------|------|-----------|------------|-----------------|
@@ -138,7 +138,7 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 
 **Source:** `.planning/research/COMPETITIVE-GAP-REVIEW.md`
 
-**Goal:** Close the remaining Paper/Claude Design/Figma capability gaps without invalidating the Milestone 1 architecture. Milestone 2 turns the working v1 vertical slice into a professional design workspace: explicit canvas objects, reusable components, governed design systems, real context ingestion, interaction authoring, dev-mode handoff, publish/export fidelity, and collaboration/search governance.
+**Goal:** Close the remaining Paper/Claude Design/Figma capability gaps without invalidating the Milestone 1 architecture. Milestone 2 turns the working v1 vertical slice into a professional design workspace: explicit canvas objects, reusable components, governed design systems, real context ingestion, interaction authoring, dev-mode handoff, publish/export fidelity, and collaboration/search governance. This is the route toward full product parity, not optional polish.
 
 **Rule:** Milestone 2 remains additive. A phase may refine v1 data models, but it must preserve `ProjectBundle + EditGraph + patch log + assets + tweak values` as the durable source-of-truth family.
 

@@ -4,7 +4,7 @@
 
 K-Design Studio is a Korean-first, browser-based AI design workspace for creating prototypes, slide decks, template-based artifacts, animations, infographics, and product screens from prompt plus context.
 
-The quality benchmark starts at Claude Design-level product completeness and then goes further: the generated result must become a directly editable working document, closer to a PPT/Figma/Paper-style canvas than a static preview. The runtime must be agent-agnostic. The user must be able to continue the same design work from Codex, Claude Code, Cursor, local agents, or web agents without changing the artifact model.
+The final product target is full competitive parity with Claude Design, Paper, and Figma-level product quality. The benchmark starts at Claude Design-level product completeness and then goes further: the generated result must become a directly editable working document, closer to a PPT/Figma/Paper-style canvas than a static preview. The runtime must be agent-agnostic. The user must be able to continue the same design work from Codex, Claude Code, Cursor, local agents, or web agents without changing the artifact model.
 
 ## Non-Negotiable Product Shape
 
@@ -29,7 +29,7 @@ The quality benchmark starts at Claude Design-level product completeness and the
 
 ## Competitive Parity Contract
 
-Milestone 1 proves the narrow vertical slice. The next product bar must explicitly close the gaps documented in `.planning/research/COMPETITIVE-GAP-REVIEW.md`:
+Milestone 1 proves the narrow vertical slice. Milestone 2 and following work are not optional polish; they are the path to the full product target. The product bar must explicitly close the gaps documented in `.planning/research/COMPETITIVE-GAP-REVIEW.md`:
 
 - Paper-level HTML/CSS canvas continuity: code components, CSS Grid/flex semantics, Tailwind/class semantics, scriptable canvas operations, and agent-readable source of truth.
 - Figma-level canvas fundamentals: pages/artboards/frames, layers, constraints, snapping, auto layout, component instances, variants, props, overrides, variables, and interactive component states.
@@ -42,11 +42,12 @@ Milestone 1 proves the narrow vertical slice. The next product bar must explicit
 
 This file is the first source to check when a project document differs. `CLAUDE.md`, `.planning/PROJECT.md`, `.planning/REQUIREMENTS.md`, `.planning/ROADMAP.md`, `.planning/STATE.md`, phase context files, phase plans, and research docs must all preserve the same product intent:
 
-- Claude Design-level quality is the benchmark.
+- Claude Design, Paper, and Figma-level quality is the final product target.
 - PPT/Figma/Paper-style direct editability of generated output is a product requirement, not optional polish.
 - The runtime is agent-agnostic, not Claude Code-only.
 - The artifact package is the durable handoff surface.
 - Phase scope may be staged, but no phase may introduce throwaway architecture that blocks the full product.
+- A statement that a phase is "not final parity yet" is only a claim boundary for that phase, never a reduction of the final product goal.
 
 ## Coding Agent Rule
 

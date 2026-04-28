@@ -55,15 +55,16 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Parent-owned overlay and inspector controls own selection, editing, undo/redo, and persistence.
 - Export must materialize from stored document state, not ad-hoc live iframe mutations.
 - Korean-first typography, copy rhythm, and presets are part of the product wedge, not polish-only work.
-- The product quality target is product-complete, Claude Design-level output; phase scope can be narrow, but foundations cannot be throwaway demos.
+- The final product quality target is product-complete Claude Design / Paper / Figma-level parity; phase scope can be narrow, but foundations cannot be throwaway demos.
 - `.planning/PRODUCT-NORTH-STAR.md` is the canonical product intent. If another planning file conflicts with it, the other file is stale and must be updated.
 - Design-producing agents must use `docs/prompts/context-driven-design-agent-prompt.md` before creating visual artifacts.
-- Full Figma parity, realtime multiplayer, full native PowerPoint authoring, marketplace, and leaked prompt cloning stay outside v1. PPTX export/handoff is part of v1.
+- Full Figma parity, realtime multiplayer, full native PowerPoint authoring, and marketplace stay outside v1 but remain part of the full-product competitive target where they match the documented roadmap. Leaked prompt cloning remains out of scope for legal and ethical reasons. PPTX export/handoff is part of v1.
 - The product baseline now includes the visible Claude Design-level working surface: left Chat/Comments, central live canvas, top Share/Export/tool modes, right Tweaks, context attachments, inline comments, live adjustment controls, design-system inheritance/learning, sharing permissions, Canva handoff, and agent-agnostic handoff.
 - The product must go beyond Claude Design by making generated results directly editable as constrained PPT/Figma/Paper-style canvas objects: text, images, cards, sections, and slide-like/artboard blocks can be selected, moved, resized, reordered, aligned, restyled, commented on, and persisted as typed operations.
 - Runtime portability is required: Codex, Claude Code, Cursor, local agents, and web agents must all be able to continue from the same portable artifact package.
 - Coding agents must follow `docs/guides/coding-principles.md`: think before coding, keep the solution simple, make surgical changes, and verify against concrete success criteria.
 - Competitive parity now means closing the documented Paper/Claude Design/Figma gaps: canvas/component model, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, dev-mode/publish fidelity, collaboration/search/governance.
+- Phase verification may say "not final product parity yet" to avoid overclaiming one phase. That wording must never be used to lower the final Claude Design / Paper / Figma-level product target.
 
 ## Blockers
 
