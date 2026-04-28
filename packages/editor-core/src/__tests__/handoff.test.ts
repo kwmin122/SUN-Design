@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { BASIC_LANDING_FIXTURE_HTML } from "../fixtures.js";
+import { ensureCanvasGraph } from "../canvas-graph.js";
 import { createAgentHandoff, createCanvaHandoff, createShareLink, learnDesignSystem } from "../handoff.js";
 import { normalizeHtml } from "../normalize.js";
 
@@ -39,5 +40,19 @@ describe("design system and handoff helpers", () => {
     expect(codex.artifactId).toBe("handoff-fixture");
     expect(codex.includes).toContain("ProjectBundle");
     expect(codex.instructionsPath).toBe("docs/prompts/context-driven-design-agent-prompt.md");
+  });
+
+  it("includes canvas and component records for portable handoff", () => {
+    const withCanvas = ensureCanvasGraph(bundle);
+    const codex = createAgentHandoff({
+      bundle: withCanvas,
+      target: "codex",
+      createdAt: "2026-04-28T00:00:00.000Z"
+    });
+
+    expect(codex.includes).toContain("canvasGraph");
+    expect(codex.includes).toContain("canvasOperations");
+    expect(codex.includes).toContain("components");
+    expect(codex.includes).toContain("componentInstances");
   });
 });

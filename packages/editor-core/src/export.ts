@@ -2,6 +2,7 @@ import { parseFragment, serialize } from "parse5";
 import type { DefaultTreeAdapterMap } from "parse5";
 
 import { stableHash } from "./ids.js";
+import { ensureCanvasGraph } from "./canvas-graph.js";
 import type { ExportJob, ExportKind, PreviewDevice, ProjectBundle, QualityIssue } from "./schemas.js";
 
 type Attribute = {
@@ -20,7 +21,8 @@ type AstNode = {
 type Parse5ParentNode = DefaultTreeAdapterMap["parentNode"];
 
 export function createStandaloneHtml(bundle: ProjectBundle): string {
-  const fragment = parseFragment(bundle.html.normalized) as AstNode;
+  const materialized = ensureCanvasGraph(bundle);
+  const fragment = parseFragment(materialized.html.normalized) as AstNode;
   stripEditorAttributes(fragment);
   const body = serialize(fragment as unknown as Parse5ParentNode);
   return `<!doctype html>
@@ -28,7 +30,7 @@ export function createStandaloneHtml(bundle: ProjectBundle): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escapeHtml(bundle.title)}</title>
+  <title>${escapeHtml(materialized.title)}</title>
 </head>
 <body>
 ${body}

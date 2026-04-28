@@ -77,6 +77,156 @@ export const EditGraphSchema = z.object({
 });
 export type EditGraph = z.infer<typeof EditGraphSchema>;
 
+export const CanvasObjectKindSchema = z.enum([
+  "page",
+  "artboard",
+  "frame",
+  "section",
+  "componentInstance",
+  "slot",
+  "text",
+  "image",
+  "button",
+  "vectorLike",
+  "unknown"
+]);
+export type CanvasObjectKind = z.infer<typeof CanvasObjectKindSchema>;
+
+export const CanvasLayoutModeSchema = z.enum(["none", "block", "flex", "grid"]);
+export type CanvasLayoutMode = z.infer<typeof CanvasLayoutModeSchema>;
+
+export const CanvasResizeModeSchema = z.enum(["fixed", "hug", "fill"]);
+export type CanvasResizeMode = z.infer<typeof CanvasResizeModeSchema>;
+
+export const CanvasPinnedEdgesSchema = z.object({
+  top: z.boolean().default(false),
+  right: z.boolean().default(false),
+  bottom: z.boolean().default(false),
+  left: z.boolean().default(false)
+});
+export type CanvasPinnedEdges = z.infer<typeof CanvasPinnedEdgesSchema>;
+
+export const CanvasLayoutSchema = z.object({
+  mode: CanvasLayoutModeSchema.optional(),
+  display: z.enum(["block", "flex", "grid"]).optional(),
+  flexDirection: z.enum(["row", "row-reverse", "column", "column-reverse"]).optional(),
+  gap: z.string().optional(),
+  padding: z.string().optional(),
+  alignItems: z.string().optional(),
+  justifyContent: z.string().optional(),
+  gridTemplateColumns: z.string().optional(),
+  breakpoint: z.string().optional()
+});
+export type CanvasLayout = z.infer<typeof CanvasLayoutSchema>;
+
+export const CanvasConstraintsSchema = z.object({
+  x: z.number().optional(),
+  y: z.number().optional(),
+  width: z.number().positive().optional(),
+  height: z.number().positive().optional(),
+  minWidth: z.number().positive().optional(),
+  minHeight: z.number().positive().optional(),
+  maxWidth: z.number().positive().optional(),
+  maxHeight: z.number().positive().optional(),
+  resizeMode: CanvasResizeModeSchema.optional(),
+  pinned: CanvasPinnedEdgesSchema.optional(),
+  layout: CanvasLayoutSchema.optional()
+});
+export type CanvasConstraints = z.infer<typeof CanvasConstraintsSchema>;
+
+export const CanvasObjectSchema = z.object({
+  id: z.string().min(1),
+  kind: CanvasObjectKindSchema,
+  name: z.string().min(1),
+  nodeId: z.string().min(1).optional(),
+  parentId: z.string().min(1).optional(),
+  childIds: z.array(z.string().min(1)).default([]),
+  locked: z.boolean().default(false),
+  hidden: z.boolean().default(false),
+  constraints: CanvasConstraintsSchema.optional(),
+  componentInstanceId: z.string().min(1).optional()
+});
+export type CanvasObject = z.infer<typeof CanvasObjectSchema>;
+
+export const CanvasComponentPropSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  kind: z.enum(["text", "color", "number", "boolean", "slot"]),
+  defaultValue: z.unknown().optional()
+});
+export type CanvasComponentProp = z.infer<typeof CanvasComponentPropSchema>;
+
+export const CanvasComponentVariantSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  props: z.record(z.string(), z.unknown()).default({})
+});
+export type CanvasComponentVariant = z.infer<typeof CanvasComponentVariantSchema>;
+
+export const CanvasComponentDefinitionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  sourceObjectId: z.string().min(1),
+  slotObjectIds: z.array(z.string().min(1)),
+  props: z.array(CanvasComponentPropSchema),
+  variants: z.array(CanvasComponentVariantSchema),
+  createdAt: z.string().min(1)
+});
+export type CanvasComponentDefinition = z.infer<typeof CanvasComponentDefinitionSchema>;
+
+export const CanvasComponentInstanceSchema = z.object({
+  id: z.string().min(1),
+  componentId: z.string().min(1),
+  objectId: z.string().min(1),
+  variantId: z.string().min(1).optional(),
+  state: z.enum(["default", "hover", "pressed", "disabled"]).default("default"),
+  overrides: z.record(z.string(), z.unknown()).default({}),
+  detached: z.boolean().default(false)
+});
+export type CanvasComponentInstance = z.infer<typeof CanvasComponentInstanceSchema>;
+
+export const CanvasGuideSchema = z.object({
+  id: z.string().min(1),
+  axis: z.enum(["x", "y"]),
+  position: z.number(),
+  label: z.string().optional()
+});
+export type CanvasGuide = z.infer<typeof CanvasGuideSchema>;
+
+export const CanvasGraphSchema = z.object({
+  version: z.literal(1),
+  rootObjectIds: z.array(z.string().min(1)),
+  objects: z.record(z.string(), CanvasObjectSchema),
+  components: z.record(z.string(), CanvasComponentDefinitionSchema).default({}),
+  instances: z.record(z.string(), CanvasComponentInstanceSchema).default({}),
+  guides: z.array(CanvasGuideSchema).default([]),
+  updatedAt: z.string().min(1)
+});
+export type CanvasGraph = z.infer<typeof CanvasGraphSchema>;
+
+export const CanvasOperationSchema = z.object({
+  id: z.string().min(1),
+  op: z.enum([
+    "setObjectName",
+    "setObjectVisibility",
+    "setObjectLock",
+    "reorderObject",
+    "groupObjects",
+    "ungroupObjects",
+    "setLayoutConstraints",
+    "createComponent",
+    "createComponentInstance",
+    "updateComponentOverride",
+    "detachComponentInstance"
+  ]),
+  objectId: z.string().min(1),
+  value: z.unknown(),
+  source: z.enum(["canvas", "tweaks", "agent", "system"]),
+  baseRevision: z.string().min(1),
+  createdAt: z.string().min(1)
+});
+export type CanvasOperation = z.infer<typeof CanvasOperationSchema>;
+
 export const EditPatchSchema = z.object({
   id: z.string().min(1),
   nodeId: z.string().min(1),
@@ -232,7 +382,9 @@ export const ProjectBundleSchema = z.object({
   qualityIssues: z.array(QualityIssueSchema).default([]),
   designSystem: DesignSystemSchema.optional(),
   shareLinks: z.array(ShareLinkSchema).default([]),
-  handoffPackages: z.array(HandoffPackageSchema).default([])
+  handoffPackages: z.array(HandoffPackageSchema).default([]),
+  canvasGraph: CanvasGraphSchema.optional(),
+  canvasOperations: z.array(CanvasOperationSchema).default([])
 });
 export type ProjectBundle = z.infer<typeof ProjectBundleSchema>;
 

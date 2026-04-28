@@ -1,5 +1,6 @@
 import type { ProjectBundle } from "./schemas.js";
 import { ProjectBundleSchema } from "./schemas.js";
+import { ensureCanvasGraph } from "./canvas-graph.js";
 
 export const PROJECT_BUNDLE_STORAGE_VERSION = 1;
 
@@ -8,7 +9,7 @@ export function serializeProjectBundle(bundle: ProjectBundle): string {
 }
 
 export function parseProjectBundleJson(json: string): ProjectBundle {
-  return ProjectBundleSchema.parse(JSON.parse(json));
+  return ensureCanvasGraph(ProjectBundleSchema.parse(JSON.parse(json)));
 }
 
 export interface ProjectRepository {

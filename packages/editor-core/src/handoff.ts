@@ -91,6 +91,10 @@ function createHandoff(input: {
     includes: [
       "ProjectBundle",
       "EditGraph",
+      "canvasGraph",
+      "canvasOperations",
+      "components",
+      "componentInstances",
       "patches",
       "assets",
       "comments",
