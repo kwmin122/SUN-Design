@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 07 context |
+| Current phase | Phase 07 planned |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -19,13 +19,13 @@
 | Phase 04 status | complete |
 | Phase 05 status | complete |
 | Phase 06 status | shipped |
-| Phase 07 status | context |
+| Phase 07 status | planned |
 | Phase 08 status | context |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 5/46 v2 requirements complete; 41 v2 requirements mapped to Phase 07-11 |
-| Next action | `/sunco:plan 7` |
+| Next action | `/sunco:execute 7` |
 
 ## Phase Queue
 
@@ -37,7 +37,7 @@
 | Phase 04 | Responsive Preview and Export Fidelity | complete | 9 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
 | Phase 06 | Canvas and Component Model | shipped | 5 |
-| Phase 07 | Design System, Tokens, and Code Connect | context | 5 |
+| Phase 07 | Design System, Tokens, and Code Connect | planned | 5 |
 | Phase 08 | Prototyping, Slides, and AI Variations | context | 11 |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
@@ -45,7 +45,7 @@
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation; the next step is `/sunco:plan 7`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is planned for governed design systems, tokens, code references, and component playground; the next step is `/sunco:execute 7`.
 
 ## Key Decisions Carried Forward
 
@@ -114,10 +114,12 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - The visible design-agent workflow requested for the studio shell is present: Ask, Search, Verify, 3 Directions, and Iterate.
 - Phase 06 shipped direct-to-main in `4a2a4fb` / remote `4a2a4fbe0ad01b727c924d32723db13434d42156`. A PR was not created because the verified work was already committed and pushed on `main`.
 - The Phase 06 completion boundary remains explicit: this is a verified canvas/component foundation, not the final Paper/Figma/Claude Design-level product. Phase 07-11 continue the parity target.
+- Phase 07 research was recorded in `.planning/phases/07-design-system-tokens-and-code-connect/07-RESEARCH.md`, using Claude Design design-system setup, Paper roadmap, Figma Dev Mode/Code Connect, Huashu Design workflow direction, and local competitive gap review as clean-room references.
+- Phase 07 execution plans were created in `.planning/phases/07-design-system-tokens-and-code-connect/`: Wave 1 core governed design-system/token/code-reference model and Wave 2 product UI for review, publish/remix/rollback, token mapping, and non-mutating component playground.
 
 ---
-*Last updated: 2026-04-28 after Phase 06 direct-to-main ship*
+*Last updated: 2026-04-28 after Phase 07 planning*
 - **phase**: 7
-- **last_updated**: 2026-04-28T13:29:22+09:00
-- **status**: context
-- **next_action**: `/sunco:plan 7`
+- **last_updated**: 2026-04-28T13:37:07+09:00
+- **status**: planned
+- **next_action**: `/sunco:execute 7`
