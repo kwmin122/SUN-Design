@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 08 foundation remediated; ship held for AI parity gap |
+| Current phase | Phase 08 gap context ready; ship held for AI parity gap |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -20,12 +20,12 @@
 | Phase 05 status | complete |
 | Phase 06 status | shipped |
 | Phase 07 status | shipped |
-| Phase 08 status | foundation-complete; ship held |
+| Phase 08 status | gap context_ready; ship held |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 17/46 v2 requirements complete; AI-01 through AI-04 are foundation-only until true agent/model output ingestion exists |
-| Next action | `/sunco:discuss 8 --gaps-only` |
+| Next action | `/sunco:plan 8 --gaps-only` |
 
 ## Phase Queue
 
@@ -38,14 +38,14 @@
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
 | Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
-| Phase 08 | Prototyping, Slides, and AI Variations | foundation-complete; ship held | 7 complete, 4 foundation-only |
+| Phase 08 | Prototyping, Slides, and AI Variations | gap context_ready; ship held | 7 complete, 4 foundation-only |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 now has a remediated prototype/slide/variation/agent-recipe foundation with persisted reference integrity validation, but it is not marked shipped because AI-01 through AI-04 still require a true canvas-aware agent/model-generated typed operation path. The next step is `/sunco:discuss 8 --gaps-only`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 now has gap-only context for the remaining AI-01 through AI-04 ship hold: true canvas-aware agent/model output ingestion from selected-region context into validated typed operations. The next step is `/sunco:plan 8 --gaps-only`.
 
 ## Key Decisions Carried Forward
 
@@ -128,10 +128,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 remediation added persisted-state reference integrity validation for prototype interactions, presentation state, slide decks, variation sets, and agent recipes. It also validates direct prototype playback before state transition.
 - Phase 08 follow-up hardening tightened transient presentation helpers too: `createPresentationState` and `playPrototypeInteraction` now reject missing active objects, missing interactions, missing prototype variables, and invalid component-state object references before preview state can advance.
 - Phase 08 status is corrected to foundation-complete with ship held: PROTO-01 through PROTO-03, SLIDE-01 through SLIDE-03, and AI-05 are complete; AI-01 through AI-04 remain foundation-only until real canvas-aware agent/model-generated typed operation ingestion exists.
+- Phase 08 gap-only discussion captured the remaining decisions in `.planning/phases/08-prototyping-slides-and-ai-variations/08-CONTEXT.md` and `.planning/phases/08-prototyping-slides-and-ai-variations/08-DISCUSSION-LOG.md`: selected-region context package, agent-agnostic structured output ingestion, visible compare/promote workflow, validation diagnostics, and tests.
 
 ---
-*Last updated: 2026-04-28 after Phase 08 persisted-state remediation and AI claim correction*
+*Last updated: 2026-04-28 after Phase 08 gap-only context capture*
 - **phase**: 8
-- **last_updated**: 2026-04-28T20:37:00+09:00
-- **status**: foundation-complete; ship held
-- **next_action**: `/sunco:discuss 8 --gaps-only`
+- **last_updated**: 2026-04-28T20:46:00+09:00
+- **status**: gap context_ready; ship held
+- **next_action**: `/sunco:plan 8 --gaps-only`
