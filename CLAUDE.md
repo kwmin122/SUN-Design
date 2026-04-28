@@ -14,9 +14,9 @@ Canonical product intent: `.planning/PRODUCT-NORTH-STAR.md`. Claude Design, Pape
 
 Mandatory coding principles: `docs/guides/coding-principles.md`. Every coding agent must think before coding, prefer simplicity, make surgical changes, and execute against verifiable success criteria.
 
-Current phase: Phase 08 — Prototyping, Slides, and AI Variations
-Phase status: gap execution complete; ready for verification
-Next SUNCO action: `/sunco:verify 8`
+Current phase: Phase 09 — Context Ingestion, Live Data, and Assets
+Phase status: context ready; ready for planning
+Next SUNCO action: `/sunco:plan 9`
 
 Competitive parity plan: `.planning/research/COMPETITIVE-GAP-REVIEW.md`. Official Claude Design, Paper, and Figma checks showed the next bar is professional canvas/component modeling, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, Dev Mode/publish/export fidelity, and collaboration/search/governance across Phase 06-11. These phases are the path to full product parity, not optional polish.
 
@@ -94,8 +94,8 @@ This prompt is not a general engineering prompt. It is the production standard f
 
 ## Current Phase
 
-Phase 08: Prototyping, Slides, and AI Variations
+Phase 09: Context Ingestion, Live Data, and Assets
 
-Goal: verify the completed prototype, slide, and local-first structured agent-output foundation, including persisted reload/promote invariants for canvas-aware generated directions.
+Goal: plan the real context foundation: source ingestion, provenance, generated `source-notes.md` and `design-context.md`, safe editable web snapshots, local-first data bindings, asset lifecycle, stable project URLs, and server-portable sync semantics.
 
-Phase 08 should proceed through `/sunco:verify 8`. Passing Phase 08 verification means the Phase 08 foundation is sound, not that the whole product target has been reached.
+Phase 09 should proceed through `/sunco:plan 9`. Planning must preserve the full Claude Design / Paper / Figma-level product target while keeping Phase 09 scoped to context/data/assets and avoiding production hosted storage, authenticated scraping, Dev Mode, publish/export fidelity, collaboration, and full Figma roundtrip.
