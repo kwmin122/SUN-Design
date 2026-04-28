@@ -90,11 +90,11 @@
 
 ### Canvas and Layout
 
-- [ ] **CANVAS-01**: User can work with pages, artboards, frames, sections, component instances, and primitive text/image/vector nodes as explicit canvas objects.
-- [ ] **CANVAS-02**: User can use a visible layer tree to select, reorder, group, hide, lock, and rename canvas objects.
-- [ ] **CANVAS-03**: User can apply constraints, snapping, guides, and resize rules that persist through reload and export.
-- [ ] **CANVAS-04**: User can edit CSS flex, auto-layout-like behavior, CSS Grid, gap, padding, alignment, and breakpoints through structured controls.
-- [ ] **CANVAS-05**: User can create and edit reusable component instances with slots, props, variants, overrides, and state.
+- [x] **CANVAS-01**: User can work with pages, artboards, frames, sections, component instances, and primitive text/image/vector nodes as explicit canvas objects.
+- [x] **CANVAS-02**: User can use a visible layer tree to select, reorder, group, hide, lock, and rename canvas objects.
+- [x] **CANVAS-03**: User can apply constraints, snapping, guides, and resize rules that persist through reload and export.
+- [x] **CANVAS-04**: User can edit CSS flex, auto-layout-like behavior, CSS Grid, gap, padding, alignment, and breakpoints through structured controls.
+- [x] **CANVAS-05**: User can create and edit reusable component instances with slots, props, variants, overrides, and state.
 
 ### Design Systems, Tokens, and Code Connection
 
@@ -228,11 +228,11 @@
 | HOME-01 | Phase 11 | planned |
 | HOME-02 | Phase 11 | planned |
 | HOME-03 | Phase 11 | planned |
-| CANVAS-01 | Phase 06 | planned |
-| CANVAS-02 | Phase 06 | planned |
-| CANVAS-03 | Phase 06 | planned |
-| CANVAS-04 | Phase 06 | planned |
-| CANVAS-05 | Phase 06 | planned |
+| CANVAS-01 | Phase 06 | complete |
+| CANVAS-02 | Phase 06 | complete |
+| CANVAS-03 | Phase 06 | complete |
+| CANVAS-04 | Phase 06 | complete |
+| CANVAS-05 | Phase 06 | complete |
 | DSGN-04 | Phase 07 | planned |
 | DSGN-05 | Phase 07 | planned |
 | DSGN-06 | Phase 07 | planned |

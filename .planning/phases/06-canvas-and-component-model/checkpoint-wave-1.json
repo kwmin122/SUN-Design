@@ -1,0 +1,43 @@
+{
+  "schema": "sunco-checkpoint-v1",
+  "phase": "06",
+  "phase_name": "Canvas and Component Model",
+  "phase_slug": "06-canvas-and-component-model",
+  "wave_completed": 1,
+  "timestamp": "2026-04-28T02:24:46Z",
+  "plans_completed": [
+    {
+      "id": "06-01",
+      "title": "Core Canvas State and Operations",
+      "status": "completed",
+      "lint_status": "PASS",
+      "summary_path": ".planning/phases/06-canvas-and-component-model/06-01-SUMMARY.md",
+      "last_commit": "2d1710d",
+      "files_written": [
+        "packages/editor-core/src/canvas-graph.ts",
+        "packages/editor-core/src/canvas-operations.ts",
+        "packages/editor-core/src/canvas-components.ts",
+        "packages/editor-core/src/schemas.ts",
+        "packages/editor-core/src/persistence.ts",
+        "packages/editor-core/src/handoff.ts"
+      ]
+    }
+  ],
+  "plans_pending": [
+    {
+      "id": "06-02",
+      "title": "Canvas Layer Tree and Component Workflow",
+      "wave": 2,
+      "status": "pending"
+    }
+  ],
+  "blast_radius": {
+    "risk": "HIGH",
+    "files_in_scope": 18,
+    "files_transitively_affected": 0
+  },
+  "lint_gate_overrides": [],
+  "branch": "main",
+  "interrupted": false,
+  "next_wave": 2
+}
