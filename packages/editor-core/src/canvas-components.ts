@@ -2,14 +2,21 @@ import { stableHash } from "./ids.js";
 import type {
   CanvasComponentDefinition,
   CanvasComponentInstance,
+  CanvasComponentProp,
   CanvasComponentVariant,
-  CanvasGraph
+  CanvasGraph,
+  CanvasObject
 } from "./schemas.js";
+
+type ComponentPropInput = Omit<CanvasComponentProp, "id"> & { id?: string };
+type ComponentVariantInput = Omit<CanvasComponentVariant, "id"> & { id?: string };
 
 export function createLocalComponentDefinition(input: {
   graph: CanvasGraph;
   sourceObjectId: string;
   name: string;
+  props?: ComponentPropInput[];
+  variants?: ComponentVariantInput[];
   createdAt: string;
 }): CanvasComponentDefinition {
   const source = input.graph.objects[input.sourceObjectId];
@@ -17,19 +24,17 @@ export function createLocalComponentDefinition(input: {
     throw new Error(`Unknown component source object: ${input.sourceObjectId}`);
   }
   const id = `component_${stableHash(`${input.sourceObjectId}:${input.name}:${input.createdAt}`)}`;
+  const props = input.props?.length
+    ? input.props.map((prop, index) => normalizeComponentProp(id, prop, index))
+    : inferPropsFromObject(id, source);
+  const variants = normalizeComponentVariants(id, input.variants ?? []);
   return {
     id,
     name: input.name,
     sourceObjectId: input.sourceObjectId,
     slotObjectIds: [...source.childIds],
-    props: [
-      { id: `${id}_prop_label`, name: "label", kind: "text", defaultValue: source.name },
-      { id: `${id}_prop_tone`, name: "tone", kind: "color", defaultValue: "#171717" }
-    ],
-    variants: [
-      { id: `${id}_variant_default`, name: "Default", props: {} },
-      { id: `${id}_variant_emphasis`, name: "Emphasis", props: { tone: "#2f9f8f" } }
-    ],
+    props,
+    variants,
     createdAt: input.createdAt
   };
 }
@@ -114,8 +119,86 @@ export function summarizeComponentInstance(
   return {
     componentName: component.name,
     objectName: object.name,
-    variantName: variant?.name ?? "Default",
+    variantName: variant?.name ?? "Base",
     state: instance.state,
     overrideCount: Object.keys(instance.overrides).length
   };
+}
+
+function inferPropsFromObject(componentId: string, source: CanvasObject): CanvasComponentProp[] {
+  const props: CanvasComponentProp[] = [
+    {
+      id: `${componentId}_prop_name`,
+      name: "name",
+      kind: "text",
+      defaultValue: source.name
+    },
+    {
+      id: `${componentId}_prop_visible`,
+      name: "visible",
+      kind: "boolean",
+      defaultValue: !source.hidden
+    }
+  ];
+
+  source.childIds.forEach((childId, index) => {
+    props.push({
+      id: `${componentId}_prop_slot_${index + 1}`,
+      name: `slot${index + 1}`,
+      kind: "slot",
+      defaultValue: childId
+    });
+  });
+
+  if (source.constraints?.width !== undefined) {
+    props.push({
+      id: `${componentId}_prop_width`,
+      name: "width",
+      kind: "number",
+      defaultValue: source.constraints.width
+    });
+  }
+
+  return props;
+}
+
+function normalizeComponentProp(
+  componentId: string,
+  prop: ComponentPropInput,
+  index: number
+): CanvasComponentProp {
+  if (!prop.name.trim()) {
+    throw new Error("Component prop name must not be empty.");
+  }
+  return {
+    id: prop.id ?? `${componentId}_prop_${stableHash(`${prop.name}:${index}`)}`,
+    name: prop.name.trim(),
+    kind: prop.kind,
+    ...(prop.defaultValue !== undefined ? { defaultValue: prop.defaultValue } : {})
+  };
+}
+
+function normalizeComponentVariants(
+  componentId: string,
+  variants: ComponentVariantInput[]
+): CanvasComponentVariant[] {
+  const normalized: CanvasComponentVariant[] = [
+    { id: `${componentId}_variant_base`, name: "Base", props: {} }
+  ];
+  const seen = new Set(["Base"]);
+
+  variants.forEach((variant, index) => {
+    const name = variant.name.trim();
+    if (!name || seen.has(name)) {
+      return;
+    }
+    seen.add(name);
+    normalized.push({
+      id: variant.id ?? `${componentId}_variant_${stableHash(`${name}:${index}`)}`,
+      name,
+      props: { ...variant.props }
+    });
+  });
+
+  return normalized;
 }

@@ -16,6 +16,17 @@ Generated: 2026-04-28
 
 Phase 06 is implemented and ready for `/sunco:verify 6`. This file records the execution gate, not the final seven-layer SUNCO verification result.
 
+## Post-Review Remediation
+
+An external review after the initial execution gate found that Phase 06 was functionally green but not yet strong enough for a Paper/Figma/Claude Design-level canvas foundation. The following blockers were fixed before formal SUNCO verification:
+
+- Graph corruption is now rejected: `reorderObject` cannot move an object into itself or a descendant, `groupObjects` requires unique direct children under the same parent, and every persisted graph runs an integrity check for missing parents, parent mismatches, duplicate child ownership, and cycles.
+- Component instance mutations now require object ownership: `updateComponentOverride` and `detachComponentInstance` reject unrelated object/instance pairs.
+- Layout controls are no longer preset-only: gap, padding, grid column count, width, and breakpoint are editable fields that materialize typed layout constraints into safe CSS patches.
+- Component creation is no longer tied to the demo `Hero Card` / `Default` / `Emphasis` path: component props and variants can be supplied dynamically, with generic object-derived fallback props and a `Base` variant.
+- Browser coverage now exercises graph/layout/component behavior beyond localStorage string checks, including dynamic variants, dynamic overrides, breakpoint materialization, and tablet/mobile overflow.
+- Layer row actions were tightened so the visible layer name remains clickable in the narrow chat rail instead of being collapsed by secondary action buttons.
+
 ## Commands Run
 
 | Command | Result |
@@ -25,9 +36,10 @@ Phase 06 is implemented and ready for `/sunco:verify 6`. This file records the e
 | `pnpm --filter @kdesign/web typecheck` | PASS |
 | `pnpm build:packages && pnpm exec playwright test apps/web/tests/phase-06-canvas.spec.ts` | PASS: 1 browser test |
 | `pnpm build:packages && pnpm exec playwright test apps/web/tests/phase-06-components.spec.ts` | PASS: 1 browser test |
+| `pnpm build:packages && pnpm exec playwright test apps/web/tests/phase-06-canvas.spec.ts apps/web/tests/phase-06-components.spec.ts` | PASS: 2 browser tests after remediation |
 | `pnpm lint` | PASS |
 | `pnpm typecheck` | PASS |
-| `pnpm test` | PASS: 11 files, 46 tests |
+| `pnpm test` | PASS: 11 files, 48 tests |
 | `pnpm e2e` | PASS: 17 browser tests |
 
 ## Requirement Evidence
@@ -35,10 +47,10 @@ Phase 06 is implemented and ready for `/sunco:verify 6`. This file records the e
 | Requirement | Status | Evidence |
 |-------------|--------|----------|
 | CANVAS-01 | PASS | `CanvasGraphSchema`, deterministic graph derivation, page/artboard/object records, and visible object count. |
-| CANVAS-02 | PASS | `CanvasLayerTree` exposes select, rename, hide/show, lock/unlock, move, group, and ungroup controls. |
-| CANVAS-03 | PASS | Layout constraints, pinning controls, snap guide, and reload-persistence browser assertions. |
-| CANVAS-04 | PASS | Block/flex/grid/gap/padding/alignment/grid-column controls emit typed operations and materialized CSS patches. |
-| CANVAS-05 | PASS | Component definition, instance creation, variants, state, overrides, detach, persistence, and handoff includes. |
+| CANVAS-02 | PASS | `CanvasLayerTree` exposes select, rename, hide/show, lock/unlock, move, group, and ungroup controls, with graph integrity guards for invalid reorder/group operations. |
+| CANVAS-03 | PASS | Layout constraints, pinning controls, snap guide, reload-persistence browser assertions, and tablet/mobile overflow regression. |
+| CANVAS-04 | PASS | Block/flex/grid/gap/padding/alignment/grid-column/breakpoint controls emit typed operations and materialized CSS patches. |
+| CANVAS-05 | PASS | Component definition, instance creation, dynamic variants, state, dynamic overrides, ownership-checked detach, persistence, and handoff includes. |
 
 ## Deferred
 

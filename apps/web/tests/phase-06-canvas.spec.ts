@@ -27,15 +27,30 @@ test("persists canvas object selection, rename, layout constraints, and tablet/m
   let saved = await page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY);
   expect(saved).toContain("Hero headline object");
 
-  await frame.locator(".feature-grid").click({ position: { x: 12, y: 12 } });
-  await page.getByRole("button", { name: "Layout grid" }).click();
-  await page.getByRole("button", { name: "Gap 16" }).click();
-  await page.getByRole("button", { name: "Grid 3 columns" }).click();
-  await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
+  await page.locator(".chat-rail").evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+  await page.locator(".layer-tree").evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+  const featureGridLayer = page.getByTestId("layer-row-obj_cdx_autztk").getByRole("button").first();
+  await featureGridLayer.scrollIntoViewIfNeeded();
+  await expect(featureGridLayer).toBeVisible();
+  await featureGridLayer.click();
+  await expect(page.getByTestId("canvas-object-breadcrumb")).toContainText("02 편집 가능한 구조");
+  await page.getByTestId("layout-columns-input").fill("4");
+  await page.getByTestId("layout-gap-input").fill("20px");
+  await page.getByTestId("layout-breakpoint-input").fill("768px");
+  for (const action of ["Layout grid", "Apply gap", "Apply grid columns", "Apply breakpoint"]) {
+    await page.getByRole("button", { name: action }).click();
+    await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
+  }
 
   saved = await page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY);
-  expect(saved).toContain("\"gridTemplateColumns\":\"repeat(3, minmax(0, 1fr))\"");
-  await expect.poll(async () => frame.locator(".feature-grid").getAttribute("style")).toContain("repeat(3");
+  expect(saved).toContain("\"gridTemplateColumns\":\"repeat(4, minmax(0, 1fr))\"");
+  expect(saved).toContain("\"breakpoint\":\"768px\"");
+  await expect.poll(async () => frame.locator(".feature-grid").getAttribute("style")).toContain("repeat(4");
+  await expect.poll(async () => frame.locator(".feature-grid").getAttribute("style")).toContain("--cdx-breakpoint: 768px");
 
   await page.reload();
   await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");

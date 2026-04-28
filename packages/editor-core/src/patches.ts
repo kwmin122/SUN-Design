@@ -28,10 +28,12 @@ type Parse5ParentNode = DefaultTreeAdapterMap["parentNode"];
 const ALLOWED_ATTRS = new Set(["alt", "aria-label", "href", "src", "title"]);
 const ALLOWED_STYLE_PROPS = new Set([
   "align-items",
+  "--cdx-breakpoint",
   "background",
   "background-color",
   "border-radius",
   "color",
+  "container-type",
   "display",
   "font-size",
   "font-weight",

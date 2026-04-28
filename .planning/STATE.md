@@ -108,10 +108,12 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 06 Wave 1 completed in `2d1710d`: editor-core canvas graph, typed canvas operations, layout materialization, local component helpers, persistence/export/handoff compatibility, and unit coverage.
 - Phase 06 Wave 2 completed in `b6bb1da`: web layer tree, object inspector, snap guide/breadcrumb, component instance panel, reload persistence, tablet/mobile overflow regression, and browser workflow coverage.
 - Phase 06 execution gate passed in `.planning/phases/06-canvas-and-component-model/06-VERIFICATION.md`. Formal SUNCO verification remains next via `/sunco:verify 6`.
+- Phase 06 post-review remediation fixed the canvas graph integrity blockers, component instance ownership checks, preset-only layout controls, hardcoded component assumptions, dynamic breakpoint materialization, and narrow-rail layer row affordance issue before formal verification.
+- Post-remediation gates passed: `pnpm lint`, `pnpm typecheck`, `pnpm test` (11 files, 48 tests), and `pnpm e2e` (17 browser tests).
 
 ---
-*Last updated: 2026-04-28 after Phase 06 execution*
+*Last updated: 2026-04-28 after Phase 06 post-review remediation*
 - **phase**: 6
-- **last_updated**: 2026-04-28T11:44:59+09:00
+- **last_updated**: 2026-04-28T12:21:43+09:00
 - **status**: executed
 - **next_action**: `/sunco:verify 6`

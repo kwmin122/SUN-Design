@@ -419,6 +419,17 @@ button {
   display: flex;
   align-items: center;
   gap: 3px;
+  max-width: 110px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.layer-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.layer-row:not(:hover):not(:focus-within) .layer-actions button:not(:first-child) {
+  display: none;
 }
 
 .layer-actions button {
@@ -1036,6 +1047,16 @@ button {
   gap: 8px;
 }
 
+.layout-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.layout-input-grid .field-stack:last-child {
+  grid-column: 1 / -1;
+}
+
 .component-controls.state-controls {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -1369,8 +1390,13 @@ button {
   }
 
   .object-state-row,
+  .layout-input-grid,
   .component-controls,
   .component-controls.state-controls {
     grid-template-columns: 1fr;
+  }
+
+  .layout-input-grid .field-stack:last-child {
+    grid-column: auto;
   }
 }

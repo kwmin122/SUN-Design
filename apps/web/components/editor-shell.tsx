@@ -974,7 +974,14 @@ export function EditorShell() {
                   <ComponentInstancePanel
                     graph={canvasGraph}
                     selectedObject={selectedObject}
-                    onCreateComponent={(name) => selectedObject && commitCanvasOperation("createComponent", { name, sourceObjectId: selectedObject.id }, selectedObject.id)}
+                    onCreateComponent={(name, options) => selectedObject && commitCanvasOperation("createComponent", {
+                      name,
+                      sourceObjectId: selectedObject.id,
+                      variants: options.variantNames.map((variantName) => ({
+                        name: variantName,
+                        props: { sourceObjectId: selectedObject.id }
+                      }))
+                    }, selectedObject.id)}
                     onCreateInstance={(componentId) => selectedObject && commitCanvasOperation("createComponentInstance", { componentId, targetObjectId: selectedObject.id }, selectedObject.id)}
                     onSetVariant={(instanceId, variantId) => {
                       const objectId = canvasGraph.instances[instanceId]?.objectId ?? selectedObject?.id;

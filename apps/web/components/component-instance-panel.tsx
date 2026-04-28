@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CanvasGraph, CanvasObject } from "@kdesign/editor-core";
 
 type ComponentInstancePanelProps = {
   graph: CanvasGraph;
   selectedObject: CanvasObject | undefined;
-  onCreateComponent(name: string): void;
+  onCreateComponent(name: string, options: { variantNames: string[] }): void;
   onCreateInstance(componentId: string): void;
   onSetVariant(instanceId: string, variantId: string): void;
   onSetState(instanceId: string, state: "default" | "hover" | "pressed" | "disabled"): void;
@@ -24,8 +24,10 @@ export function ComponentInstancePanel({
   onSetOverride,
   onDetachInstance
 }: ComponentInstancePanelProps) {
-  const [componentName, setComponentName] = useState("Hero Card");
-  const [labelOverride, setLabelOverride] = useState("");
+  const [componentName, setComponentName] = useState("");
+  const [variantName, setVariantName] = useState("");
+  const [overrideKey, setOverrideKey] = useState("name");
+  const [overrideValue, setOverrideValue] = useState("");
 
   const components = useMemo(() => Object.values(graph.components), [graph.components]);
   const instances = useMemo(() => Object.values(graph.instances), [graph.instances]);
@@ -35,8 +37,10 @@ export function ComponentInstancePanel({
   const activeComponent = selectedInstance
     ? graph.components[selectedInstance.componentId]
     : components[0];
-  const defaultVariant = activeComponent?.variants.find((variant) => variant.name === "Default") ?? activeComponent?.variants[0];
-  const emphasisVariant = activeComponent?.variants.find((variant) => variant.name === "Emphasis") ?? activeComponent?.variants[1];
+
+  useEffect(() => {
+    setComponentName((current) => current || (selectedObject?.name ?? ""));
+  }, [selectedObject?.id, selectedObject?.name]);
 
   return (
     <section className="tweak-card component-panel" data-testid="component-instance-panel">
@@ -56,12 +60,23 @@ export function ComponentInstancePanel({
           onChange={(event) => setComponentName(event.target.value)}
         />
       </label>
+      <label className="field-stack">
+        <span>Initial variant</span>
+        <input
+          data-testid="component-variant-input"
+          placeholder="Desktop, Compact, Mobile..."
+          value={variantName}
+          onChange={(event) => setVariantName(event.target.value)}
+        />
+      </label>
 
       <div className="component-controls">
         <button
           type="button"
           disabled={!selectedObject || !componentName.trim()}
-          onClick={() => componentName.trim() && onCreateComponent(componentName.trim())}
+          onClick={() => componentName.trim() && onCreateComponent(componentName.trim(), {
+            variantNames: variantName.trim() ? [variantName.trim()] : []
+          })}
         >
           Create component
         </button>
@@ -74,22 +89,20 @@ export function ComponentInstancePanel({
         </button>
       </div>
 
-      <div className="component-controls">
-        <button
-          type="button"
-          disabled={!selectedInstance || !defaultVariant}
-          onClick={() => selectedInstance && defaultVariant && onSetVariant(selectedInstance.id, defaultVariant.id)}
-        >
-          Variant Default
-        </button>
-        <button
-          type="button"
-          disabled={!selectedInstance || !emphasisVariant}
-          onClick={() => selectedInstance && emphasisVariant && onSetVariant(selectedInstance.id, emphasisVariant.id)}
-        >
-          Variant Emphasis
-        </button>
-      </div>
+      {activeComponent ? (
+        <div className="component-controls variant-controls">
+          {activeComponent.variants.map((variant) => (
+            <button
+              key={variant.id}
+              type="button"
+              disabled={!selectedInstance}
+              onClick={() => selectedInstance && onSetVariant(selectedInstance.id, variant.id)}
+            >
+              Variant {variant.name}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="component-controls state-controls">
         {(["default", "hover", "pressed", "disabled"] as const).map((state) => (
@@ -105,18 +118,26 @@ export function ComponentInstancePanel({
       </div>
 
       <label className="field-stack">
-        <span>Label override</span>
+        <span>Override key</span>
+        <input
+          data-testid="component-override-key-input"
+          value={overrideKey}
+          onChange={(event) => setOverrideKey(event.target.value)}
+        />
+      </label>
+      <label className="field-stack">
+        <span>Override value</span>
         <input
           data-testid="component-label-override"
-          value={labelOverride}
-          onChange={(event) => setLabelOverride(event.target.value)}
+          value={overrideValue}
+          onChange={(event) => setOverrideValue(event.target.value)}
         />
       </label>
       <div className="component-controls">
         <button
           type="button"
-          disabled={!selectedInstance || !labelOverride.trim()}
-          onClick={() => selectedInstance && labelOverride.trim() && onSetOverride(selectedInstance.id, "label", labelOverride.trim())}
+          disabled={!selectedInstance || !overrideKey.trim() || !overrideValue.trim()}
+          onClick={() => selectedInstance && overrideKey.trim() && overrideValue.trim() && onSetOverride(selectedInstance.id, overrideKey.trim(), overrideValue.trim())}
         >
           Apply override
         </button>
@@ -146,7 +167,7 @@ export function ComponentInstancePanel({
           const variant = component?.variants.find((item) => item.id === instance.variantId);
           return (
             <span key={instance.id}>
-              {component?.name ?? instance.componentId} · {variant?.name ?? "Default"} · {instance.state}
+              {component?.name ?? instance.componentId} · {variant?.name ?? "Base"} · {instance.state}
               {instance.detached ? " · detached" : ""}
             </span>
           );

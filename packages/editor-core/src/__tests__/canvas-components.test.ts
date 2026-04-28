@@ -27,14 +27,23 @@ describe("canvas component helpers", () => {
     const component = createLocalComponentDefinition({
       graph,
       sourceObjectId,
-      name: "Hero Card",
+      name: "Product summary",
+      props: [
+        { name: "headline", kind: "text", defaultValue: "제품 요약" },
+        { name: "media", kind: "slot", defaultValue: sourceObjectId }
+      ],
+      variants: [
+        { name: "Desktop", props: { columns: 3 } },
+        { name: "Mobile", props: { columns: 1 } }
+      ],
       createdAt: "2026-04-28T00:00:00.000Z"
     });
 
-    expect(component.name).toBe("Hero Card");
+    expect(component.name).toBe("Product summary");
     expect(component.sourceObjectId).toBe(sourceObjectId);
-    expect(component.props.map((prop) => prop.name)).toEqual(["label", "tone"]);
-    expect(component.variants.map((variant) => variant.name)).toEqual(["Default", "Emphasis"]);
+    expect(component.props.map((prop) => prop.name)).toEqual(["headline", "media"]);
+    expect(component.variants.map((variant) => variant.name)).toEqual(["Base", "Desktop", "Mobile"]);
+    expect(component.props.map((prop) => prop.name)).not.toContain("tone");
   });
 
   it("creates instances, merges overrides, and summarizes state", () => {
@@ -44,6 +53,7 @@ describe("canvas component helpers", () => {
       graph,
       sourceObjectId,
       name: "Hero Card",
+      variants: [{ name: "Emphasis", props: { importance: "high" } }],
       createdAt: "2026-04-28T00:00:00.000Z"
     });
     graph.components[component.id] = component;

@@ -109,6 +109,72 @@ describe("canvas operations", () => {
     expect(ungrouped.canvasGraph?.objects[groupId]).toBeUndefined();
   });
 
+  it("rejects graph-corrupting reorder and cross-parent group operations", () => {
+    const bundle = createBundle();
+    const parent = Object.values(bundle.canvasGraph!.objects).find((object) => {
+      const child = object.childIds.map((childId) => bundle.canvasGraph!.objects[childId]).find(Boolean);
+      return object.parentId && child?.childIds.length;
+    });
+    expect(parent).toBeDefined();
+    const child = bundle.canvasGraph!.objects[parent!.childIds[0]!]!;
+    const grandchild = bundle.canvasGraph!.objects[child.childIds[0]!]!;
+
+    expect(() => applyCanvasOperationToBundle(
+      bundle,
+      createOperation(bundle, parent!.id, "reorderObject", { parentId: grandchild.id, index: 0 })
+    )).toThrow("descendant");
+
+    const parents = Object.values(bundle.canvasGraph!.objects).filter((object) => object.childIds.length > 0);
+    const firstParent = parents[0]!;
+    const secondParent = parents.find((candidate) => candidate.id !== firstParent.id && candidate.childIds[0]);
+    expect(secondParent).toBeDefined();
+
+    expect(() => applyCanvasOperationToBundle(
+      bundle,
+      createOperation(bundle, firstParent.childIds[0]!, "groupObjects", {
+        name: "Invalid Mixed Group",
+        childObjectIds: [firstParent.childIds[0]!, secondParent!.childIds[0]!]
+      })
+    )).toThrow("same parent");
+  });
+
+  it("rejects component instance operations from non-owner objects", () => {
+    const bundle = createBundle();
+    const parent = Object.values(bundle.canvasGraph!.objects).find((object) => object.childIds.length > 1);
+    expect(parent).toBeDefined();
+    const [sourceObjectId, unrelatedObjectId] = parent!.childIds;
+    expect(sourceObjectId).toBeDefined();
+    expect(unrelatedObjectId).toBeDefined();
+
+    const withComponent = applyCanvasOperationToBundle(
+      bundle,
+      createOperation(bundle, sourceObjectId!, "createComponent", {
+        name: "Reusable block",
+        sourceObjectId,
+        variants: [{ name: "Dense", props: { density: "compact" } }]
+      })
+    );
+    const componentId = Object.keys(withComponent.canvasGraph!.components)[0]!;
+    const withInstance = applyCanvasOperationToBundle(
+      withComponent,
+      createOperation(withComponent, sourceObjectId!, "createComponentInstance", { componentId, targetObjectId: sourceObjectId })
+    );
+    const instanceId = Object.keys(withInstance.canvasGraph!.instances)[0]!;
+
+    expect(() => applyCanvasOperationToBundle(
+      withInstance,
+      createOperation(withInstance, unrelatedObjectId!, "updateComponentOverride", {
+        instanceId,
+        overrides: { headline: "Wrong owner" }
+      })
+    )).toThrow("does not own");
+
+    expect(() => applyCanvasOperationToBundle(
+      withInstance,
+      createOperation(withInstance, unrelatedObjectId!, "detachComponentInstance", { instanceId })
+    )).toThrow("does not own");
+  });
+
   it("rejects locked object mutations", () => {
     const bundle = createBundle();
     const objectId = firstTextObjectId(bundle);

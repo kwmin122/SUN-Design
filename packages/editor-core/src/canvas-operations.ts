@@ -9,8 +9,11 @@ import {
   CanvasConstraintsSchema,
   CanvasOperationSchema,
   ProjectBundleSchema,
+  type CanvasComponentProp,
+  type CanvasComponentVariant,
   type CanvasConstraints,
   type CanvasGraph,
+  type CanvasComponentInstance,
   type CanvasObject,
   type CanvasOperation,
   type ProjectBundle
@@ -103,6 +106,8 @@ export function applyCanvasOperationToBundle(
         graph,
         sourceObjectId: value.sourceObjectId ?? operation.objectId,
         name: value.name,
+        ...(value.props ? { props: value.props } : {}),
+        ...(value.variants ? { variants: value.variants } : {}),
         createdAt: operation.createdAt
       });
       graph.components[component.id] = component;
@@ -129,10 +134,7 @@ export function applyCanvasOperationToBundle(
     }
     case "updateComponentOverride": {
       const value = asUpdateInstanceValue(operation.value);
-      const instance = graph.instances[value.instanceId];
-      if (!instance) {
-        throw new Error(`Unknown component instance: ${value.instanceId}`);
-      }
+      const instance = requireOwnedInstance(graph, operation.objectId, value.instanceId);
       const component = graph.components[instance.componentId];
       if (!component) {
         throw new Error(`Unknown component: ${instance.componentId}`);
@@ -153,10 +155,7 @@ export function applyCanvasOperationToBundle(
     }
     case "detachComponentInstance": {
       const value = asDetachInstanceValue(operation.value);
-      const instance = graph.instances[value.instanceId];
-      if (!instance) {
-        throw new Error(`Unknown component instance: ${value.instanceId}`);
-      }
+      const instance = requireOwnedInstance(graph, operation.objectId, value.instanceId);
       graph.instances[value.instanceId] = { ...instance, detached: true };
       break;
     }
@@ -202,6 +201,10 @@ export function layoutConstraintsToStyle(constraints: CanvasConstraints): Record
   if (constraints.layout?.gridTemplateColumns) {
     style["grid-template-columns"] = constraints.layout.gridTemplateColumns;
   }
+  if (constraints.layout?.breakpoint) {
+    style["container-type"] = "inline-size";
+    style["--cdx-breakpoint"] = constraints.layout.breakpoint;
+  }
   return style;
 }
 
@@ -210,6 +213,7 @@ function persistGraph(bundle: ProjectBundle, graph: MutableGraph, operation: Can
     ...graph,
     updatedAt: operation.createdAt
   };
+  assertCanvasGraphIntegrity(nextGraph);
   return ProjectBundleSchema.parse({
     ...bundle,
     canvasGraph: nextGraph,
@@ -245,6 +249,13 @@ function validateLayoutConstraints(constraints: CanvasConstraints): void {
 }
 
 function reorderObject(graph: MutableGraph, objectId: string, parentId: string, index: number): void {
+  const object = requireObject(graph, objectId);
+  if (!object.parentId) {
+    throw new Error("Cannot reorder root canvas object.");
+  }
+  if (objectId === parentId || isDescendant(graph, parentId, objectId)) {
+    throw new Error("Cannot move a canvas object into itself or a descendant.");
+  }
   if (!graph.objects[parentId]) {
     throw new Error(`Unknown canvas parent: ${parentId}`);
   }
@@ -271,6 +282,12 @@ function groupObjects(
   if (childObjectIds.length === 0) {
     throw new Error("Group operation requires at least one child.");
   }
+  if (new Set(childObjectIds).size !== childObjectIds.length) {
+    throw new Error("Group child ids must be unique.");
+  }
+  if (!childObjectIds.includes(operation.objectId)) {
+    throw new Error("Group operation object must be one of the selected children.");
+  }
   const children = childObjectIds.map((id) => {
     const child = graph.objects[id];
     if (!child) {
@@ -282,8 +299,15 @@ function groupObjects(
   if (!parentId || !graph.objects[parentId]) {
     throw new Error("Group children must have a known parent.");
   }
+  if (children.some((child) => child.parentId !== parentId)) {
+    throw new Error("Group children must share the same parent.");
+  }
   const parent = graph.objects[parentId];
-  const insertionIndex = Math.min(...childObjectIds.map((id) => parent.childIds.indexOf(id)).filter((index) => index >= 0));
+  const childIndexes = childObjectIds.map((id) => parent.childIds.indexOf(id));
+  if (childIndexes.some((index) => index < 0)) {
+    throw new Error("Group children must be direct children of the same parent.");
+  }
+  const insertionIndex = Math.min(...childIndexes);
   const groupId = `obj_group_${operation.id}`;
   if (graph.objects[groupId]) {
     throw new Error(`Canvas group already exists: ${groupId}`);
@@ -311,6 +335,7 @@ function ungroupObject(graph: MutableGraph, groupId: string): void {
     throw new Error(`Unknown canvas group: ${groupId}`);
   }
   if (group.childIds.length === 0) {
+    removeFromParent(graph, groupId);
     delete graph.objects[groupId];
     return;
   }
@@ -347,12 +372,103 @@ function removeFromParent(graph: MutableGraph, objectId: string): void {
   };
 }
 
+function isDescendant(graph: CanvasGraph, possibleDescendantId: string, ancestorId: string): boolean {
+  const ancestor = graph.objects[ancestorId];
+  if (!ancestor) {
+    return false;
+  }
+  for (const childId of ancestor.childIds) {
+    if (childId === possibleDescendantId || isDescendant(graph, possibleDescendantId, childId)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function requireObject(graph: MutableGraph, objectId: string): CanvasObject {
   const object = graph.objects[objectId];
   if (!object) {
     throw new Error(`Unknown canvas object: ${objectId}`);
   }
   return object;
+}
+
+function requireOwnedInstance(
+  graph: MutableGraph,
+  objectId: string,
+  instanceId: string
+): CanvasComponentInstance {
+  const instance = graph.instances[instanceId];
+  if (!instance) {
+    throw new Error(`Unknown component instance: ${instanceId}`);
+  }
+  const object = requireObject(graph, objectId);
+  if (instance.objectId !== objectId || object.componentInstanceId !== instanceId) {
+    throw new Error(`Canvas object ${objectId} does not own component instance: ${instanceId}`);
+  }
+  return instance;
+}
+
+function assertCanvasGraphIntegrity(graph: CanvasGraph): void {
+  const referencedChildren = new Map<string, string>();
+  for (const rootId of graph.rootObjectIds) {
+    const root = graph.objects[rootId];
+    if (!root) {
+      throw new Error(`Canvas graph root is missing: ${rootId}`);
+    }
+    if (root.parentId) {
+      throw new Error(`Canvas graph root must not have a parent: ${rootId}`);
+    }
+    visitForCycles(graph, rootId, new Set());
+  }
+
+  for (const object of Object.values(graph.objects)) {
+    if (object.parentId && !graph.objects[object.parentId]) {
+      throw new Error(`Canvas object parent is missing: ${object.id}`);
+    }
+    for (const childId of object.childIds) {
+      const child = graph.objects[childId];
+      if (!child) {
+        throw new Error(`Canvas object child is missing: ${childId}`);
+      }
+      if (child.parentId !== object.id) {
+        throw new Error(`Canvas object parent mismatch: ${childId}`);
+      }
+      const existingParentId = referencedChildren.get(childId);
+      if (existingParentId && existingParentId !== object.id) {
+        throw new Error(`Canvas object has multiple parents: ${childId}`);
+      }
+      referencedChildren.set(childId, object.id);
+    }
+  }
+
+  for (const instance of Object.values(graph.instances)) {
+    if (!graph.components[instance.componentId]) {
+      throw new Error(`Component instance references missing component: ${instance.id}`);
+    }
+    const object = graph.objects[instance.objectId];
+    if (!object) {
+      throw new Error(`Component instance references missing object: ${instance.id}`);
+    }
+    if (object.componentInstanceId === instance.id && object.kind !== "componentInstance") {
+      throw new Error(`Component instance object kind mismatch: ${object.id}`);
+    }
+  }
+}
+
+function visitForCycles(graph: CanvasGraph, objectId: string, path: Set<string>): void {
+  if (path.has(objectId)) {
+    throw new Error(`Canvas graph contains a cycle at: ${objectId}`);
+  }
+  const object = graph.objects[objectId];
+  if (!object) {
+    throw new Error(`Canvas graph object is missing: ${objectId}`);
+  }
+  const nextPath = new Set(path);
+  nextPath.add(objectId);
+  for (const childId of object.childIds) {
+    visitForCycles(graph, childId, nextPath);
+  }
 }
 
 function cloneGraph(graph: CanvasGraph | undefined): MutableGraph {
@@ -420,14 +536,21 @@ function asLayoutValue(value: unknown): { constraints: CanvasConstraints } {
   };
 }
 
-function asCreateComponentValue(value: unknown): { name: string; sourceObjectId?: string } {
+function asCreateComponentValue(value: unknown): {
+  name: string;
+  sourceObjectId?: string;
+  props?: Array<Omit<CanvasComponentProp, "id"> & { id?: string }>;
+  variants?: Array<Omit<CanvasComponentVariant, "id"> & { id?: string }>;
+} {
   const candidate = asObject(value, "Create component value");
   if (typeof candidate.name !== "string" || candidate.name.trim().length === 0) {
     throw new Error("Component name must be a non-empty string.");
   }
   return {
     name: candidate.name,
-    ...(typeof candidate.sourceObjectId === "string" ? { sourceObjectId: candidate.sourceObjectId } : {})
+    ...(typeof candidate.sourceObjectId === "string" ? { sourceObjectId: candidate.sourceObjectId } : {}),
+    ...(candidate.props !== undefined ? { props: asComponentProps(candidate.props) } : {}),
+    ...(candidate.variants !== undefined ? { variants: asComponentVariants(candidate.variants) } : {})
   };
 }
 
@@ -483,4 +606,49 @@ function asDetachInstanceValue(value: unknown): { instanceId: string } {
     throw new Error("Detach instance value requires instanceId.");
   }
   return { instanceId: candidate.instanceId };
+}
+
+function asComponentProps(value: unknown): Array<Omit<CanvasComponentProp, "id"> & { id?: string }> {
+  if (!Array.isArray(value)) {
+    throw new Error("Component props must be an array.");
+  }
+  return value.map((item) => {
+    const candidate = asObject(item, "Component prop");
+    if (typeof candidate.name !== "string" || !candidate.name.trim()) {
+      throw new Error("Component prop requires a name.");
+    }
+    if (
+      candidate.kind !== "text" &&
+      candidate.kind !== "color" &&
+      candidate.kind !== "number" &&
+      candidate.kind !== "boolean" &&
+      candidate.kind !== "slot"
+    ) {
+      throw new Error("Component prop has an invalid kind.");
+    }
+    return {
+      ...(typeof candidate.id === "string" ? { id: candidate.id } : {}),
+      name: candidate.name,
+      kind: candidate.kind,
+      ...(candidate.defaultValue !== undefined ? { defaultValue: candidate.defaultValue } : {})
+    };
+  });
+}
+
+function asComponentVariants(value: unknown): Array<Omit<CanvasComponentVariant, "id"> & { id?: string }> {
+  if (!Array.isArray(value)) {
+    throw new Error("Component variants must be an array.");
+  }
+  return value.map((item) => {
+    const candidate = asObject(item, "Component variant");
+    if (typeof candidate.name !== "string" || !candidate.name.trim()) {
+      throw new Error("Component variant requires a name.");
+    }
+    const props = candidate.props === undefined ? {} : asObject(candidate.props, "Component variant props");
+    return {
+      ...(typeof candidate.id === "string" ? { id: candidate.id } : {}),
+      name: candidate.name,
+      props
+    };
+  });
 }
