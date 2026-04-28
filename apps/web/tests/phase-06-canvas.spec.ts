@@ -15,6 +15,7 @@ test("persists canvas object selection, rename, layout constraints, and tablet/m
 
   await expect(page.getByTestId("canvas-layer-tree")).toBeVisible();
   await expect(page.getByTestId("canvas-object-inspector")).toBeVisible();
+  await expect(page.locator(".design-agent-steps")).toContainText("3 Directions");
 
   const frame = page.frameLocator('iframe[title="Sandboxed design preview"]');
   await frame.getByText("AI 디자인을 바로 편집 가능한 결과물로").click();
@@ -26,6 +27,13 @@ test("persists canvas object selection, rename, layout constraints, and tablet/m
 
   let saved = await page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY);
   expect(saved).toContain("Hero headline object");
+
+  await page.getByRole("button", { name: "Lock object" }).click();
+  await page.getByTestId("selected-text-input").fill("Locked patch should not apply");
+  await page.getByRole("button", { name: "텍스트 적용" }).click();
+  await expect(page.getByTestId("diagnostics-bridge")).toContainText("locked");
+  saved = await page.evaluate((key) => window.localStorage.getItem(key), STORAGE_KEY);
+  expect(saved).not.toContain("Locked patch should not apply");
 
   await page.locator(".chat-rail").evaluate((element) => {
     element.scrollTop = element.scrollHeight;

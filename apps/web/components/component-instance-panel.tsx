@@ -6,7 +6,7 @@ import type { CanvasGraph, CanvasObject } from "@kdesign/editor-core";
 type ComponentInstancePanelProps = {
   graph: CanvasGraph;
   selectedObject: CanvasObject | undefined;
-  onCreateComponent(name: string, options: { variantNames: string[] }): void;
+  onCreateComponent(name: string, options: { propNames: string[]; variantNames: string[] }): void;
   onCreateInstance(componentId: string): void;
   onSetVariant(instanceId: string, variantId: string): void;
   onSetState(instanceId: string, state: "default" | "hover" | "pressed" | "disabled"): void;
@@ -25,6 +25,7 @@ export function ComponentInstancePanel({
   onDetachInstance
 }: ComponentInstancePanelProps) {
   const [componentName, setComponentName] = useState("");
+  const [propNames, setPropNames] = useState("name");
   const [variantName, setVariantName] = useState("");
   const [overrideKey, setOverrideKey] = useState("name");
   const [overrideValue, setOverrideValue] = useState("");
@@ -61,6 +62,15 @@ export function ComponentInstancePanel({
         />
       </label>
       <label className="field-stack">
+        <span>Props</span>
+        <input
+          data-testid="component-prop-input"
+          placeholder="name, headline, image"
+          value={propNames}
+          onChange={(event) => setPropNames(event.target.value)}
+        />
+      </label>
+      <label className="field-stack">
         <span>Initial variant</span>
         <input
           data-testid="component-variant-input"
@@ -75,6 +85,7 @@ export function ComponentInstancePanel({
           type="button"
           disabled={!selectedObject || !componentName.trim()}
           onClick={() => componentName.trim() && onCreateComponent(componentName.trim(), {
+            propNames: parseNames(propNames),
             variantNames: variantName.trim() ? [variantName.trim()] : []
           })}
         >
@@ -82,7 +93,7 @@ export function ComponentInstancePanel({
         </button>
         <button
           type="button"
-          disabled={!selectedObject || !activeComponent}
+          disabled={!selectedObject || !activeComponent || Boolean(selectedInstance)}
           onClick={() => activeComponent && onCreateInstance(activeComponent.id)}
         >
           Create instance
@@ -128,7 +139,7 @@ export function ComponentInstancePanel({
       <label className="field-stack">
         <span>Override value</span>
         <input
-          data-testid="component-label-override"
+          data-testid="component-override-value-input"
           value={overrideValue}
           onChange={(event) => setOverrideValue(event.target.value)}
         />
@@ -175,4 +186,8 @@ export function ComponentInstancePanel({
       </div>
     </section>
   );
+}
+
+function parseNames(value: string): string[] {
+  return Array.from(new Set(value.split(",").map((item) => item.trim()).filter(Boolean)));
 }

@@ -18,6 +18,7 @@ test("creates, edits, detaches, reloads, and hands off a local component instanc
   await expect(page.getByTestId("component-instance-panel")).toBeVisible();
 
   await page.getByTestId("component-name-input").fill("Article Module");
+  await page.getByTestId("component-prop-input").fill("headline");
   await page.getByTestId("component-variant-input").fill("Marketing");
   await page.getByRole("button", { name: "Create component" }).click();
   await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
@@ -28,7 +29,7 @@ test("creates, edits, detaches, reloads, and hands off a local component instanc
   await page.getByRole("button", { name: "Variant Marketing" }).click();
   await page.getByRole("button", { name: "State hover" }).click();
   await page.getByTestId("component-override-key-input").fill("headline");
-  await page.getByTestId("component-label-override").fill("가입 CTA");
+  await page.getByTestId("component-override-value-input").fill("가입 CTA");
   await page.getByRole("button", { name: "Apply override" }).click();
   await page.getByRole("button", { name: "Detach instance" }).click();
 

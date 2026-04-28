@@ -30,7 +30,8 @@ describe("canvas component helpers", () => {
       name: "Product summary",
       props: [
         { name: "headline", kind: "text", defaultValue: "제품 요약" },
-        { name: "media", kind: "slot", defaultValue: sourceObjectId }
+        { name: "media", kind: "slot", defaultValue: sourceObjectId },
+        { name: "columns", kind: "number", defaultValue: 1 }
       ],
       variants: [
         { name: "Desktop", props: { columns: 3 } },
@@ -41,7 +42,7 @@ describe("canvas component helpers", () => {
 
     expect(component.name).toBe("Product summary");
     expect(component.sourceObjectId).toBe(sourceObjectId);
-    expect(component.props.map((prop) => prop.name)).toEqual(["headline", "media"]);
+    expect(component.props.map((prop) => prop.name)).toEqual(["headline", "media", "columns"]);
     expect(component.variants.map((variant) => variant.name)).toEqual(["Base", "Desktop", "Mobile"]);
     expect(component.props.map((prop) => prop.name)).not.toContain("tone");
   });
@@ -52,8 +53,9 @@ describe("canvas component helpers", () => {
     const component = createLocalComponentDefinition({
       graph,
       sourceObjectId,
-      name: "Hero Card",
-      variants: [{ name: "Emphasis", props: { importance: "high" } }],
+      name: "Reusable Module",
+      props: [{ name: "label", kind: "text", defaultValue: "가입 CTA" }],
+      variants: [{ name: "Emphasis", props: { label: "가입 CTA" } }],
       createdAt: "2026-04-28T00:00:00.000Z"
     });
     graph.components[component.id] = component;
@@ -65,10 +67,10 @@ describe("canvas component helpers", () => {
       variantId: component.variants[1]!.id,
       createdAt: "2026-04-28T00:00:01.000Z"
     });
-    graph.instances[instance.id] = updateComponentOverride(instance, "label", "가입 CTA");
+    graph.instances[instance.id] = updateComponentOverride(component, instance, "label", "가입 CTA");
 
     const summary = summarizeComponentInstance(graph, instance.id);
-    expect(summary.componentName).toBe("Hero Card");
+    expect(summary.componentName).toBe("Reusable Module");
     expect(summary.variantName).toBe("Emphasis");
     expect(summary.overrideCount).toBe(1);
   });
@@ -79,7 +81,7 @@ describe("canvas component helpers", () => {
     const component = createLocalComponentDefinition({
       graph,
       sourceObjectId,
-      name: "Hero Card",
+      name: "Reusable Module",
       createdAt: "2026-04-28T00:00:00.000Z"
     });
     graph.components[component.id] = component;
@@ -105,6 +107,17 @@ describe("canvas component helpers", () => {
       targetObjectId: sourceObjectId,
       createdAt: "2026-04-28T00:00:01.000Z"
     });
-    expect(() => updateComponentOverride(instance, "", "bad")).toThrow("must not be empty");
+    expect(() => updateComponentOverride(component, instance, "", "bad")).toThrow("must not be empty");
+    expect(() => updateComponentOverride(component, instance, "missing", "bad")).toThrow("unknown prop");
+    expect(() => updateComponentOverride({ ...component, id: "other-component" }, instance, "name", "bad"))
+      .toThrow("does not belong");
+    expect(() => createLocalComponentDefinition({
+      graph,
+      sourceObjectId,
+      name: "Broken Variant",
+      props: [{ name: "headline", kind: "text" }],
+      variants: [{ name: "Desktop", props: { missing: "bad" } }],
+      createdAt: "2026-04-28T00:00:00.000Z"
+    })).toThrow("unknown prop");
   });
 });

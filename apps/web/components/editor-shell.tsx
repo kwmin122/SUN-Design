@@ -98,6 +98,14 @@ type TweakProfile = {
   groups: TweakGroup[];
 };
 
+const DESIGN_AGENT_STEPS = [
+  { number: "01", title: "Ask", detail: "로고, 제품샷, UI, 색상, 폰트, 가이드 확인" },
+  { number: "02", title: "Search", detail: "공식 브랜드 페이지와 제품 자료 우선" },
+  { number: "03", title: "Verify", detail: "기억으로 색을 찍지 않고 실제 파일에서 추출" },
+  { number: "04", title: "3 Directions", detail: "요구가 흐릿하면 세 가지 디자인 방향 제안" },
+  { number: "05", title: "Iterate", detail: "초안, 변형, 조정값을 차례로 보여주며 개선" }
+];
+
 const DEFAULT_TWEAKS: ArtifactTweaks = {
   feedColumns: 3,
   density: "comfortable",
@@ -359,6 +367,18 @@ export function EditorShell() {
   ) => {
     const current = projectBundleRef.current;
     if (!current) {
+      return;
+    }
+    const canvasObject = current.canvasGraph ? findCanvasObjectByNodeId(current.canvasGraph, nodeId) : undefined;
+    if (canvasObject?.locked) {
+      appendDiagnostic({
+        id: createLocalId("patch_error"),
+        source: "bridge",
+        severity: "warning",
+        code: "patch_rejected",
+        message: `Canvas object is locked: ${canvasObject.id}`,
+        createdAt: new Date().toISOString()
+      });
       return;
     }
 
@@ -742,6 +762,15 @@ export function EditorShell() {
               <small>실제 자산과 완성도</small>
             </button>
           </div>
+          <div className="design-agent-steps" aria-label="Context-driven design workflow">
+            {DESIGN_AGENT_STEPS.map((step) => (
+              <article key={step.number}>
+                <span>{step.number}</span>
+                <strong>{step.title}</strong>
+                <p>{step.detail}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="prompt-composer" aria-label="Design prompt composer">
@@ -977,9 +1006,14 @@ export function EditorShell() {
                     onCreateComponent={(name, options) => selectedObject && commitCanvasOperation("createComponent", {
                       name,
                       sourceObjectId: selectedObject.id,
+                      props: options.propNames.map((propName) => ({
+                        name: propName,
+                        kind: "text",
+                        defaultValue: propName === "name" ? selectedObject.name : ""
+                      })),
                       variants: options.variantNames.map((variantName) => ({
                         name: variantName,
-                        props: { sourceObjectId: selectedObject.id }
+                        props: {}
                       }))
                     }, selectedObject.id)}
                     onCreateInstance={(componentId) => selectedObject && commitCanvasOperation("createComponentInstance", { componentId, targetObjectId: selectedObject.id }, selectedObject.id)}

@@ -210,7 +210,7 @@ function LayerRow({
           <button
             type="button"
             aria-label="Ungroup layer"
-            disabled={object.kind !== "frame" || object.childIds.length === 0}
+            disabled={!object.id.startsWith("obj_group_") || object.kind !== "frame" || object.childIds.length === 0}
             onClick={() => onUngroupObject(object.id)}
           >
             Ungroup

@@ -151,9 +151,9 @@ K-Design Studio v1 is planned as one milestone with five standard-granularity ph
 **Success Criteria:**
 - A user can see and manipulate pages, artboards, frames, sections, component instances, text, image, and vector-like nodes as distinct canvas objects.
 - A layer tree supports select, reorder, group, hide, lock, rename, and object hierarchy inspection.
-- Constraints, snapping, guides, and resize rules persist through reload and export.
-- Flex, CSS Grid, gap, padding, alignment, and breakpoint controls emit typed operations, not live DOM saves.
-- Component instances preserve slots, props, variants, overrides, and state in the stored artifact package.
+- Foundational constraints, visual snapping/guide hints, and resize metadata persist through reload and portable artifact state.
+- Flex, CSS Grid, gap, padding, alignment, and breakpoint metadata controls emit typed operations, not live DOM saves.
+- Component instances preserve live slots, declared props, variants, validated overrides, and state in the stored artifact package.
 
 **Complexity:** High
 

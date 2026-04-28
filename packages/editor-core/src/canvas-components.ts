@@ -27,7 +27,7 @@ export function createLocalComponentDefinition(input: {
   const props = input.props?.length
     ? input.props.map((prop, index) => normalizeComponentProp(id, prop, index))
     : inferPropsFromObject(id, source);
-  const variants = normalizeComponentVariants(id, input.variants ?? []);
+  const variants = normalizeComponentVariants(id, input.variants ?? [], props);
   return {
     id,
     name: input.name,
@@ -73,18 +73,26 @@ export function createLocalComponentInstance(input: {
 }
 
 export function updateComponentOverride(
+  component: CanvasComponentDefinition,
   instance: CanvasComponentInstance,
   key: string,
   value: unknown
 ): CanvasComponentInstance {
-  if (!key.trim()) {
+  const trimmedKey = key.trim();
+  if (!trimmedKey) {
     throw new Error("Component override key must not be empty.");
+  }
+  if (instance.componentId !== component.id) {
+    throw new Error(`Component instance does not belong to component: ${component.id}`);
+  }
+  if (!component.props.some((prop) => prop.name === trimmedKey)) {
+    throw new Error(`Component override references unknown prop: ${trimmedKey}`);
   }
   return {
     ...instance,
     overrides: {
       ...instance.overrides,
-      [key]: value
+      [trimmedKey]: value
     }
   };
 }
@@ -180,17 +188,24 @@ function normalizeComponentProp(
 
 function normalizeComponentVariants(
   componentId: string,
-  variants: ComponentVariantInput[]
+  variants: ComponentVariantInput[],
+  props: CanvasComponentProp[]
 ): CanvasComponentVariant[] {
   const normalized: CanvasComponentVariant[] = [
     { id: `${componentId}_variant_base`, name: "Base", props: {} }
   ];
   const seen = new Set(["Base"]);
+  const propNames = new Set(props.map((prop) => prop.name));
 
   variants.forEach((variant, index) => {
     const name = variant.name.trim();
     if (!name || seen.has(name)) {
       return;
+    }
+    for (const key of Object.keys(variant.props)) {
+      if (!propNames.has(key)) {
+        throw new Error(`Component variant references unknown prop: ${key}`);
+      }
     }
     seen.add(name);
     normalized.push({

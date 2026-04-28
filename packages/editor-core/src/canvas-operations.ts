@@ -3,7 +3,7 @@ import {
   createLocalComponentInstance,
   resolveComponentVariant
 } from "./canvas-components.js";
-import { ensureCanvasGraph } from "./canvas-graph.js";
+import { assertCanvasGraphIntegrity, ensureCanvasGraph } from "./canvas-graph.js";
 import { applyEditPatchToBundle } from "./patches.js";
 import {
   CanvasConstraintsSchema,
@@ -116,6 +116,11 @@ export function applyCanvasOperationToBundle(
     case "createComponentInstance": {
       const value = asCreateInstanceValue(operation.value);
       const targetObjectId = value.targetObjectId ?? operation.objectId;
+      const targetObject = requireObject(graph, targetObjectId);
+      requireUnlockedObject(targetObject);
+      if (targetObject.componentInstanceId) {
+        throw new Error(`Canvas object already has a component instance: ${targetObjectId}`);
+      }
       const instance = createLocalComponentInstance({
         graph,
         componentId: value.componentId,
@@ -124,7 +129,6 @@ export function applyCanvasOperationToBundle(
         createdAt: operation.createdAt
       });
       graph.instances[instance.id] = instance;
-      const targetObject = requireObject(graph, targetObjectId);
       graph.objects[targetObjectId] = {
         ...targetObject,
         kind: "componentInstance",
@@ -142,6 +146,7 @@ export function applyCanvasOperationToBundle(
       if (value.variantId && !resolveComponentVariant(component, value.variantId)) {
         throw new Error(`Unknown component variant: ${value.variantId}`);
       }
+      validateOverrideKeys(component.props, value.overrides);
       graph.instances[value.instanceId] = {
         ...instance,
         ...(value.variantId ? { variantId: value.variantId } : {}),
@@ -213,7 +218,7 @@ function persistGraph(bundle: ProjectBundle, graph: MutableGraph, operation: Can
     ...graph,
     updatedAt: operation.createdAt
   };
-  assertCanvasGraphIntegrity(nextGraph);
+  assertCanvasGraphIntegrity(nextGraph, new Set(Object.keys(bundle.editGraph.nodes)));
   return ProjectBundleSchema.parse({
     ...bundle,
     canvasGraph: nextGraph,
@@ -262,14 +267,27 @@ function reorderObject(graph: MutableGraph, objectId: string, parentId: string, 
   if (!Number.isInteger(index) || index < 0) {
     throw new Error("Invalid canvas reorder index.");
   }
-  removeFromParent(graph, objectId);
-  const parent = graph.objects[parentId];
-  if (!parent) {
-    throw new Error(`Unknown canvas parent: ${parentId}`);
+  const currentParentId = object.parentId;
+  const currentParent = requireObject(graph, currentParentId);
+  const parent = requireObject(graph, parentId);
+  requireUnlockedObject(currentParent);
+  requireUnlockedObject(parent);
+  if (index > parent.childIds.length) {
+    throw new Error("Invalid canvas reorder index.");
   }
+  removeFromParent(graph, objectId);
+  const updatedParent = requireObject(graph, parentId);
   const nextChildIds = [...parent.childIds];
-  nextChildIds.splice(Math.min(index, nextChildIds.length), 0, objectId);
-  graph.objects[parentId] = { ...parent, childIds: nextChildIds };
+  if (parentId === currentParentId) {
+    nextChildIds.splice(parent.childIds.indexOf(objectId), 1);
+  } else {
+    nextChildIds.splice(0, nextChildIds.length, ...updatedParent.childIds);
+  }
+  if (index > nextChildIds.length) {
+    throw new Error("Invalid canvas reorder index.");
+  }
+  nextChildIds.splice(index, 0, objectId);
+  graph.objects[parentId] = { ...updatedParent, childIds: nextChildIds };
   graph.objects[objectId] = { ...requireObject(graph, objectId), parentId };
 }
 
@@ -303,6 +321,8 @@ function groupObjects(
     throw new Error("Group children must share the same parent.");
   }
   const parent = graph.objects[parentId];
+  requireUnlockedObject(parent);
+  children.forEach(requireUnlockedObject);
   const childIndexes = childObjectIds.map((id) => parent.childIds.indexOf(id));
   if (childIndexes.some((index) => index < 0)) {
     throw new Error("Group children must be direct children of the same parent.");
@@ -334,6 +354,9 @@ function ungroupObject(graph: MutableGraph, groupId: string): void {
   if (!group) {
     throw new Error(`Unknown canvas group: ${groupId}`);
   }
+  if (!group.id.startsWith("obj_group_") || group.nodeId) {
+    throw new Error("Only synthetic canvas groups can be ungrouped.");
+  }
   if (group.childIds.length === 0) {
     removeFromParent(graph, groupId);
     delete graph.objects[groupId];
@@ -344,6 +367,8 @@ function ungroupObject(graph: MutableGraph, groupId: string): void {
     throw new Error("Group must have a known parent.");
   }
   const parent = graph.objects[parentId];
+  requireUnlockedObject(parent);
+  group.childIds.map((childId) => requireObject(graph, childId)).forEach(requireUnlockedObject);
   const groupIndex = parent.childIds.indexOf(groupId);
   const nextChildIds = parent.childIds.filter((id) => id !== groupId);
   nextChildIds.splice(Math.max(groupIndex, 0), 0, ...group.childIds);
@@ -393,6 +418,12 @@ function requireObject(graph: MutableGraph, objectId: string): CanvasObject {
   return object;
 }
 
+function requireUnlockedObject(object: CanvasObject): void {
+  if (object.locked) {
+    throw new Error(`Canvas object is locked: ${object.id}`);
+  }
+}
+
 function requireOwnedInstance(
   graph: MutableGraph,
   objectId: string,
@@ -409,65 +440,12 @@ function requireOwnedInstance(
   return instance;
 }
 
-function assertCanvasGraphIntegrity(graph: CanvasGraph): void {
-  const referencedChildren = new Map<string, string>();
-  for (const rootId of graph.rootObjectIds) {
-    const root = graph.objects[rootId];
-    if (!root) {
-      throw new Error(`Canvas graph root is missing: ${rootId}`);
+function validateOverrideKeys(props: CanvasComponentProp[], overrides: Record<string, unknown>): void {
+  const propNames = new Set(props.map((prop) => prop.name));
+  for (const key of Object.keys(overrides)) {
+    if (!propNames.has(key)) {
+      throw new Error(`Component override references unknown prop: ${key}`);
     }
-    if (root.parentId) {
-      throw new Error(`Canvas graph root must not have a parent: ${rootId}`);
-    }
-    visitForCycles(graph, rootId, new Set());
-  }
-
-  for (const object of Object.values(graph.objects)) {
-    if (object.parentId && !graph.objects[object.parentId]) {
-      throw new Error(`Canvas object parent is missing: ${object.id}`);
-    }
-    for (const childId of object.childIds) {
-      const child = graph.objects[childId];
-      if (!child) {
-        throw new Error(`Canvas object child is missing: ${childId}`);
-      }
-      if (child.parentId !== object.id) {
-        throw new Error(`Canvas object parent mismatch: ${childId}`);
-      }
-      const existingParentId = referencedChildren.get(childId);
-      if (existingParentId && existingParentId !== object.id) {
-        throw new Error(`Canvas object has multiple parents: ${childId}`);
-      }
-      referencedChildren.set(childId, object.id);
-    }
-  }
-
-  for (const instance of Object.values(graph.instances)) {
-    if (!graph.components[instance.componentId]) {
-      throw new Error(`Component instance references missing component: ${instance.id}`);
-    }
-    const object = graph.objects[instance.objectId];
-    if (!object) {
-      throw new Error(`Component instance references missing object: ${instance.id}`);
-    }
-    if (object.componentInstanceId === instance.id && object.kind !== "componentInstance") {
-      throw new Error(`Component instance object kind mismatch: ${object.id}`);
-    }
-  }
-}
-
-function visitForCycles(graph: CanvasGraph, objectId: string, path: Set<string>): void {
-  if (path.has(objectId)) {
-    throw new Error(`Canvas graph contains a cycle at: ${objectId}`);
-  }
-  const object = graph.objects[objectId];
-  if (!object) {
-    throw new Error(`Canvas graph object is missing: ${objectId}`);
-  }
-  const nextPath = new Set(path);
-  nextPath.add(objectId);
-  for (const childId of object.childIds) {
-    visitForCycles(graph, childId, nextPath);
   }
 }
 

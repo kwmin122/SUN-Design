@@ -109,6 +109,19 @@ describe("canvas operations", () => {
     expect(ungrouped.canvasGraph?.objects[groupId]).toBeUndefined();
   });
 
+  it("rejects ungrouping non-synthetic derived frame objects", () => {
+    const bundle = createBundle();
+    const frame = Object.values(bundle.canvasGraph!.objects).find((object) =>
+      object.kind === "frame" && object.nodeId && object.childIds.length > 0
+    );
+    expect(frame).toBeDefined();
+
+    expect(() => applyCanvasOperationToBundle(
+      bundle,
+      createOperation(bundle, frame!.id, "ungroupObjects", {})
+    )).toThrow("synthetic");
+  });
+
   it("rejects graph-corrupting reorder and cross-parent group operations", () => {
     const bundle = createBundle();
     const parent = Object.values(bundle.canvasGraph!.objects).find((object) => {
@@ -124,6 +137,11 @@ describe("canvas operations", () => {
       createOperation(bundle, parent!.id, "reorderObject", { parentId: grandchild.id, index: 0 })
     )).toThrow("descendant");
 
+    expect(() => applyCanvasOperationToBundle(
+      bundle,
+      createOperation(bundle, parent!.childIds[0]!, "reorderObject", { parentId: parent!.id, index: 999 })
+    )).toThrow("Invalid canvas reorder index");
+
     const parents = Object.values(bundle.canvasGraph!.objects).filter((object) => object.childIds.length > 0);
     const firstParent = parents[0]!;
     const secondParent = parents.find((candidate) => candidate.id !== firstParent.id && candidate.childIds[0]);
@@ -136,6 +154,27 @@ describe("canvas operations", () => {
         childObjectIds: [firstParent.childIds[0]!, secondParent!.childIds[0]!]
       })
     )).toThrow("same parent");
+  });
+
+  it("rejects locked multi-target canvas mutations", () => {
+    const bundle = createBundle();
+    const parent = Object.values(bundle.canvasGraph!.objects).find((object) => object.childIds.length > 1);
+    expect(parent).toBeDefined();
+    const [anchorId, lockedChildId] = parent!.childIds;
+    expect(anchorId).toBeDefined();
+    expect(lockedChildId).toBeDefined();
+    const lockedChild = applyCanvasOperationToBundle(
+      bundle,
+      createOperation(bundle, lockedChildId!, "setObjectLock", { locked: true })
+    );
+
+    expect(() => applyCanvasOperationToBundle(
+      lockedChild,
+      createOperation(lockedChild, anchorId!, "groupObjects", {
+        name: "Invalid Locked Group",
+        childObjectIds: [anchorId!, lockedChildId!]
+      })
+    )).toThrow("locked");
   });
 
   it("rejects component instance operations from non-owner objects", () => {
@@ -151,6 +190,7 @@ describe("canvas operations", () => {
       createOperation(bundle, sourceObjectId!, "createComponent", {
         name: "Reusable block",
         sourceObjectId,
+        props: [{ name: "density", kind: "text", defaultValue: "comfortable" }],
         variants: [{ name: "Dense", props: { density: "compact" } }]
       })
     );
@@ -160,6 +200,15 @@ describe("canvas operations", () => {
       createOperation(withComponent, sourceObjectId!, "createComponentInstance", { componentId, targetObjectId: sourceObjectId })
     );
     const instanceId = Object.keys(withInstance.canvasGraph!.instances)[0]!;
+
+    const lockedUnrelated = applyCanvasOperationToBundle(
+      withComponent,
+      createOperation(withComponent, unrelatedObjectId!, "setObjectLock", { locked: true })
+    );
+    expect(() => applyCanvasOperationToBundle(
+      lockedUnrelated,
+      createOperation(lockedUnrelated, sourceObjectId!, "createComponentInstance", { componentId, targetObjectId: unrelatedObjectId })
+    )).toThrow("locked");
 
     expect(() => applyCanvasOperationToBundle(
       withInstance,
@@ -173,6 +222,19 @@ describe("canvas operations", () => {
       withInstance,
       createOperation(withInstance, unrelatedObjectId!, "detachComponentInstance", { instanceId })
     )).toThrow("does not own");
+
+    expect(() => applyCanvasOperationToBundle(
+      withInstance,
+      createOperation(withInstance, sourceObjectId!, "createComponentInstance", { componentId, targetObjectId: sourceObjectId })
+    )).toThrow("already has");
+
+    expect(() => applyCanvasOperationToBundle(
+      withInstance,
+      createOperation(withInstance, sourceObjectId!, "updateComponentOverride", {
+        instanceId,
+        overrides: { missing: "Wrong prop" }
+      })
+    )).toThrow("unknown prop");
   });
 
   it("rejects locked object mutations", () => {

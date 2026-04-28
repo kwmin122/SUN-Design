@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 06 executed |
+| Current phase | Phase 06 verified |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -18,14 +18,14 @@
 | Phase 03 status | complete |
 | Phase 04 status | complete |
 | Phase 05 status | complete |
-| Phase 06 status | executed |
+| Phase 06 status | verified |
 | Phase 07 status | context |
 | Phase 08 status | context |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 5/46 v2 requirements complete; 41 v2 requirements mapped to Phase 07-11 |
-| Next action | `/sunco:verify 6` |
+| Next action | `/sunco:ship 6` |
 
 ## Phase Queue
 
@@ -36,7 +36,7 @@
 | Phase 03 | Prompt, Creation Modes, Assets, and Korean Presets | complete | 9 |
 | Phase 04 | Responsive Preview and Export Fidelity | complete | 9 |
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
-| Phase 06 | Canvas and Component Model | executed | 5 |
+| Phase 06 | Canvas and Component Model | verified | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | context | 5 |
 | Phase 08 | Prototyping, Slides, and AI Variations | context | 11 |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
@@ -45,7 +45,7 @@
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 implementation is executed for the Milestone 2 canvas/component foundation; the next step is `/sunco:verify 6`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is formally verified for the Milestone 2 canvas/component foundation; the next step is `/sunco:ship 6`.
 
 ## Key Decisions Carried Forward
 
@@ -107,13 +107,15 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 06 execution plans were created in `.planning/phases/06-canvas-and-component-model/`: Wave 1 core editor-core canvas/component state and operations; Wave 2 web layer tree, layout inspector, snapping/guide surface, and local component instance workflow.
 - Phase 06 Wave 1 completed in `2d1710d`: editor-core canvas graph, typed canvas operations, layout materialization, local component helpers, persistence/export/handoff compatibility, and unit coverage.
 - Phase 06 Wave 2 completed in `b6bb1da`: web layer tree, object inspector, snap guide/breadcrumb, component instance panel, reload persistence, tablet/mobile overflow regression, and browser workflow coverage.
-- Phase 06 execution gate passed in `.planning/phases/06-canvas-and-component-model/06-VERIFICATION.md`. Formal SUNCO verification remains next via `/sunco:verify 6`.
+- Phase 06 formal SUNCO verification passed in `.planning/phases/06-canvas-and-component-model/06-VERIFICATION.md`.
 - Phase 06 post-review remediation fixed the canvas graph integrity blockers, component instance ownership checks, preset-only layout controls, hardcoded component assumptions, dynamic breakpoint materialization, and narrow-rail layer row affordance issue before formal verification.
-- Post-remediation gates passed: `pnpm lint`, `pnpm typecheck`, `pnpm test` (11 files, 48 tests), and `pnpm e2e` (17 browser tests).
+- Phase 06 final verification remediation fixed persisted component prop/variant/override invariants on graph load and the exported component override helper.
+- Post-remediation gates passed: `pnpm lint`, `pnpm typecheck`, `pnpm test` (11 files, 52 tests), and `pnpm e2e` (17 browser tests).
+- The visible design-agent workflow requested for the studio shell is present: Ask, Search, Verify, 3 Directions, and Iterate.
 
 ---
-*Last updated: 2026-04-28 after Phase 06 post-review remediation*
+*Last updated: 2026-04-28 after Phase 06 formal verification*
 - **phase**: 6
-- **last_updated**: 2026-04-28T12:21:43+09:00
-- **status**: executed
-- **next_action**: `/sunco:verify 6`
+- **last_updated**: 2026-04-28T13:07:51+09:00
+- **status**: verified
+- **next_action**: `/sunco:ship 6`

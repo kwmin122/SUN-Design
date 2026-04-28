@@ -1,4 +1,4 @@
-# Phase 06 Execution Gate
+# Phase 06 Verification Results
 
 Generated: 2026-04-28
 
@@ -6,56 +6,113 @@ Generated: 2026-04-28
 
 | Layer | Name | Result | Notes |
 |-------|------|--------|-------|
-| 1 | Plan execution | PASS | Both Phase 06 plans completed in commits `2d1710d` and `b6bb1da`. |
-| 2 | Guardrails | PASS | Lint, typecheck, unit tests, and full browser tests passed after Wave 2. |
-| 3 | BDD coverage | PASS | Browser tests cover canvas object selection/layout/reload/overflow and component instance workflow. |
-| 4 | Architecture boundary | PASS | No iframe `.contentDocument` path was added; stored `ProjectBundle` remains source of truth. |
-| 5 | Scope control | PASS | Phase 07-11 capabilities remain deferred; Phase 06 adds only the canvas/component foundation. |
+| 1 | Multi-agent review | PASS | Initial reviewers found graph, lock, component ownership, and persisted invariant failures; all blocking findings were remediated and regression-tested. |
+| 2 | Guardrails | PASS | `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm e2e` all pass. |
+| 3 | BDD criteria | PASS | 20/20 plan-level `done_when` criteria met, with targeted unit and browser evidence. |
+| 4 | Permission audit | PASS | Changes stayed in Phase 06 planning docs, web canvas UI/tests, and editor-core canvas/component modules; no secrets or network code added. |
+| 5 | Adversarial | PASS | Previously exploitable lock bypass, unsafe ungroup, duplicate child, stale node, and component invariant paths are now rejected. |
+| 6 | Cross-model | PASS | Skeptical review gaps were fixed or explicitly scoped to Phase 07-11; final persisted component invariant blocker was closed. |
+| 7 | Human eval | PASS | User accepted proceeding to `/sunco:verify 6` while explicitly preserving the caveat that this is a foundation, not full Paper/Figma/Claude Design parity. |
 
-## Overall: EXECUTION PASS - FORMAL VERIFY NEXT
+## Overall: PASS
 
-Phase 06 is implemented and ready for `/sunco:verify 6`. This file records the execution gate, not the final seven-layer SUNCO verification result.
+All 7 layers passed for the Phase 06 canvas and component foundation. Ready to ship Phase 06. Competitive product parity remains deferred to Phase 07-11 as documented.
 
-## Post-Review Remediation
+## Layer Details
 
-An external review after the initial execution gate found that Phase 06 was functionally green but not yet strong enough for a Paper/Figma/Claude Design-level canvas foundation. The following blockers were fixed before formal SUNCO verification:
+### Layer 1 - Multi-agent Review
 
-- Graph corruption is now rejected: `reorderObject` cannot move an object into itself or a descendant, `groupObjects` requires unique direct children under the same parent, and every persisted graph runs an integrity check for missing parents, parent mismatches, duplicate child ownership, and cycles.
-- Component instance mutations now require object ownership: `updateComponentOverride` and `detachComponentInstance` reject unrelated object/instance pairs.
-- Layout controls are no longer preset-only: gap, padding, grid column count, width, and breakpoint are editable fields that materialize typed layout constraints into safe CSS patches.
-- Component creation is no longer tied to the demo `Hero Card` / `Default` / `Emphasis` path: component props and variants can be supplied dynamically, with generic object-derived fallback props and a `Base` variant.
-- Browser coverage now exercises graph/layout/component behavior beyond localStorage string checks, including dynamic variants, dynamic overrides, breakpoint materialization, and tablet/mobile overflow.
-- Layer row actions were tightened so the visible layer name remains clickable in the narrow chat rail instead of being collapsed by secondary action buttons.
+**Correctness review:** WARN/FAIL findings from the initial review were accepted and fixed:
 
-## Commands Run
+- `reorderObject` rejects self/descendant moves and invalid indexes.
+- `groupObjects` requires unique direct children under the same parent.
+- graph integrity now runs on persisted `canvasGraph` load through `ensureCanvasGraph`.
+- locked objects, locked parents, and locked multi-target mutations are rejected.
+- ungroup is limited to synthetic canvas groups.
+
+**Security/resilience review:** FAIL findings were accepted and fixed:
+
+- component instances cannot be duplicated on one object.
+- instance override/detach operations require the owning object.
+- component variants and overrides are validated against declared component props on operation and persisted-load paths.
+- exported `updateComponentOverride` now requires the component definition and rejects empty, unknown, or wrong-component override keys.
+
+### Layer 2 - Guardrails
 
 | Command | Result |
 |---|---|
-| `pnpm --filter @kdesign/editor-core typecheck` | PASS |
-| `pnpm --filter @kdesign/editor-core test -- src/__tests__/canvas-graph.test.ts src/__tests__/canvas-operations.test.ts src/__tests__/canvas-components.test.ts src/__tests__/schemas.test.ts src/__tests__/export.test.ts src/__tests__/handoff.test.ts` | PASS: 10 files, 38 tests |
-| `pnpm --filter @kdesign/web typecheck` | PASS |
-| `pnpm build:packages && pnpm exec playwright test apps/web/tests/phase-06-canvas.spec.ts` | PASS: 1 browser test |
-| `pnpm build:packages && pnpm exec playwright test apps/web/tests/phase-06-components.spec.ts` | PASS: 1 browser test |
-| `pnpm build:packages && pnpm exec playwright test apps/web/tests/phase-06-canvas.spec.ts apps/web/tests/phase-06-components.spec.ts` | PASS: 2 browser tests after remediation |
-| `pnpm lint` | PASS |
+| `pnpm --filter @kdesign/editor-core test -- src/__tests__/canvas-graph.test.ts src/__tests__/canvas-components.test.ts src/__tests__/canvas-operations.test.ts` | PASS: 10 files, 44 tests |
 | `pnpm typecheck` | PASS |
-| `pnpm test` | PASS: 11 files, 48 tests |
+| `pnpm lint && pnpm typecheck && pnpm test && pnpm e2e` | PASS |
+| `pnpm test` | PASS: 11 files, 52 tests |
 | `pnpm e2e` | PASS: 17 browser tests |
 
-## Requirement Evidence
+### Layer 3 - BDD Criteria
 
-| Requirement | Status | Evidence |
-|-------------|--------|----------|
-| CANVAS-01 | PASS | `CanvasGraphSchema`, deterministic graph derivation, page/artboard/object records, and visible object count. |
-| CANVAS-02 | PASS | `CanvasLayerTree` exposes select, rename, hide/show, lock/unlock, move, group, and ungroup controls, with graph integrity guards for invalid reorder/group operations. |
-| CANVAS-03 | PASS | Layout constraints, pinning controls, snap guide, reload-persistence browser assertions, and tablet/mobile overflow regression. |
-| CANVAS-04 | PASS | Block/flex/grid/gap/padding/alignment/grid-column/breakpoint controls emit typed operations and materialized CSS patches. |
-| CANVAS-05 | PASS | Component definition, instance creation, dynamic variants, state, dynamic overrides, ownership-checked detach, persistence, and handoff includes. |
+| Criterion | Status | Evidence |
+|-----------|--------|----------|
+| `ProjectBundle` accepts optional `canvasGraph` and persisted `canvasOperations`. | PASS | `ProjectBundleSchema` fields and persistence tests pass. |
+| v1 bundles without canvas data load through a deterministic derived canvas graph. | PASS | `parseProjectBundleJson` missing-graph test passes. |
+| Canvas operations are typed, validated, replayable, and append to stored state. | PASS | `canvas-operations.test.ts` and browser localStorage assertions pass. |
+| Layout constraints materialize to safe stored HTML styles for export and preview. | PASS | layout materialization unit test and Phase 06 canvas browser test pass. |
+| Local component definitions and instances support live slots, declared props, variants, validated overrides, state, and detach records. | PASS | component helper, operation, browser, and handoff tests pass. |
+| Agent handoff packages include canvas and component state without runtime lock-in. | PASS | handoff tests and Phase 06 component browser test pass. |
+| Invalid object ids, locked mutations, stale parents, and unsafe layout values are rejected. | PASS | operation and graph regression tests pass. |
+| Missing component ids, invalid variants, empty/unknown override keys, duplicate instances, and stale component references are rejected. | PASS | component, operation, and persisted graph load tests pass. |
+| Plan 06-01 task acceptance criteria verified. | PASS | schema, graph, operation, layout, component, export, and handoff tests pass. |
+| Plan 06-01 lint/typecheck/test gates exit 0. | PASS | full gate passed on 2026-04-28. |
+| The app displays a visible canvas layer tree backed by stored `canvasGraph` data. | PASS | Phase 06 canvas browser test passes. |
+| Selecting an iframe node selects the corresponding canvas object without reading iframe DOM directly. | PASS | selection maps via bridge registry and `findCanvasObjectByNodeId`; no iframe DOM source-of-truth path added. |
+| Rename, hide/show, lock/unlock, reorder, group/ungroup, and layout controls commit typed canvas operations. | PASS | UI callbacks route through `commitCanvasOperation`; browser and unit tests pass. |
+| Layout controls persist through reload and materialize to preview/export-safe stored state. | PASS | Phase 06 canvas browser test passes. |
+| A selected object can become a local component with live slots, declared props, variants, validated overrides, and state. | PASS | Phase 06 component browser test and component tests pass. |
+| A component instance can be created, adjusted, detached, persisted, and reloaded. | PASS | Phase 06 component browser test passes. |
+| Desktop, tablet, and mobile browser checks have no horizontal body overflow. | PASS | Phase 06 canvas browser test asserts 1440, 768, and 390 px widths. |
+| Phase 07-only token governance, publish/remix, Storybook/GitHub links, and Code Connect are not implemented. | PASS | scope remains foundation-only; docs defer these to Phase 07-11. |
+| Plan 06-02 task acceptance criteria verified. | PASS | layer tree, inspector, component workflow, responsive browser tests pass. |
+| Plan 06-02 lint/typecheck/e2e gates exit 0. | PASS | full gate passed on 2026-04-28. |
 
-## Deferred
+### Layer 4 - Permission Audit
 
-- Phase 07: governed tokens, code connection, component playground, and design-system publishing.
-- Phase 08: AI localized remix, prototype interactions, slide/deck authoring, and variations.
-- Phase 09: real context ingestion, source notes, live data, and asset provenance.
-- Phase 10: dev mode, publish, and deeper export fidelity.
-- Phase 11: collaboration, search, governance, and permissions.
+- File scope: Phase 06 planning docs, `packages/editor-core` canvas/component modules and tests, `apps/web` canvas shell components/tests/styles.
+- Network: no new `fetch`, `axios`, `http.get`, `https.get`, `got`, or `ky` product paths were added for Phase 06.
+- Secrets: no `.env`, key, certificate, credential, or secret files were changed.
+- Scope control: Phase 07-11 parity work is documented but not implemented in Phase 06.
+
+### Layer 5 - Adversarial
+
+Adversarial findings were reproduced as code paths and fixed:
+
+- parent-to-child reorder cycles are rejected.
+- cross-parent groups and duplicate group child ids are rejected.
+- duplicate and stale child references are rejected on load.
+- stale edit-node references in persisted canvas objects are rejected on load.
+- locked object mutations are rejected both in typed canvas operations and the legacy edit patch UI path.
+- normal derived frames cannot be deleted through ungroup.
+- component instances cannot be created twice on the same object.
+- persisted component variants, instance variants, and overrides cannot reference undeclared props or variants.
+
+### Layer 6 - Cross-model
+
+Skeptical review originally found that Phase 06 was a good foundation but not full Paper/Figma/Claude Design product parity. The verification outcome keeps that boundary honest:
+
+- breakpoint behavior is stored metadata and safe CSS materialization, not full responsive rule authoring.
+- component support is local reusable component foundation with declared props, variants, overrides, state, detach, and handoff, not full code components/slots/tokens.
+- Paper/Figma/Claude Design parity remains planned across Phase 07-11.
+- the final component invariant blocker was fixed in `canvas-graph.ts`, `canvas-components.ts`, and regression tests.
+
+### Layer 7 - Human Eval
+
+Human evaluation accepted proceeding to formal Phase 06 verification with this caveat:
+
+- Phase 06 is a verified high-quality canvas/component foundation.
+- It must not be described as the finished Paper/Figma/Claude Design-level product.
+- The visible design-agent workflow requested by the user is now present in the app shell: `Ask`, `Search`, `Verify`, `3 Directions`, and `Iterate`.
+
+## Issues to Fix
+
+None for Phase 06 verification.
+
+## Next Route
+
+Run `/sunco:ship 6` to package the verified Phase 06 work.

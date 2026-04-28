@@ -46,9 +46,9 @@ It must not turn into a full Figma/Paper clone in one phase. Phase 06 establishe
 
 - CANVAS-01: explicit canvas objects for pages, artboards, frames, sections, component instances, and primitive text/image/vector-like nodes.
 - CANVAS-02: visible layer tree for select, reorder, group, hide, lock, and rename.
-- CANVAS-03: constraints, snapping, guides, and resize rules that persist through reload and export.
-- CANVAS-04: structured controls for CSS flex, auto-layout-like web constraints, CSS Grid, gap, padding, alignment, and breakpoints.
-- CANVAS-05: reusable component instances with slots, props, variants, overrides, and state.
+- CANVAS-03: foundational constraints, visual snapping/guide hints, and resize metadata that persist through reload and portable artifact state.
+- CANVAS-04: structured controls for CSS flex, auto-layout-like web constraints, CSS Grid, gap, padding, alignment, and breakpoint metadata.
+- CANVAS-05: reusable component instances with live slots, declared props, variants, validated overrides, and state.
 
 ## Canonical References
 
