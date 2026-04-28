@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 09 context ready; plan next |
+| Current phase | Phase 09 planned; execute next |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -21,11 +21,11 @@
 | Phase 06 status | shipped |
 | Phase 07 status | shipped |
 | Phase 08 status | shipped |
-| Phase 09 status | context_ready |
+| Phase 09 status | planned |
 | Phase 10 status | context |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 21/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
-| Next action | `/sunco:plan 9` |
+| Next action | `/sunco:execute 9` |
 
 ## Phase Queue
 
@@ -39,13 +39,13 @@
 | Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
 | Phase 08 | Prototyping, Slides, and AI Variations | shipped | 11 complete |
-| Phase 09 | Context Ingestion, Live Data, and Assets | context_ready | 6 |
+| Phase 09 | Context Ingestion, Live Data, and Assets | planned | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 context is captured for real source ingestion, provenance, generated source/design notes, safe web snapshots, local-first data bindings, asset lifecycle, and server-portable sync semantics. The next step is `/sunco:plan 9`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is planned in two waves: Wave 1 builds editor-core context/data/asset/sync schemas, helpers, integrity, export/handoff inclusion, and regression tests; Wave 2 exposes the visible web studio workflows and browser coverage. The next step is `/sunco:execute 9`.
 
 ## Key Decisions Carried Forward
 
@@ -138,10 +138,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 formal SUNCO verification passed in `.planning/phases/08-prototyping-slides-and-ai-variations/08-VERIFICATION.md`: guardrails, BDD criteria, permission audit, adversarial probes, and product-boundary review passed. The next route is `/sunco:ship 8`.
 - Phase 08 shipped direct-to-main in `4bc5efb` / remote `4bc5efb3cfa0bef476c62a4fbccc4a0f084a2df5`. A PR was not created because the verified work was already committed and pushed on `main`.
 - Phase 09 context was captured in `.planning/phases/09-context-ingestion-live-data-and-assets/09-CONTEXT.md`, locking the scope to real source ingestion, provenance, generated `source-notes.md`/`design-context.md`, safe editable web snapshots, local-first data bindings, asset lifecycle, stable project URLs, and server-portable sync semantics while deferring production hosted storage, authenticated scraping, Dev Mode, publish/export fidelity, collaboration, and full Figma roundtrip.
+- Phase 09 execution plans were created in `.planning/phases/09-context-ingestion-live-data-and-assets/`: Wave 1 core editor-core source/data/asset/sync foundation and Wave 2 web context queue, notes viewer, web snapshot, data binding, asset provenance, and local/mock sync UI. DATA-01 remains foundation-only until hosted-account sync semantics are implemented and verified.
 
 ---
-*Last updated: 2026-04-28 after Phase 09 context capture*
+*Last updated: 2026-04-28 after Phase 09 planning*
 - **phase**: 9
-- **last_updated**: 2026-04-28T22:51:26+09:00
-- **status**: context_ready
-- **next_action**: /sunco:plan 9
+- **last_updated**: 2026-04-28T23:18:53+09:00
+- **status**: planned
+- **next_action**: /sunco:execute 9
