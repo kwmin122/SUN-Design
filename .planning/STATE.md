@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 08 verified; ship next |
+| Current phase | Phase 09 context; discuss next |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -20,12 +20,12 @@
 | Phase 05 status | complete |
 | Phase 06 status | shipped |
 | Phase 07 status | shipped |
-| Phase 08 status | verified; ship next |
+| Phase 08 status | shipped |
 | Phase 09 status | context |
 | Phase 10 status | context |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 21/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
-| Next action | `/sunco:ship 8` |
+| Next action | `/sunco:discuss 9` |
 
 ## Phase Queue
 
@@ -38,14 +38,14 @@
 | Phase 05 | Design Systems, Sharing, and Agent-Agnostic Handoff | complete | 9 |
 | Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
-| Phase 08 | Prototyping, Slides, and AI Variations | verified; ship next | 11 complete |
+| Phase 08 | Prototyping, Slides, and AI Variations | shipped | 11 complete |
 | Phase 09 | Context Ingestion, Live Data, and Assets | context | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 verification passed: selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks are implemented and verified. The next step is `/sunco:ship 8`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. A PR was not created because the verified Phase 08 work was already committed and pushed on `main`. The next step is `/sunco:discuss 9`.
 
 ## Key Decisions Carried Forward
 
@@ -136,10 +136,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 post-review remediation closed the reload/promote invariant gap: persisted `agentOutputs` now reuse the same allowlist/unsafe-patch validation as ingest, `agentRuns` must match linked output runtime/context/target/revision, and `agent-output:*` variation directions are rejected on load or promote if unsafe.
 - Phase 08 runtime provenance remediation closed the remaining context-package gap: if an agent context package has a runtime, normal ingest and persisted reload now reject output/runtime mismatches, and the web workflow leaves a rejected diagnostic run when the selected runtime does not match the context.
 - Phase 08 formal SUNCO verification passed in `.planning/phases/08-prototyping-slides-and-ai-variations/08-VERIFICATION.md`: guardrails, BDD criteria, permission audit, adversarial probes, and product-boundary review passed. The next route is `/sunco:ship 8`.
+- Phase 08 shipped direct-to-main in `4bc5efb` / remote `4bc5efb3cfa0bef476c62a4fbccc4a0f084a2df5`. A PR was not created because the verified work was already committed and pushed on `main`.
 
 ---
-*Last updated: 2026-04-28 after Phase 08 formal verification*
+*Last updated: 2026-04-28 after Phase 08 direct-to-main ship*
 - **phase**: 8
-- **last_updated**: 2026-04-28T22:25:00+09:00
-- **status**: verified
-- **next_action**: /sunco:ship 8
+- **last_updated**: 2026-04-28T22:36:53+09:00
+- **status**: shipped
+- **next_action**: /sunco:discuss 9
