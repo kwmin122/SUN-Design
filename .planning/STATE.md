@@ -134,10 +134,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 08 gap-only plan hardening closed verifier findings before execution: agent output now requires multiple directions, agent operations/patches are allowlisted for selected-region rewrite/restyle, and runtime mismatches must be rejected with diagnostics.
 - Phase 08 gap-only execution completed the remaining AI-01 through AI-04 path: `AgentContextPackage`, `AgentOutputEnvelope`, `AgentRun`, persisted integrity checks, selected-region web ingestion UI, validation diagnostics, and Playwright E2E for valid/rejected agent output.
 - Phase 08 post-review remediation closed the reload/promote invariant gap: persisted `agentOutputs` now reuse the same allowlist/unsafe-patch validation as ingest, `agentRuns` must match linked output runtime/context/target/revision, and `agent-output:*` variation directions are rejected on load or promote if unsafe.
+- Phase 08 runtime provenance remediation closed the remaining context-package gap: if an agent context package has a runtime, normal ingest and persisted reload now reject output/runtime mismatches, and the web workflow leaves a rejected diagnostic run when the selected runtime does not match the context.
 
 ---
-*Last updated: 2026-04-28 after Phase 08 persisted agent-output invariant remediation*
+*Last updated: 2026-04-28 after Phase 08 runtime provenance remediation*
 - **phase**: 8
-- **last_updated**: 2026-04-28T21:50:00+09:00
+- **last_updated**: 2026-04-28T22:11:00+09:00
 - **status**: executed
 - **next_action**: /sunco:verify 8

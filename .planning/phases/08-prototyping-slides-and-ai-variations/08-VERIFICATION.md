@@ -10,13 +10,13 @@ Generated: 2026-04-28
 | 2 | Guardrails | PASS | Targeted checks and full repo `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm e2e` pass. |
 | 3 | BDD criteria | PASS | AI-01 through AI-04 now have selected-region context packages, multiple agent-generated directions, scoped provenance, typed operation/patch ingestion, diagnostics, and explicit promotion. |
 | 4 | Permission audit | PASS | Changes stayed within Phase 08 plan scope and did not add hosted auth, paid provider calls, worker queues, live data, or Dev Mode export. |
-| 5 | Adversarial | PASS | Persisted agent context/output/run references, stale revisions, single-direction outputs, runtime mismatches, cross-target edits, unsupported operations, unsafe patch values, and agent-output variation promote bypasses are rejected. |
+| 5 | Adversarial | PASS | Persisted agent context/output/run references, stale revisions, single-direction outputs, input/output/context runtime mismatches, cross-target edits, unsupported operations, unsafe patch values, and agent-output variation promote bypasses are rejected. |
 | 6 | Competitive parity boundary | PASS WITH BOUNDARY | Phase 08 closes the AI-01 through AI-04 foundation gap through validated local-first ingestion; hosted provider adapters and richer context/live data remain Phase 09-11 work. |
 | 7 | Human eval | PASS | User removed the independent verification-prompt requirement; this file records direct evidence and next route. |
 
 ## Overall: EXECUTED; READY FOR /sunco:verify 8
 
-Phase 08 now includes the missing canvas-aware agent/model-shaped output path. The product can create a selected-object context package, accept structured output from an external agent/runtime, validate it against stored canvas ids and source revision, reject unsafe or out-of-scope output with diagnostics, display multiple generated directions side by side, promote one explicitly through typed operations/patches, and reload persisted state. Persisted reload and promote paths now reuse the same agent allowlist, unsafe-patch, revision, and runtime invariants as initial ingestion.
+Phase 08 now includes the missing canvas-aware agent/model-shaped output path. The product can create a selected-object context package, accept structured output from an external agent/runtime, validate it against stored canvas ids and source revision, reject unsafe or out-of-scope output with diagnostics, display multiple generated directions side by side, promote one explicitly through typed operations/patches, and reload persisted state. Persisted reload and promote paths now reuse the same agent allowlist, unsafe-patch, revision, and runtime invariants as initial ingestion. When a context package has a runtime, selected runtime, output runtime, persisted output runtime, and linked run runtime must remain consistent.
 
 This does not claim full Claude Design/Paper/Figma product parity. It closes the Phase 08 AI-01 through AI-04 execution gap at the local-first artifact layer. Provider adapters, richer live context, Dev Mode, publish/export fidelity, collaboration, search, and governance remain later phases.
 
@@ -43,12 +43,12 @@ This does not claim full Claude Design/Paper/Figma product parity. It closes the
 |---|---|
 | `pnpm --filter @kdesign/editor-core typecheck` | PASS |
 | `pnpm --filter @kdesign/web typecheck` | PASS |
-| `pnpm --filter @kdesign/editor-core test -- src/__tests__/agent-output.test.ts src/__tests__/persistence.test.ts src/__tests__/variations.test.ts` | PASS: 15 files, 84 tests |
+| `pnpm --filter @kdesign/editor-core test -- src/__tests__/agent-output.test.ts src/__tests__/persistence.test.ts src/__tests__/variations.test.ts` | PASS: 15 files, 86 tests |
 | `pnpm exec playwright test apps/web/tests/phase-08-agent-output.spec.ts` | PASS: 2 browser tests |
 | `npx tsc --noEmit` | PASS |
 | `pnpm lint` | PASS |
 | `pnpm typecheck` | PASS |
-| `pnpm test` | PASS: 16 files, 92 tests |
+| `pnpm test` | PASS: 16 files, 94 tests |
 | `pnpm e2e` | PASS: 24 browser tests |
 
 ## BDD Criteria
@@ -64,7 +64,7 @@ This does not claim full Claude Design/Paper/Figma product parity. It closes the
 | Multiple generated directions are required and shown side by side. | PASS | Schema requires 2-6 directions; E2E asserts two agent directions. |
 | Localized remix preserves selected-object scope and provenance. | PASS | Scope validator and UI provenance labels use `agent-output:<runtime>`. |
 | Canvas-aware agent actions use stored ids and typed operations/patches, not raw DOM. | PASS | Core validator rejects out-of-scope targets and E2E rejects `iframe.contentDocument` persistence. |
-| Invalid agent output is diagnostic, not silent. | PASS | Tests cover stale revision, single direction, runtime mismatch, cross-target, unsupported operation, and unsafe patch paths. |
+| Invalid agent output is diagnostic, not silent. | PASS | Tests cover stale revision, single direction, input/output/context runtime mismatch, cross-target, unsupported operation, and unsafe patch paths. |
 | Persisted agent output cannot bypass ingest validation on reload or promote. | PASS | Persistence tests reject unsupported/unsafe persisted `agentOutputs`, runtime-linked `agentRuns`, and agent-output variation records; variation tests reject promote bypass. |
 
 ## Adversarial Coverage
@@ -73,6 +73,7 @@ This does not claim full Claude Design/Paper/Figma product parity. It closes the
 - persisted agent outputs pointing at missing context packages are rejected on load.
 - persisted agent runs pointing at missing output ids are rejected on load.
 - persisted agent output envelopes are revalidated against the same selected-region allowlist and unsafe-patch checks used at ingestion time.
+- persisted agent output envelopes must match their context package runtime when a context runtime exists.
 - persisted agent runs must match their output runtime, context package, target object, and source revision.
 - persisted `agent-output:*` variation directions are rejected on load and before promote if they contain unsupported operations or unsafe patch values.
 - agent output must include at least two directions.

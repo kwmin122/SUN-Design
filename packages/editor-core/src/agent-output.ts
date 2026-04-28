@@ -120,6 +120,12 @@ export function ingestAgentOutput(bundle: ProjectBundle, input: IngestAgentOutpu
   }
 
   const createdAt = input.createdAt ?? new Date().toISOString();
+  if (contextPackage.runtime && input.runtime !== contextPackage.runtime) {
+    return persistRejectedAgentRun(current, contextPackage, input.runtime, [
+      createDiagnostic("runtime-mismatch", `Selected runtime ${input.runtime} does not match context runtime ${contextPackage.runtime}.`, createdAt, contextPackage.id)
+    ], createdAt);
+  }
+
   const parsed = AgentOutputEnvelopeSchema.safeParse(input.output);
   if (!parsed.success) {
     return persistRejectedAgentRun(current, contextPackage, input.runtime, diagnosticsForSchemaFailure(input.output, createdAt), createdAt);
@@ -190,6 +196,9 @@ export function validateAgentOutputScope(
   }
   if (output.contextPackageId !== contextPackage.id) {
     diagnostics.push(createDiagnostic("missing-reference", `Output references a different context package: ${output.contextPackageId}`, output.createdAt, output.contextPackageId));
+  }
+  if (contextPackage.runtime && output.runtime !== contextPackage.runtime) {
+    diagnostics.push(createDiagnostic("runtime-mismatch", `Output runtime ${output.runtime} does not match context runtime ${contextPackage.runtime}.`, output.createdAt, output.id));
   }
   if (output.targetObjectId !== contextPackage.targetObjectId) {
     diagnostics.push(createDiagnostic("out-of-scope-target", `Output target must stay on selected object: ${contextPackage.targetObjectId}`, output.createdAt, output.targetObjectId));

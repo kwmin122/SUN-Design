@@ -84,7 +84,11 @@ export function VariationComparePanel({
         >
           Create agent context
         </button>
-        <select value={runtime} onChange={(event) => setRuntime(event.target.value as AgentRuntime)}>
+        <select
+          data-testid="agent-runtime-select"
+          value={runtime}
+          onChange={(event) => setRuntime(event.target.value as AgentRuntime)}
+        >
           {RUNTIMES.map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
       </div>

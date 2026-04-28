@@ -102,6 +102,7 @@ test("ingests agent generated selected-region directions", async ({ page }) => {
   expect(contextPackage.targetObjectId).toBeTruthy();
   expect(contextPackage.sourceRevision).toBeTruthy();
   expect(contextPackage.selectedObject).toBeTruthy();
+  expect(contextPackage.runtime).toBe("codex");
   expect(contextPackage.guardrails).toContain("Use stored ProjectBundle ids only.");
   expect(contextPackage.instructionsPath).toBe("docs/prompts/context-driven-design-agent-prompt.md");
 
@@ -134,6 +135,7 @@ test("ingests agent generated selected-region directions", async ({ page }) => {
 test("rejects invalid agent selected-region output with diagnostics", async ({ page }) => {
   await openFreshProject(page);
   const contextPackage = await createAgentContext(page);
+  expect(contextPackage.runtime).toBe("codex");
 
   await page.getByTestId("agent-output-json-input").fill(JSON.stringify(buildAgentOutput(contextPackage, {
     sourceRevision: "rev_stale"
@@ -147,6 +149,13 @@ test("rejects invalid agent selected-region output with diagnostics", async ({ p
   await page.getByTestId("ingest-agent-output-button").click();
   await expect(page.getByTestId("agent-output-diagnostics")).toContainText(/insufficient-directions|schema-error/);
 
+  await page.getByTestId("agent-output-json-input").fill(JSON.stringify(buildAgentOutput(contextPackage, {
+    runtime: "claudeCode"
+  })));
+  await page.getByTestId("ingest-agent-output-button").click();
+  await expect(page.getByTestId("agent-output-diagnostics")).toContainText("runtime-mismatch");
+
+  await page.getByTestId("agent-runtime-select").selectOption("claudeCode");
   await page.getByTestId("agent-output-json-input").fill(JSON.stringify(buildAgentOutput(contextPackage, {
     runtime: "claudeCode"
   })));

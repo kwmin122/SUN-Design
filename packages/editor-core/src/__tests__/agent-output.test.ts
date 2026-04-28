@@ -206,6 +206,27 @@ describe("agent output ingestion", () => {
     expect(bundle.variationSets).toHaveLength(0);
   });
 
+  it("records rejected agent runs for context package runtime mismatches", () => {
+    const fixture = withContext();
+    const bundle = ingestAgentOutput(fixture.bundle, {
+      contextPackageId: fixture.contextPackage.id,
+      runtime: "claudeCode",
+      output: createEnvelope({
+        contextPackageId: fixture.contextPackage.id,
+        runtime: "claudeCode",
+        targetObjectId: fixture.targetObjectId,
+        sourceRevision: fixture.contextPackage.sourceRevision
+      }),
+      createdAt: "2026-04-28T00:00:04.000Z"
+    });
+
+    expect(bundle.agentRuns[0]?.status).toBe("rejected");
+    expect(bundle.agentRuns[0]?.runtime).toBe("claudeCode");
+    expect(bundle.agentRuns[0]?.diagnostics.map((diagnostic) => diagnostic.code)).toContain("runtime-mismatch");
+    expect(bundle.agentOutputs).toHaveLength(0);
+    expect(bundle.variationSets).toHaveLength(0);
+  });
+
   it("records rejected agent runs for cross-target operations", () => {
     const fixture = withContext();
     const bundle = ingestAgentOutput(fixture.bundle, {

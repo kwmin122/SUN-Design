@@ -109,7 +109,7 @@
 - [x] **AI-01**: User can ask the AI to rewrite or restyle only a selected region. Phase 08 supports selected-object agent context packages and local-first structured agent output ingestion into typed operations/patches.
 - [x] **AI-02**: User can compare multiple generated visual directions side by side. Phase 08 requires at least two agent-generated directions per valid output envelope and displays them as validated candidates.
 - [x] **AI-03**: User can right-click or otherwise target an object and request a localized remix that preserves surrounding layout and source provenance. Phase 08 preserves selected-object scope, source revision, runtime provenance, and explicit promote workflow.
-- [x] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits. Phase 08 validates agent output against stored canvas ids, allowlisted operations/patches, unsafe patch values, runtime links, persisted reference integrity, and promote-time safety.
+- [x] **AI-04**: User can run a canvas-aware agent action that reads the current canvas object model and emits typed operations instead of raw DOM edits. Phase 08 validates agent output against stored canvas ids, allowlisted operations/patches, unsafe patch values, context/output/run runtime provenance, persisted reference integrity, and promote-time safety.
 - [x] **AI-05**: User can export a portable prompt/script recipe that another agent runtime can replay against the same artifact package.
 
 ### Prototyping and Slides

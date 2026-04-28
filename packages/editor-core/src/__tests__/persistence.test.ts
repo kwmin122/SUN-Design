@@ -341,6 +341,19 @@ describe("project bundle persistence", () => {
       .toThrow("Agent output failed persisted validation");
   });
 
+  it("rejects persisted agent output context runtime mismatches", () => {
+    const { raw, contextPackage, targetObjectId } = createRawAgentState();
+
+    raw.agentContextPackages = [contextPackage];
+    raw.agentOutputs = [createRawAgentOutput(contextPackage, {
+      targetObjectId,
+      runtime: "claudeCode"
+    })];
+
+    expect(() => parseProjectBundleJson(JSON.stringify(raw)))
+      .toThrow("Agent output failed persisted validation");
+  });
+
   it("rejects persisted agent run runtime mismatches", () => {
     const { raw, contextPackage, targetObjectId } = createRawAgentState();
     const output = createRawAgentOutput(contextPackage, { targetObjectId });
@@ -460,12 +473,14 @@ function createRawAgentOutput(
   input: {
     targetObjectId: string;
     directions?: unknown[];
+    runtime?: "codex" | "claudeCode";
   }
 ) {
+  const runtime = input.runtime ?? contextPackage.runtime;
   return {
     id: "agent_output_valid",
     contextPackageId: contextPackage.id,
-    runtime: contextPackage.runtime,
+    runtime,
     targetObjectId: input.targetObjectId,
     sourceRevision: contextPackage.sourceRevision,
     prompt: "Generate selected-region directions.",
@@ -477,7 +492,7 @@ function createRawAgentOutput(
       targetObjectId: input.targetObjectId,
       operations: [],
       patches: [],
-      provenance: "agent-output:codex",
+      provenance: `agent-output:${runtime}`,
       createdAt: AGENT_TEST_TIME
     }, {
       id: "agent_dir_b",
@@ -487,7 +502,7 @@ function createRawAgentOutput(
       targetObjectId: input.targetObjectId,
       operations: [],
       patches: [],
-      provenance: "agent-output:codex",
+      provenance: `agent-output:${runtime}`,
       createdAt: AGENT_TEST_TIME
     }],
     diagnostics: [],

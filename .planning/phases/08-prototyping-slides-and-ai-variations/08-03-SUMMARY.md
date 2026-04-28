@@ -29,7 +29,7 @@ Closed the Phase 08 AI-01 through AI-04 ship hold with a local-first, agent-agno
 ### Created
 
 - `packages/editor-core/src/agent-output.ts` - Local-first context package creation, agent output parsing/ingestion, shared direction safety validation, and rejected-run persistence.
-- `packages/editor-core/src/__tests__/agent-output.test.ts` - Core coverage for valid ingestion, stale revision, single direction, runtime mismatch, cross-target, unsupported/raw HTML, and promotion.
+- `packages/editor-core/src/__tests__/agent-output.test.ts` - Core coverage for valid ingestion, stale revision, single direction, input/output/context runtime mismatch, cross-target, unsupported/raw HTML, and promotion.
 - `apps/web/tests/phase-08-agent-output.spec.ts` - Browser coverage for selected-region context creation, valid agent output ingestion, promotion, reload, diagnostics, and responsive no-overflow checks.
 
 ### Modified
@@ -37,7 +37,7 @@ Closed the Phase 08 AI-01 through AI-04 ship hold with a local-first, agent-agno
 - `packages/editor-core/src/schemas.ts` - Adds durable agent context/output/run schemas and `validated` variation status.
 - `packages/editor-core/src/integrity.ts` - Validates persisted agent context packages, outputs, runs, runtime links, and agent-output variation records on load/serialize.
 - `packages/editor-core/src/index.ts` - Exports the agent output module.
-- `packages/editor-core/src/__tests__/persistence.test.ts` - Adds corrupt persisted agent-output reference, safety, and runtime-link rejection cases.
+- `packages/editor-core/src/__tests__/persistence.test.ts` - Adds corrupt persisted agent-output reference, safety, runtime-link, and context-runtime rejection cases.
 - `apps/web/components/variation-compare-panel.tsx` - Adds agent context, output JSON input, ingestion, diagnostics, and provenance display.
 - `apps/web/components/editor-shell.tsx` - Wires agent context creation and output ingestion through stored bundle updates.
 - `apps/web/app/globals.css` - Adds compact tool-rail styling for agent context/output diagnostics and agent-generated direction cards.
@@ -49,10 +49,10 @@ Closed the Phase 08 AI-01 through AI-04 ship hold with a local-first, agent-agno
 |-----------|--------|-------|
 | Agent context package contains selected target id, revision, object summary, guardrails, and prompt path | PASS | Unit and E2E assert stored package fields and `docs/prompts/context-driven-design-agent-prompt.md`. |
 | Agent output requires at least two generated directions | PASS | Schema uses `.min(2).max(6)`; unit and E2E cover single-direction rejection. |
-| Runtime mismatch is rejected with diagnostics | PASS | Unit and E2E assert `runtime-mismatch` rejected runs. |
+| Runtime mismatch is rejected with diagnostics | PASS | Unit and E2E assert `runtime-mismatch` rejected runs for input/output mismatches and context-package/output mismatches. |
 | Agent output is scoped to selected object and stored ids | PASS | Core validation rejects cross-target operations and patches. |
 | Unsupported operations and raw HTML/unsafe patch values are rejected | PASS | Core tests assert `unsupported-operation` and `unsafe-patch`. |
-| Persisted agent output cannot bypass validation after reload | PASS | Persistence tests reject unsupported persisted `agentOutputs`, unsafe patch values, runtime mismatches, and agent-output variation records. |
+| Persisted agent output cannot bypass validation after reload | PASS | Persistence tests reject unsupported persisted `agentOutputs`, unsafe patch values, context-runtime mismatches, run/output runtime mismatches, and agent-output variation records. |
 | Persisted agent-output directions cannot bypass validation during promote | PASS | Variation tests reject unsupported `agent-output:*` directions before any typed operation is applied. |
 | Valid agent directions appear side by side and can be promoted | PASS | Unit and E2E assert `Agent sharper hierarchy`, `Agent calmer rhythm`, promotion, and reload persistence. |
 | No live iframe DOM is persisted | PASS | E2E asserts saved state does not contain `iframe.contentDocument`. |
@@ -64,9 +64,9 @@ Closed the Phase 08 AI-01 through AI-04 ship hold with a local-first, agent-agno
 
 - `pnpm --filter @kdesign/editor-core typecheck` passed.
 - `pnpm --filter @kdesign/web typecheck` passed.
-- `pnpm --filter @kdesign/editor-core test -- src/__tests__/agent-output.test.ts src/__tests__/persistence.test.ts src/__tests__/variations.test.ts` passed: 15 files, 84 tests.
+- `pnpm --filter @kdesign/editor-core test -- src/__tests__/agent-output.test.ts src/__tests__/persistence.test.ts src/__tests__/variations.test.ts` passed: 15 files, 86 tests.
 - `pnpm exec playwright test apps/web/tests/phase-08-agent-output.spec.ts` passed: 2 browser tests.
-- `npx tsc --noEmit`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (16 files, 92 tests), and `pnpm e2e` (24 browser tests) passed.
+- `npx tsc --noEmit`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (16 files, 94 tests), and `pnpm e2e` (24 browser tests) passed.
 
 ## Deviations
 
