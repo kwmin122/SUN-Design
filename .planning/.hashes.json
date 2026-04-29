@@ -2,7 +2,7 @@
   ".planning/PROJECT.md": "4f27084f1094664f38c750ba477b1bcdee18b864bf982c63fe2559f185e81ec2",
   ".planning/REQUIREMENTS.md": "1890cc7fea5ebedfe3387c64ccb36c6c8c4c772e320912a3dfc28063176cc83f",
   ".planning/ROADMAP.md": "dc2b7f8cf7bde26235f5dbd4a40875f67c043860f1a805eef1cb037cee21dc88",
-  ".planning/STATE.md": "83725a621d6449348591e92a3576975c589b6320ec3f7918bbc79147dcd1d89e",
+  ".planning/STATE.md": "38d172a21a887a5568ce4415121a60ecbe14705e4da7fd345844d12b3a6ed9a2",
   ".planning/phases/01-safe-html-document-foundation/01-01-PLAN.md": "51176ca0d9f83cab9bada0375e6f8ec45476c7e283d88b880045dbafcdd691fc",
   ".planning/phases/01-safe-html-document-foundation/01-01-SUMMARY.md": "f06ab28fa4d3aa063183aa5b8524bea2a65629714602b07f2cace94ca8de87b4",
   ".planning/phases/01-safe-html-document-foundation/01-02-PLAN.md": "ee8e7d508e6b3160a3430758922e5de66a47dbe0edbb364fe09b498dbfb9564b",
@@ -66,6 +66,10 @@
   ".planning/phases/09-context-ingestion-live-data-and-assets/09-VERIFICATION.md": "3e21f8fa927535136a5c797617983fb46a5094dc90a0440b877cecf2d400f3df",
   ".planning/phases/09-context-ingestion-live-data-and-assets/checkpoint-wave-1.json": "56d491c5e3d2d6a99f2d942f42a1990b275513efd4f2b7fc4e0e650cbfcecfd5",
   ".planning/phases/09-context-ingestion-live-data-and-assets/checkpoint-wave-2.json": "93e8ba30d85e89e7fe63fb900970d248156f70d39ead30c2f21ab1cead869d4f",
+  ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-01-PLAN.md": "1cdd63931179a1d68d038aaccf2d6e683e7c5b38d3308d791be7d0f7720aa0af",
+  ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-02-PLAN.md": "6846b86ce918d5c64d3cb881a0724faaab6c62df814f0cea66c58709916a3710",
+  ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-03-PLAN.md": "0d4ffd394c1ebda810ae2273defed7a5cbb7eedc585fbd86b23015982629da06",
   ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-CONTEXT.md": "f2e76b7a242fe1237d9e0dbe917009d2937fd3774fae8ab72b8daf5e662b64ca",
+  ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-RESEARCH.md": "b9465c352e2220d9062d3256e7f5cb5f75119a06459438a38ef1083806f9a3a1",
   ".planning/phases/11-collaboration-search-and-governance/11-CONTEXT.md": "8cd9bf1f6d74a09a3dc7659fda071b2c946ff278b8e2cd177f2438c95da89be3"
 }

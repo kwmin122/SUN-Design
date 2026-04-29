@@ -14,9 +14,9 @@ Canonical product intent: `.planning/PRODUCT-NORTH-STAR.md`. Claude Design, Pape
 
 Mandatory coding principles: `docs/guides/coding-principles.md`. Every coding agent must think before coding, prefer simplicity, make surgical changes, and execute against verifiable success criteria.
 
-Current phase: Phase 09 — Context Ingestion, Live Data, and Assets
+Current phase: Phase 10 — Dev Mode, Publish, and Export Fidelity
 Phase status: planned; ready for execution
-Next SUNCO action: `/sunco:execute 9`
+Next SUNCO action: `/sunco:execute 10`
 
 Competitive parity plan: `.planning/research/COMPETITIVE-GAP-REVIEW.md`. Official Claude Design, Paper, and Figma checks showed the next bar is professional canvas/component modeling, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, Dev Mode/publish/export fidelity, and collaboration/search/governance across Phase 06-11. These phases are the path to full product parity, not optional polish.
 
@@ -94,8 +94,8 @@ This prompt is not a general engineering prompt. It is the production standard f
 
 ## Current Phase
 
-Phase 09: Context Ingestion, Live Data, and Assets
+Phase 10: Dev Mode, Publish, and Export Fidelity
 
-Goal: execute the real context foundation: source ingestion, provenance, generated `source-notes.md` and `design-context.md`, safe editable web snapshots, local-first data bindings, asset lifecycle, stable project URLs, and server-portable sync semantics.
+Goal: execute Dev Mode inspect/code/readiness/version diff, real stored-state export materialization, static publish preview, code-agent roundtrip, and PPTX/animation export foundations.
 
-Phase 09 should proceed through `/sunco:execute 9`. Execution must preserve the full Claude Design / Paper / Figma-level product target while keeping Phase 09 scoped to context/data/assets and avoiding production hosted storage, authenticated scraping, Dev Mode, publish/export fidelity, collaboration, and full Figma roundtrip. DATA-01 remains foundation-only until hosted-account sync semantics are implemented and verified.
+Phase 10 should proceed through `/sunco:execute 10`. Execution must preserve the full Claude Design / Paper / Figma-level product target while keeping Phase 10 scoped to Dev Mode, publish preview, export fidelity, and code roundtrip. Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.

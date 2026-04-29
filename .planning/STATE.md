@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 10 planning pending |
+| Current phase | Phase 10 planned; execute pending |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -22,10 +22,10 @@
 | Phase 07 status | shipped |
 | Phase 08 status | shipped |
 | Phase 09 status | shipped |
-| Phase 10 status | context |
+| Phase 10 status | planned |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 26/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
-| Next action | Run `/sunco:plan 10` |
+| Next action | Run `/sunco:execute 10` |
 
 ## Phase Queue
 
@@ -40,12 +40,12 @@
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
 | Phase 08 | Prototyping, Slides, and AI Variations | shipped | 11 complete |
 | Phase 09 | Context Ingestion, Live Data, and Assets | shipped | 6 |
-| Phase 10 | Dev Mode, Publish, and Export Fidelity | context; plan pending | 10 |
+| Phase 10 | Dev Mode, Publish, and Export Fidelity | planned | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 has context but no execution plans yet. The next step is `/sunco:plan 10`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 is planned for Dev Mode inspect/code/readiness/version diff, real stored-state export materialization, static publish preview, PPTX/animation exports, and code-agent roundtrip. The next step is `/sunco:execute 10`.
 
 ## Key Decisions Carried Forward
 
@@ -68,7 +68,7 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 
 ## Blockers
 
-- No known Phase 09 blockers remain after ship.
+- No known Phase 10 planning blockers remain.
 
 ## Verification Notes
 
@@ -145,10 +145,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 09 verification remediation fixed the remaining blockers: persistence now migrates legacy context attachments before integrity validation; corrupt local project loads preserve saved payloads; URL validation blocks `localhost.`, `::`, `fe80::/10`, `100.64.0.0/10`, and persisted unsafe `sourceUrl` records; persisted source `assetIds`, binding `fieldMap`, and sync remote revision invariants are enforced; data binding rejects mismatched source ids; asset replacement writes typed `replaceAsset` patches; editable web snapshots map to canvas section objects; source provenance evidence is enforced. Gates passed: `pnpm lint`, `pnpm typecheck`, `npx tsc --noEmit`, `pnpm test` (20 files / 119 tests), and `pnpm e2e` (28 browser tests).
 - Phase 09 final verification remediation closed the follow-up blockers from `/sunco:verify 9`: invalid source status transitions are rejected, persisted snapshot URLs are revalidated and matched to source URLs, reserved/multicast/broadcast URL forms are blocked, data/sync revision references rebase after later edits, asset replacement updates stored source/context/snapshot references, invalid local saved payloads are not overwritten by fallback saves, `rowLimit: 0` is rejected, and stable asset URLs support percent encoding. Formal Phase 09 verification now passes in `.planning/phases/09-context-ingestion-live-data-and-assets/09-VERIFICATION.md`.
 - Phase 09 shipped direct-to-main in `38cb30f` / remote `38cb30f7bb6f868b552147ae786a159b32641485`. A PR was not created because the verified work was already committed and pushed on `main`.
+- Phase 10 research and execution plans were created in `.planning/phases/10-dev-mode-publish-and-export-fidelity/`: Wave 1 core Dev Mode inspection/readiness/diff/asset metadata, Wave 1 local export-worker/file materialization/publish/roundtrip contracts, and Wave 2 web Dev Mode/export/publish/roundtrip workflows. Full hosted production publish, full Figma export, and unrestricted PPT authoring remain deferred.
 
 ---
-*Last updated: 2026-04-29 after Phase 09 ship*
+*Last updated: 2026-04-29 after Phase 10 planning*
 - **phase**: 10
-- **last_updated**: 2026-04-29T15:31:00+09:00
-- **status**: phase_09_shipped
-- **next_action**: /sunco:plan 10
+- **last_updated**: 2026-04-29T15:43:10+09:00
+- **status**: planned
+- **next_action**: /sunco:execute 10
