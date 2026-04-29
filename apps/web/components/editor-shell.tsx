@@ -69,6 +69,7 @@ import {
   applyCanvasOperationToBundle,
   applyEditPatchToBundle,
   applyEditPatchesToBundle,
+  buildEditGraph,
   createPresentationState,
   createSelectedRegionRemix,
   createSlideDeck,
@@ -110,6 +111,7 @@ import {
   rejectUnsupportedSource,
   relinkAssetSource,
   replaceAssetReference,
+  rebaseRevisionReferences,
   rejectDesignSystemItems,
   remixDesignSystem,
   rollbackDesignSystem,
@@ -120,6 +122,7 @@ import {
   ingestAgentOutput,
   normalizeHtml,
   parseAgentOutputJson,
+  stableHash,
   validatePublicSourceUrl,
   validateSyncEnvelope
 } from "@kdesign/editor-core";
@@ -279,6 +282,7 @@ export function EditorShell() {
   const [projectBundle, setProjectBundle] = useState<ProjectBundle | null>(null);
   const projectBundleRef = useRef<ProjectBundle | null>(null);
   const hasLoadedInitialBundleRef = useRef(false);
+  const preserveInvalidLocalProjectRef = useRef(false);
   const [nonce, setNonce] = useState<string>("");
   const [diagnostics, setDiagnostics] = useState<PreviewError[]>([]);
   const [isPreviewReady, setIsPreviewReady] = useState(false);
@@ -323,7 +327,9 @@ export function EditorShell() {
       setUndoStack((stack) => [...stack, current].slice(-30));
       setRedoStack([]);
     }
-    saveLocalProjectBundle(ensuredBundle);
+    if (!preserveInvalidLocalProjectRef.current) {
+      saveLocalProjectBundle(ensuredBundle);
+    }
     projectBundleRef.current = ensuredBundle;
     setProjectBundle(ensuredBundle);
     resetRuntime();
@@ -333,6 +339,7 @@ export function EditorShell() {
     const saved = loadLocalProjectBundle();
     if (saved.status === "loaded") {
       const ensuredSaved = ensureCanvasGraph(saved.bundle);
+      preserveInvalidLocalProjectRef.current = false;
       setTweaks(readArtifactTweaks(saved.bundle.tweakValues));
       saveLocalProjectBundle(ensuredSaved);
       setProjectBundle(ensuredSaved);
@@ -341,6 +348,7 @@ export function EditorShell() {
       return;
     }
     if (saved.status === "invalid") {
+      preserveInvalidLocalProjectRef.current = true;
       const fallback = ensureCanvasGraph(createFixtureBundle(tweaks));
       setProjectBundle(fallback);
       projectBundleRef.current = fallback;
@@ -357,6 +365,7 @@ export function EditorShell() {
       return;
     }
 
+    preserveInvalidLocalProjectRef.current = false;
     commitBundle(createFixtureBundle(tweaks));
   }, [commitBundle, resetRuntime, tweaks]);
 
@@ -397,6 +406,7 @@ export function EditorShell() {
 
   const clearSavedState = useCallback(() => {
     clearLocalProjectBundle();
+    preserveInvalidLocalProjectRef.current = false;
     commitBundle(createFixtureBundle(tweaks));
     setSelectedNodeId(null);
     setSelectedObjectId(null);
@@ -2296,24 +2306,45 @@ function createPhase09Asset(id: string, filename: string): AssetRef {
   };
 }
 
-function appendWebSnapshotCanvasObject(bundle: ProjectBundle, snapshot: { canvasObjectIds: string[]; createdAt: string }): ProjectBundle {
+function appendWebSnapshotCanvasObject(
+  bundle: ProjectBundle,
+  snapshot: { canvasObjectIds: string[]; createdAt: string; normalizedHtml?: string | undefined }
+): ProjectBundle {
   const objectId = snapshot.canvasObjectIds[0];
   if (!objectId) {
     return bundle;
   }
-  const graph = bundle.canvasGraph ?? deriveCanvasGraph(bundle);
+  const nodeId = objectId.startsWith("obj_")
+    ? objectId.slice(4)
+    : `cdx_snapshot_${stableHash(objectId)}`;
+  const sectionHtml = `<section class="phase-09-snapshot-section" data-cdx-id="${nodeId}" data-cdx-role="frame">${snapshot.normalizedHtml ?? ""}</section>`;
+  const normalized = bundle.html.normalized.includes(`data-cdx-id="${nodeId}"`)
+    ? bundle.html.normalized
+    : `${bundle.html.normalized}\n${sectionHtml}`;
+  const bundleWithSnapshotHtml = rebaseRevisionReferences(ProjectBundleSchema.parse({
+    ...bundle,
+    baseRevision: `rev_${stableHash(normalized)}`,
+    updatedAt: snapshot.createdAt,
+    html: {
+      ...bundle.html,
+      normalized
+    },
+    editGraph: buildEditGraph(normalized)
+  }), snapshot.createdAt);
+  const graph = bundleWithSnapshotHtml.canvasGraph ?? deriveCanvasGraph(bundleWithSnapshotHtml);
   if (graph.objects[objectId]) {
-    return ProjectBundleSchema.parse({ ...bundle, canvasGraph: graph });
+    return ProjectBundleSchema.parse({ ...bundleWithSnapshotHtml, canvasGraph: graph });
   }
   const parent = Object.values(graph.objects).find((object) => object.kind === "artboard")
     ?? graph.objects[graph.rootObjectIds[0] ?? ""];
   if (!parent) {
-    return ProjectBundleSchema.parse({ ...bundle, canvasGraph: graph });
+    return ProjectBundleSchema.parse({ ...bundleWithSnapshotHtml, canvasGraph: graph });
   }
   const snapshotObject: CanvasObject = {
     id: objectId,
     kind: "section",
     name: "Editable Web Snapshot",
+    nodeId,
     parentId: parent.id,
     childIds: [],
     locked: false,
@@ -2323,7 +2354,7 @@ function appendWebSnapshotCanvasObject(bundle: ProjectBundle, snapshot: { canvas
     ? parent.childIds
     : [...parent.childIds, objectId];
   return ProjectBundleSchema.parse({
-    ...bundle,
+    ...bundleWithSnapshotHtml,
     canvasGraph: {
       ...graph,
       objects: {

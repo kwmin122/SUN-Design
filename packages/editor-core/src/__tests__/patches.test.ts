@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { BASIC_LANDING_FIXTURE_HTML } from "../fixtures.js";
+import { ensureCanvasGraph } from "../canvas-graph.js";
+import { createDataBinding, createDataSource } from "../data-bindings.js";
+import { createSyncEnvelope } from "../sync.js";
 import { normalizeHtml } from "../normalize.js";
 import { applyEditPatchToBundle, findNodeIdsByClass } from "../patches.js";
 import type { EditPatch, ProjectBundle } from "../schemas.js";
@@ -60,6 +63,52 @@ describe("edit patch application", () => {
     expect(hidden.html.normalized).toContain("width: 640px");
     expect(hidden.html.normalized).toContain("text-align: center");
     expect(hidden.html.normalized).toContain("visibility: hidden");
+  });
+
+  it("rebases data bindings and sync envelopes when patches change the base revision", () => {
+    const bundle = ensureCanvasGraph(createBundle());
+    const target = Object.values(bundle.canvasGraph?.objects ?? {}).find((object) => object.nodeId);
+    if (!target) {
+      throw new Error("Expected canvas object.");
+    }
+    const source = createDataSource({
+      kind: "csv",
+      name: "team.csv",
+      sourceId: "source_csv",
+      fields: ["name"],
+      rows: [{ name: "민지" }],
+      createdAt: "2026-04-27T00:00:00.000Z"
+    });
+    const binding = createDataBinding({
+      dataSourceId: source.id,
+      targetObjectId: target.id,
+      ...(target.nodeId ? { targetNodeId: target.nodeId } : {}),
+      fieldMap: { title: "name" },
+      sourceRevision: bundle.baseRevision,
+      createdAt: "2026-04-27T00:00:00.000Z"
+    });
+    const synced = {
+      ...bundle,
+      dataSources: [source],
+      dataBindings: [binding],
+      syncEnvelope: {
+        ...createSyncEnvelope({ bundle, createdAt: "2026-04-27T00:00:00.000Z" }),
+        status: "synced" as const
+      }
+    };
+
+    const headline = Object.values(synced.editGraph.nodes).find((node) => node.textPreview?.includes("AI 디자인"));
+    if (!headline) {
+      throw new Error("Expected headline node.");
+    }
+    const patched = applyEditPatchToBundle(
+      synced,
+      createPatch(synced, headline.id, "setText", "리비전이 바뀐 디자인")
+    );
+
+    expect(patched.dataBindings[0]?.sourceRevision).toBe(patched.baseRevision);
+    expect(patched.syncEnvelope?.localRevision).toBe(patched.baseRevision);
+    expect(patched.syncEnvelope?.status).toBe("diverged");
   });
 
   it("rejects unknown nodes and unsafe style values", () => {

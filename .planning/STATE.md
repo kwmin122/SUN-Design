@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 09 verification remediation complete; formal verify pending |
+| Current phase | Phase 09 verified; ship pending |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -21,11 +21,11 @@
 | Phase 06 status | shipped |
 | Phase 07 status | shipped |
 | Phase 08 status | shipped |
-| Phase 09 status | remediation complete; verify pending |
+| Phase 09 status | verified |
 | Phase 10 status | context |
 | Phase 11 status | context |
-| Requirement coverage | 49/49 v1 complete; 21/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
-| Next action | Re-run `/sunco:verify 9` |
+| Requirement coverage | 49/49 v1 complete; 26/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
+| Next action | Run `/sunco:ship 9` |
 
 ## Phase Queue
 
@@ -39,13 +39,13 @@
 | Phase 06 | Canvas and Component Model | shipped | 5 |
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
 | Phase 08 | Prototyping, Slides, and AI Variations | shipped | 11 complete |
-| Phase 09 | Context Ingestion, Live Data, and Assets | verify pending | 6 |
+| Phase 09 | Context Ingestion, Live Data, and Assets | verified | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | context | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is executed in two waves, and the formal `/sunco:verify 9` failure has been remediated in code and tests. The next step is to re-run `/sunco:verify 9`; do not run `/sunco:ship 9` until that formal verification passes.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is verified after remediation for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. The next step is `/sunco:ship 9`.
 
 ## Key Decisions Carried Forward
 
@@ -68,7 +68,7 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 
 ## Blockers
 
-- No known Phase 09 remediation blockers remain after the post-verification fix pass. Formal `/sunco:verify 9` still needs to re-run before ship.
+- No known Phase 09 blockers remain after formal verification.
 
 ## Verification Notes
 
@@ -142,11 +142,12 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 09 execution completed in `12b011e` and `326750f`: editor-core now has source/context/data/asset/sync persisted models with reload integrity checks, and the web studio exposes context ingestion, generated notes, web snapshot states, asset provenance, data binding preview, and DATA-01 foundation-only sync diagnostics.
 - Phase 09 post-review remediation closed two blockers: fallback data binding now writes a matching CSV `SourceRecord` before persistence, and public URL validation now rejects IPv4 link-local, IPv6 loopback/private/link-local, and IPv4-mapped IPv6 private targets. Regression gates now include 27 browser tests.
 - Phase 09 formal SUNCO verification failed in `.planning/phases/09-context-ingestion-live-data-and-assets/09-VERIFICATION.md`. Deterministic guardrails passed, but Layer 1, Layer 3, Layer 5, Layer 6, and Layer 7 found remaining blockers. Do not run `/sunco:ship 9` until these are fixed and `/sunco:verify 9` passes.
-- Phase 09 verification remediation fixed the remaining blockers: persistence now migrates legacy context attachments before integrity validation; corrupt local project loads preserve saved payloads; URL validation blocks `localhost.`, `::`, `fe80::/10`, `100.64.0.0/10`, and persisted unsafe `sourceUrl` records; persisted source `assetIds`, binding `fieldMap`, and sync remote revision invariants are enforced; data binding rejects mismatched source ids; asset replacement writes typed `replaceAsset` patches; editable web snapshots map to canvas section objects; source provenance evidence is enforced. Gates passed: `pnpm lint`, `pnpm typecheck`, `npx tsc --noEmit`, `pnpm test` (20 files / 117 tests), and `pnpm e2e` (28 browser tests).
+- Phase 09 verification remediation fixed the remaining blockers: persistence now migrates legacy context attachments before integrity validation; corrupt local project loads preserve saved payloads; URL validation blocks `localhost.`, `::`, `fe80::/10`, `100.64.0.0/10`, and persisted unsafe `sourceUrl` records; persisted source `assetIds`, binding `fieldMap`, and sync remote revision invariants are enforced; data binding rejects mismatched source ids; asset replacement writes typed `replaceAsset` patches; editable web snapshots map to canvas section objects; source provenance evidence is enforced. Gates passed: `pnpm lint`, `pnpm typecheck`, `npx tsc --noEmit`, `pnpm test` (20 files / 119 tests), and `pnpm e2e` (28 browser tests).
+- Phase 09 final verification remediation closed the follow-up blockers from `/sunco:verify 9`: invalid source status transitions are rejected, persisted snapshot URLs are revalidated and matched to source URLs, reserved/multicast/broadcast URL forms are blocked, data/sync revision references rebase after later edits, asset replacement updates stored source/context/snapshot references, invalid local saved payloads are not overwritten by fallback saves, `rowLimit: 0` is rejected, and stable asset URLs support percent encoding. Formal Phase 09 verification now passes in `.planning/phases/09-context-ingestion-live-data-and-assets/09-VERIFICATION.md`.
 
 ---
-*Last updated: 2026-04-29 after Phase 09 verification remediation*
+*Last updated: 2026-04-29 after Phase 09 formal verification*
 - **phase**: 9
-- **last_updated**: 2026-04-29T13:44:00+09:00
-- **status**: verify_pending
-- **next_action**: /sunco:verify 9
+- **last_updated**: 2026-04-29T15:16:12+09:00
+- **status**: verified
+- **next_action**: /sunco:ship 9

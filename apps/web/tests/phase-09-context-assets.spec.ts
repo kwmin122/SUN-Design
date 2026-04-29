@@ -41,13 +41,18 @@ test("ingests context sources notes snapshots and asset provenance", async ({ pa
     const saved = JSON.parse(window.localStorage.getItem(key) ?? "{}");
     const snapshot = saved.webSnapshots.find((item: { status: string }) => item.status === "editable");
     const objectId = snapshot?.canvasObjectIds?.[0];
+    const object = objectId ? saved.canvasGraph?.objects?.[objectId] : undefined;
     return {
       objectId,
-      objectExists: Boolean(objectId && saved.canvasGraph?.objects?.[objectId])
+      objectExists: Boolean(object),
+      nodeId: object?.nodeId,
+      editNodeExists: Boolean(object?.nodeId && saved.editGraph?.nodes?.[object.nodeId])
     };
   }, STORAGE_KEY);
   expect(editableSnapshotState.objectId).toBeTruthy();
   expect(editableSnapshotState.objectExists).toBe(true);
+  expect(editableSnapshotState.nodeId).toBeTruthy();
+  expect(editableSnapshotState.editNodeExists).toBe(true);
 
   await page.getByTestId("phase-09-capture-reference-snapshot").click();
   await expect(page.getByTestId("phase-09-web-snapshot-list")).toContainText("referenceOnly");

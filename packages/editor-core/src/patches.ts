@@ -69,7 +69,7 @@ export function applyEditPatchToBundle(bundle: ProjectBundle, patchInput: EditPa
 
   applyPatchToNode(node, patch);
   const normalized = serialize(fragment as unknown as Parse5ParentNode);
-  const nextBundle = {
+  const nextBundle = rebaseRevisionReferences({
     ...bundle,
     baseRevision: `rev_${stableHash(normalized)}`,
     updatedAt: patch.createdAt,
@@ -79,13 +79,37 @@ export function applyEditPatchToBundle(bundle: ProjectBundle, patchInput: EditPa
     },
     editGraph: buildEditGraph(normalized),
     patches: [...bundle.patches, patch]
-  };
+  }, patch.createdAt);
 
   return ProjectBundleSchema.parse(nextBundle);
 }
 
 export function applyEditPatchesToBundle(bundle: ProjectBundle, patches: EditPatch[]): ProjectBundle {
   return patches.reduce((current, patch) => applyEditPatchToBundle(current, patch), bundle);
+}
+
+export function rebaseRevisionReferences(bundle: ProjectBundle, updatedAt: string): ProjectBundle {
+  const nextRevision = bundle.baseRevision;
+  return ProjectBundleSchema.parse({
+    ...bundle,
+    dataBindings: bundle.dataBindings.map((binding) => ({
+      ...binding,
+      sourceRevision: nextRevision,
+      updatedAt
+    })),
+    ...(bundle.syncEnvelope ? {
+      syncEnvelope: {
+        ...bundle.syncEnvelope,
+        status: bundle.syncEnvelope.status === "synced" ? "diverged" as const : bundle.syncEnvelope.status,
+        localRevision: nextRevision,
+        remoteRevision: bundle.syncEnvelope.status === "localOnly" ? nextRevision : bundle.syncEnvelope.remoteRevision,
+        diagnostics: bundle.syncEnvelope.status === "synced"
+          ? Array.from(new Set([...bundle.syncEnvelope.diagnostics, "local revision changed after sync"]))
+          : bundle.syncEnvelope.diagnostics,
+        lastSyncedAt: updatedAt
+      }
+    } : {})
+  });
 }
 
 export function findNodeIdsByClass(bundle: ProjectBundle, className: string): string[] {

@@ -78,7 +78,7 @@ export function replaceAssetReference(
     .filter((node) => node.assetId === input.previousAssetId)
     .map((node) => node.id);
   if (nodeIds.length === 0) {
-    return materialized;
+    return replaceStoredAssetReferences(materialized, input.previousAssetId, input.nextAsset.id);
   }
 
   const createdAt = input.createdAt ?? event.createdAt;
@@ -93,7 +93,7 @@ export function replaceAssetReference(
     createdAt
   }));
 
-  return applyEditPatchesToBundle(materialized, patches);
+  return replaceStoredAssetReferences(applyEditPatchesToBundle(materialized, patches), input.previousAssetId, input.nextAsset.id);
 }
 
 export function relinkAssetSource(
@@ -132,4 +132,26 @@ function upsertAssetUrls(existing: ProjectAssetUrl[], next: ProjectAssetUrl[]): 
     byAssetId.set(item.assetId, item);
   }
   return Array.from(byAssetId.values());
+}
+
+function replaceStoredAssetReferences(bundle: ProjectBundle, previousAssetId: string, nextAssetId: string): ProjectBundle {
+  const replaceIds = (assetIds: string[]) => Array.from(new Set(
+    assetIds.map((assetId) => assetId === previousAssetId ? nextAssetId : assetId)
+  ));
+  return ProjectBundleSchema.parse({
+    ...bundle,
+    sourceRecords: bundle.sourceRecords.map((source) => ({
+      ...source,
+      assetIds: replaceIds(source.assetIds)
+    })),
+    parsedContextArtifacts: bundle.parsedContextArtifacts.map((artifact) => ({
+      ...artifact,
+      assetIds: replaceIds(artifact.assetIds)
+    })),
+    webSnapshots: bundle.webSnapshots.map((snapshot) => (
+      snapshot.screenshotAssetId === previousAssetId
+        ? { ...snapshot, screenshotAssetId: nextAssetId }
+        : snapshot
+    ))
+  });
 }

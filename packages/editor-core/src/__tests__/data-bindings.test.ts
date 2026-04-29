@@ -120,4 +120,15 @@ describe("data binding foundation", () => {
 
     expect(() => applyDataBindingToBundle(bundle, source, binding)).toThrow("Data binding source mismatch");
   });
+
+  it("rejects zero row limits instead of treating them as unlimited", () => {
+    expect(() => createDataBinding({
+      dataSourceId: "data",
+      targetObjectId: "obj",
+      fieldMap: { title: "name" },
+      rowLimit: 0,
+      sourceRevision: "rev",
+      createdAt: TEST_TIME
+    })).toThrow();
+  });
 });

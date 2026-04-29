@@ -25,6 +25,9 @@ describe("asset lifecycle foundation", () => {
   it("creates stable project asset URLs", () => {
     const url = createProjectAssetUrl("project", "asset_1");
     expect(url.url).toBe("kdesign://asset/project/asset_1");
+
+    const encoded = createProjectAssetUrl("project ok", "asset:1");
+    expect(encoded.url).toBe("kdesign://asset/project%20ok/asset%3A1");
   });
 
   it("replaces assets and records replacement history", () => {
@@ -41,7 +44,35 @@ describe("asset lifecycle foundation", () => {
     };
     const bundle = {
       ...normalized,
-      assets: [original]
+      assets: [original],
+      sourceRecords: [{
+        id: "source_asset",
+        kind: "image" as const,
+        name: "Original image",
+        hash: "hash_original",
+        createdAt: TEST_TIME,
+        importedAt: TEST_TIME,
+        localPath: "assets/original.png",
+        mimeType: "image/png",
+        assetIds: [original.id],
+        parseStatus: "parsed" as const,
+        usageStatus: "candidate" as const,
+        diagnostics: []
+      }],
+      parsedContextArtifacts: [{
+        id: "parsed_asset",
+        sourceId: "source_asset",
+        kind: "figmaSummary" as const,
+        title: "Asset summary",
+        summary: "References original asset",
+        textBlocks: [],
+        tables: [],
+        frameNames: ["Frame"],
+        assetIds: [original.id],
+        metadata: {},
+        diagnostics: [],
+        createdAt: TEST_TIME
+      }]
     };
 
     const next = replaceAssetReference(bundle, {
@@ -56,6 +87,8 @@ describe("asset lifecycle foundation", () => {
     expect(next.projectAssetUrls.map((item) => item.url)).toContain("kdesign://asset/phase-09-assets/asset_next");
     expect(Object.values(next.editGraph.nodes).some((node) => node.assetId === nextAsset.id)).toBe(true);
     expect(next.html.normalized).toContain("kdesign://asset/phase-09-assets/asset_next");
+    expect(next.sourceRecords[0]?.assetIds).toEqual([nextAsset.id]);
+    expect(next.parsedContextArtifacts[0]?.assetIds).toEqual([nextAsset.id]);
   });
 
   it("relinks an asset to a source record", () => {

@@ -77,4 +77,8 @@ test("preserves invalid local project payload instead of deleting saved work", a
   }), { storageKey: STORAGE_KEY, errorKey: LOAD_ERROR_KEY });
   expect(saved.payload).toBe(corruptPayload);
   expect(saved.loadError).toBeTruthy();
+
+  await page.getByTestId("phase-09-import-csv-data").click();
+  const afterNextSave = await page.evaluate((storageKey) => window.localStorage.getItem(storageKey), STORAGE_KEY);
+  expect(afterNextSave).toBe(corruptPayload);
 });

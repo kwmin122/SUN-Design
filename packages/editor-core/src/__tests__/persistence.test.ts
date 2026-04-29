@@ -495,6 +495,11 @@ describe("project bundle persistence", () => {
     delete raw.sourceRecords[0].mimeType;
     raw.sourceRecords[0].diagnostics = [];
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Source record missing provenance evidence");
+
+    raw.sourceRecords[0].parseStatus = "blocked";
+    raw.sourceRecords[0].usageStatus = "used";
+    raw.sourceRecords[0].diagnostics = ["blocked-url:private-or-local-url"];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Blocked source must have blocked usage status");
   });
 
   it("rejects persisted Phase 09 snapshot data asset and sync corruption", () => {
@@ -518,7 +523,7 @@ describe("project bundle persistence", () => {
     raw.webSnapshots = [{
       id: "snapshot_corrupt",
       sourceId: "source_valid",
-      url: "https://example.com",
+      url: "https://example.com/",
       status: "editable",
       sanitizedHtml: "<main></main>",
       normalizedHtml: "<main></main>",
@@ -528,6 +533,16 @@ describe("project bundle persistence", () => {
       createdAt: AGENT_TEST_TIME
     }];
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Web snapshot references missing asset");
+
+    raw.webSnapshots[0].screenshotAssetId = undefined;
+    raw.webSnapshots[0].url = "javascript:alert(1)";
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Web snapshot URL is not public");
+
+    raw.webSnapshots[0].url = "https://different.example.com/";
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Web snapshot URL does not match source URL");
+
+    raw.webSnapshots[0].url = "https://example.com/";
+    raw.webSnapshots[0].canvasObjectIds = [objectId];
 
     raw.webSnapshots = [];
     raw.dataSources = [{

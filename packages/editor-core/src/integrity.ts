@@ -33,6 +33,7 @@ export function assertProjectBundleIntegrity(bundle: ProjectBundle): void {
 
 export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
   const sourceIds = new Set(bundle.sourceRecords.map((source) => source.id));
+  const sourcesById = new Map(bundle.sourceRecords.map((source) => [source.id, source]));
   const assetIds = new Set(bundle.assets.map((asset) => asset.id));
   const dataSourceIds = new Set(bundle.dataSources.map((source) => source.id));
   const dataSourcesById = new Map(bundle.dataSources.map((source) => [source.id, source]));
@@ -51,6 +52,7 @@ export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
     if (source.kind !== "unsupported" && source.parseStatus !== "queued" && !hasSourceEvidence(source)) {
       throw new Error(`Source record missing provenance evidence: ${source.id}`);
     }
+    assertSourceStatus(source);
   }
 
   for (const job of bundle.ingestionJobs) {
@@ -78,6 +80,17 @@ export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
   }
   for (const snapshot of bundle.webSnapshots) {
     assertSource(sourceIds, snapshot.sourceId, "Web snapshot");
+    const source = sourcesById.get(snapshot.sourceId);
+    const snapshotUrlValidation = validatePublicSourceUrl(snapshot.url);
+    if (!snapshotUrlValidation.valid && snapshot.status !== "blocked") {
+      throw new Error(`Web snapshot URL is not public: ${snapshot.id}`);
+    }
+    if (source?.sourceUrl) {
+      const sourceUrlValidation = validatePublicSourceUrl(source.sourceUrl);
+      if (sourceUrlValidation.valid && snapshotUrlValidation.valid && snapshot.url !== sourceUrlValidation.normalizedUrl) {
+        throw new Error(`Web snapshot URL does not match source URL: ${snapshot.id}`);
+      }
+    }
     if (snapshot.status === "editable" && (!snapshot.sanitizedHtml || !snapshot.normalizedHtml)) {
       throw new Error(`Editable web snapshot is missing stored HTML: ${snapshot.id}`);
     }
@@ -85,7 +98,10 @@ export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
       assertAsset(assetIds, snapshot.screenshotAssetId, "Web snapshot");
     }
     for (const objectId of snapshot.canvasObjectIds) {
-      assertCanvasObject(bundle, objectId, "Web snapshot");
+      const object = assertCanvasObject(bundle, objectId, "Web snapshot");
+      if (snapshot.status === "editable" && !object.nodeId && object.childIds.length === 0) {
+        throw new Error(`Editable web snapshot has no editable canvas section: ${snapshot.id}`);
+      }
     }
   }
   for (const dataSource of bundle.dataSources) {
@@ -145,17 +161,31 @@ export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
 }
 
 function hasSourceEvidence(source: ProjectBundle["sourceRecords"][number]): boolean {
-  return Boolean(
-    source.sourceUrl ||
-    source.localPath ||
-    source.mimeType ||
-    source.diagnostics.some((diagnostic) => (
+  if (source.kind === "url" || source.kind === "webCapture") {
+    return Boolean(source.sourceUrl);
+  }
+  const hasDiagnosticEvidence = source.diagnostics.some((diagnostic) => (
       diagnostic.startsWith("inline-source-bytes") ||
       diagnostic.startsWith("deterministic-fixture") ||
       diagnostic.startsWith("unsupported-source-type") ||
       diagnostic.startsWith("blocked-url")
-    ))
-  );
+  ));
+  return Boolean((source.sourceUrl || source.localPath || hasDiagnosticEvidence) && (source.mimeType || hasDiagnosticEvidence));
+}
+
+function assertSourceStatus(source: ProjectBundle["sourceRecords"][number]): void {
+  if (source.parseStatus === "blocked" && source.usageStatus !== "blocked") {
+    throw new Error(`Blocked source must have blocked usage status: ${source.id}`);
+  }
+  if (source.usageStatus === "blocked" && source.parseStatus !== "blocked") {
+    throw new Error(`Blocked usage source must have blocked parse status: ${source.id}`);
+  }
+  if (source.parseStatus === "failed" && ["approved", "used"].includes(source.usageStatus)) {
+    throw new Error(`Failed source cannot be approved or used: ${source.id}`);
+  }
+  if (["approved", "used"].includes(source.usageStatus) && !["parsed", "partial"].includes(source.parseStatus)) {
+    throw new Error(`Used source must be parsed or partial: ${source.id}`);
+  }
 }
 
 function assertPrototypeIntegrity(bundle: ProjectBundle): void {

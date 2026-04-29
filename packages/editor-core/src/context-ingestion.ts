@@ -443,6 +443,7 @@ export function createWebSnapshot(input: {
     title: "Web Snapshot",
     html: input.html
   });
+  const snapshotNodeId = `cdx_snapshot_${stableHash(`${input.sourceId}:${validation.normalizedUrl}`)}`;
   return WebSnapshotSchema.parse({
     id: `web_snapshot_${stableHash(`${input.sourceId}:${validation.normalizedUrl}:editable:${createdAt}`)}`,
     sourceId: input.sourceId,
@@ -451,7 +452,7 @@ export function createWebSnapshot(input: {
     sanitizedHtml: normalized.html.sanitized,
     normalizedHtml: normalized.html.normalized,
     ...(input.screenshotAssetId ? { screenshotAssetId: input.screenshotAssetId } : {}),
-    canvasObjectIds: [`snapshot_canvas_${stableHash(`${input.sourceId}:${validation.normalizedUrl}`)}`],
+    canvasObjectIds: [`obj_${snapshotNodeId}`],
     diagnostics: normalized.sanitizerReport.changes.map((change) => `${change.kind}:${change.target}`),
     createdAt
   });
@@ -546,25 +547,47 @@ function isPrivateHostname(hostname: string): boolean {
     return (
       normalized.startsWith("fc") ||
       normalized.startsWith("fd") ||
-      isIpv6LinkLocal(normalized)
+      isIpv6LinkLocal(normalized) ||
+      normalized.startsWith("ff")
     );
   }
   return false;
 }
 
 function isPrivateIpv4Hostname(hostname: string): boolean {
+  const octets = parseIpv4Octets(hostname);
+  if (!octets) {
+    return false;
+  }
+  const [first, second, third] = octets;
   if (
-    hostname === "0.0.0.0" ||
-    /^127\./.test(hostname) ||
-    /^10\./.test(hostname) ||
-    /^169\.254\./.test(hostname) ||
-    /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(hostname) ||
-    /^192\.168\./.test(hostname)
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 192 && second === 0 && third === 2) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    (first === 198 && second === 51 && third === 100) ||
+    (first === 203 && second === 0 && third === 113) ||
+    first >= 224
   ) {
     return true;
   }
-  const private172 = hostname.match(/^172\.(\d+)\./);
-  return Boolean(private172 && Number(private172[1]) >= 16 && Number(private172[1]) <= 31);
+  return false;
+}
+
+function parseIpv4Octets(hostname: string): [number, number, number, number] | undefined {
+  if (!/^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) {
+    return undefined;
+  }
+  const octets = hostname.split(".").map((value) => Number(value));
+  if (octets.some((value) => !Number.isInteger(value) || value < 0 || value > 255)) {
+    return undefined;
+  }
+  return octets as [number, number, number, number];
 }
 
 function isIpv6LinkLocal(hostname: string): boolean {

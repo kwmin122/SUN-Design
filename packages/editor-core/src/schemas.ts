@@ -215,7 +215,7 @@ export type AssetLifecycleEvent = z.infer<typeof AssetLifecycleEventSchema>;
 
 export const ProjectAssetUrlSchema = z.object({
   assetId: z.string().min(1),
-  url: z.string().regex(/^kdesign:\/\/asset\/[A-Za-z0-9._~-]+\/[A-Za-z0-9._~-]+$/)
+  url: z.string().regex(/^kdesign:\/\/asset\/(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+\/(?:[A-Za-z0-9._~-]|%[0-9A-Fa-f]{2})+$/)
 });
 export type ProjectAssetUrl = z.infer<typeof ProjectAssetUrlSchema>;
 

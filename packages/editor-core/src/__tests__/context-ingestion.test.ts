@@ -175,12 +175,18 @@ describe("context ingestion foundation", () => {
     expect(validatePublicSourceUrl("http://100.64.0.1/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://100.127.255.255/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://100.128.0.1/").valid).toBe(true);
+    expect(validatePublicSourceUrl("http://0.1.2.3/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://192.0.2.1/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://198.18.0.1/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://224.0.0.1/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://255.255.255.255/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[fd00::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[fe80::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[fe90::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[febf::1]/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[ff02::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::ffff:127.0.0.1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::ffff:10.0.0.1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::ffff:169.254.169.254]/").valid).toBe(false);

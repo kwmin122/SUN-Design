@@ -125,12 +125,12 @@
 
 ### Context, Data, and Assets
 
-- [ ] **CTX-01**: User can ingest real screenshots, images, URLs, DOCX, PPTX, XLSX, Figma exports, and codebase folders into structured project context.
-- [ ] **CTX-02**: User gets generated `source-notes.md` and `design-context.md` files that record official sources, asset paths, uncertain facts, and usage rights.
-- [ ] **CTX-03**: User can capture a live web page or selected region into editable canvas sections with source provenance.
-- [ ] **DATA-01**: Documents can sync between local storage and a hosted account.
-- [ ] **DATA-02**: User can bind components to CSV, spreadsheet, API fixture, or static JSON data and preview realistic repeated content.
-- [ ] **ASSET-01**: User can cache, replace, relink, and audit project assets with stable URLs, source notes, and license/provenance metadata.
+- [x] **CTX-01**: User can ingest real screenshots, images, URLs, DOCX, PPTX, XLSX, Figma exports, and codebase folders into structured project context.
+- [x] **CTX-02**: User gets generated `source-notes.md` and `design-context.md` files that record official sources, asset paths, uncertain facts, and usage rights.
+- [x] **CTX-03**: User can capture a live web page or selected region into editable canvas sections with source provenance.
+- [ ] **DATA-01**: Documents can sync between local storage and a hosted account. Phase 09 provides only the verified server-portable local/mock sync foundation; completion remains blocked until hosted-account semantics are implemented and verified.
+- [x] **DATA-02**: User can bind components to CSV, spreadsheet, API fixture, or static JSON data and preview realistic repeated content.
+- [x] **ASSET-01**: User can cache, replace, relink, and audit project assets with stable URLs, source notes, and license/provenance metadata.
 
 ### Dev Mode, Publish, and Export
 
@@ -251,12 +251,12 @@
 | SLIDE-03 | Phase 08 | complete |
 | SLIDE-04 | Phase 10 | planned |
 | SLIDE-05 | Phase 10 | planned |
-| CTX-01 | Phase 09 | planned |
-| CTX-02 | Phase 09 | planned |
-| CTX-03 | Phase 09 | planned |
-| DATA-01 | Phase 09 | planned |
-| DATA-02 | Phase 09 | planned |
-| ASSET-01 | Phase 09 | planned |
+| CTX-01 | Phase 09 | complete |
+| CTX-02 | Phase 09 | complete |
+| CTX-03 | Phase 09 | complete |
+| DATA-01 | Phase 09 | foundation complete; hosted account sync deferred |
+| DATA-02 | Phase 09 | complete |
+| ASSET-01 | Phase 09 | complete |
 | DEV-01 | Phase 10 | planned |
 | DEV-02 | Phase 10 | planned |
 | DEV-03 | Phase 10 | planned |

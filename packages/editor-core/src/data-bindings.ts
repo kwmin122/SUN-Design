@@ -77,7 +77,7 @@ export function createDataBinding(input: {
     targetObjectId: input.targetObjectId,
     ...(input.targetNodeId ? { targetNodeId: input.targetNodeId } : {}),
     fieldMap: input.fieldMap,
-    ...(input.rowLimit ? { rowLimit: input.rowLimit } : {}),
+    ...(input.rowLimit !== undefined ? { rowLimit: input.rowLimit } : {}),
     state: "ready",
     sourceRevision: input.sourceRevision,
     createdAt,
