@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 const STORAGE_KEY = "kdesign.phase01.project.v1";
+const LOAD_ERROR_KEY = "kdesign.phase01.project.v1.loadError";
 
 async function openFreshProject(page: Page) {
   await page.goto("/");
@@ -59,4 +60,21 @@ test("binds deterministic data and persists sync foundation diagnostics", async 
   await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
   await expect(page.getByTestId("phase-09-data-binding-preview")).toContainText("민지");
   await expect(page.getByTestId("phase-09-sync-status")).toContainText("diverged");
+});
+
+test("preserves invalid local project payload instead of deleting saved work", async ({ page }) => {
+  const corruptPayload = "{\"schemaVersion\":1,\"id\":\"corrupt-project\"}";
+  await page.addInitScript(({ storageKey, payload }) => {
+    window.localStorage.setItem(storageKey, payload);
+  }, { storageKey: STORAGE_KEY, payload: corruptPayload });
+
+  await page.goto("/");
+  await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
+
+  const saved = await page.evaluate(({ storageKey, errorKey }) => ({
+    payload: window.localStorage.getItem(storageKey),
+    loadError: window.localStorage.getItem(errorKey)
+  }), { storageKey: STORAGE_KEY, errorKey: LOAD_ERROR_KEY });
+  expect(saved.payload).toBe(corruptPayload);
+  expect(saved.loadError).toBeTruthy();
 });

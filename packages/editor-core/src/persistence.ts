@@ -1,6 +1,7 @@
 import type { ProjectBundle } from "./schemas.js";
 import { ProjectBundleSchema } from "./schemas.js";
 import { ensureCanvasGraph } from "./canvas-graph.js";
+import { migrateContextAttachmentsToSourceRecords } from "./context-ingestion.js";
 import { assertProjectBundleIntegrity } from "./integrity.js";
 
 export const PROJECT_BUNDLE_STORAGE_VERSION = 1;
@@ -14,7 +15,8 @@ export function serializeProjectBundle(bundle: ProjectBundle): string {
 }
 
 export function parseProjectBundleJson(json: string): ProjectBundle {
-  const bundle = ensureCanvasGraph(ProjectBundleSchema.parse(JSON.parse(json)));
+  const parsed = ProjectBundleSchema.parse(JSON.parse(json));
+  const bundle = ensureCanvasGraph(migrateContextAttachmentsToSourceRecords(parsed));
   assertProjectBundleIntegrity(bundle);
   return bundle;
 }

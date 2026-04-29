@@ -28,12 +28,11 @@ describe("asset lifecycle foundation", () => {
   });
 
   it("replaces assets and records replacement history", () => {
-    const original: AssetRef = {
-      id: "asset_original",
-      kind: "image",
-      status: "cached",
-      localPath: "assets/original.png"
-    };
+    const normalized = createBundle();
+    const original = normalized.assets[0];
+    if (!original) {
+      throw new Error("Expected fixture image asset.");
+    }
     const nextAsset: AssetRef = {
       id: "asset_next",
       kind: "image",
@@ -41,7 +40,7 @@ describe("asset lifecycle foundation", () => {
       localPath: "assets/replacement-product-shot.png"
     };
     const bundle = {
-      ...createBundle(),
+      ...normalized,
       assets: [original]
     };
 
@@ -55,6 +54,8 @@ describe("asset lifecycle foundation", () => {
     expect(next.assets.some((asset) => asset.id === nextAsset.id)).toBe(true);
     expect(next.assetLifecycle[0]?.type).toBe("replaced");
     expect(next.projectAssetUrls.map((item) => item.url)).toContain("kdesign://asset/phase-09-assets/asset_next");
+    expect(Object.values(next.editGraph.nodes).some((node) => node.assetId === nextAsset.id)).toBe(true);
+    expect(next.html.normalized).toContain("kdesign://asset/phase-09-assets/asset_next");
   });
 
   it("relinks an asset to a source record", () => {

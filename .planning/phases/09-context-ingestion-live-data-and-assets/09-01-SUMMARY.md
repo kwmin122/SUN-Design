@@ -15,6 +15,8 @@ executor_model: gpt-5
 
 Built the editor-core Phase 09 foundation: `ProjectBundle` now persists source records, ingestion jobs, parsed context artifacts, generated notes, web snapshots, data sources/bindings, asset lifecycle records, stable project asset URLs, and a DATA-01 foundation-only sync envelope. New helpers create deterministic source summaries, safe snapshot states, data-binding previews, asset replacement/relink history, sync diagnostics, and persisted integrity checks.
 
+Post-verification remediation tightened the foundation after `/sunco:verify 9`: persisted loads now migrate legacy context attachments before integrity checks, validate source asset/provenance/url evidence, reject invalid binding field maps, reject stale synced remote revisions, preserve corrupt local payloads instead of deleting saved work, and materialize asset replacement as typed `replaceAsset` patches.
+
 ## Tasks Completed
 
 | # | Task | Commit | Notes |
@@ -23,6 +25,7 @@ Built the editor-core Phase 09 foundation: `ProjectBundle` now persists source r
 | 2 | Create context ingestion helpers | 12b011e | Added source notes, design context, parsed summaries, URL guard, web snapshot helpers. |
 | 3 | Create data binding, asset lifecycle, and sync helpers | 12b011e | Added local/mock deterministic helpers and regression coverage. |
 | 4 | Validate persisted context graph integrity | 12b011e | Added load-time integrity checks and adversarial persistence tests. |
+| 5 | Close verification invariant blockers | current remediation | Added migration, URL, source, data binding, sync, and asset replacement regressions. |
 
 ## Key Files
 
@@ -38,6 +41,8 @@ Built the editor-core Phase 09 foundation: `ProjectBundle` now persists source r
 - `packages/editor-core/src/handoff.ts` — Added source notes, design context, data, asset, and sync records to handoff includes.
 - `packages/editor-core/src/index.ts` — Re-exported Phase 09 modules.
 - `packages/editor-core/src/__tests__/*.test.ts` — Added and extended regression coverage.
+- `packages/editor-core/src/persistence.ts` — Runs legacy context migration before persisted integrity validation.
+- `packages/editor-core/src/normalize.ts` / `packages/editor-core/src/patches.ts` — Preserve `kdesign://asset/...` image ids through typed asset replacement patches.
 
 ## Acceptance Criteria
 
@@ -48,9 +53,9 @@ Built the editor-core Phase 09 foundation: `ProjectBundle` now persists source r
 | Structured summaries for document/slide/sheet/Figma/codebase/URL | PASS | Deterministic helper tests cover all input families. |
 | Unsafe URL and unsupported source negative tests | PASS | `javascript:`, localhost, IPv4 link-local, IPv6 loopback, IPv6 private, IPv6 link-local, and IPv4-mapped IPv6 private URLs are rejected; unsupported source creates blocked diagnostics. |
 | Data binding helpers validate mappings | PASS | Missing source fields return error diagnostics. |
-| Asset replacement/relink preserves audit records | PASS | Stable `kdesign://asset/...` URLs and lifecycle events covered. |
+| Asset replacement/relink preserves audit records and dependent references | PASS | Stable `kdesign://asset/...` URLs, lifecycle events, and typed replacement patches are covered. |
 | Sync helper remains DATA-01 foundation-only | PASS | Diagnostics explicitly preserve hosted-sync boundary. |
-| Persisted corruption probes reject missing references | PASS | Generated notes, parsed artifacts, snapshots, bindings, assets, URLs, and sync corruption covered. |
+| Persisted corruption probes reject missing references | PASS | Generated notes, parsed artifacts, snapshots, source asset ids, binding fields, assets, URLs, and sync corruption covered. |
 
 ## Lint Gate
 

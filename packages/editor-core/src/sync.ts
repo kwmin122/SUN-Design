@@ -30,6 +30,12 @@ export function validateSyncEnvelope(bundle: ProjectBundle, envelope: SyncEnvelo
   if (envelope.status === "synced" && !envelope.remoteDocumentId) {
     diagnostics.push("synced-missing-remote-document-id");
   }
+  if (envelope.status === "synced" && envelope.remoteRevision !== envelope.localRevision) {
+    diagnostics.push("synced-remote-revision-mismatch");
+  }
+  if (envelope.status === "diverged" && envelope.diagnostics.length === 0) {
+    diagnostics.push("diverged-sync-envelope-needs-diagnostics");
+  }
   if (envelope.status === "rejected" && envelope.diagnostics.length === 0) {
     diagnostics.push("rejected-sync-envelope-needs-diagnostics");
   }

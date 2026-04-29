@@ -234,7 +234,7 @@ function isSafeStyleValue(value: string): boolean {
 }
 
 function isSafeUrl(value: string): boolean {
-  return /^(https?:|data:image\/|blob:|\/|#)/i.test(value) && !/javascript:/i.test(value);
+  return /^(https?:|data:image\/|blob:|kdesign:\/\/asset\/|\/|#)/i.test(value) && !/javascript:/i.test(value);
 }
 
 function asString(value: unknown): string {

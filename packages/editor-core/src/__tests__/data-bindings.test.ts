@@ -95,4 +95,29 @@ describe("data binding foundation", () => {
     expect(preview.state).toBe("error");
     expect(preview.diagnostics).toContain("missing-source-field:missing");
   });
+
+  it("rejects applying a binding to a different data source id", () => {
+    const bundle = createBundle();
+    const source = createDataSource({
+      kind: "csv",
+      name: "team.csv",
+      sourceId: "source_csv",
+      fields: ["name"],
+      rows: [{ name: "민지" }],
+      createdAt: TEST_TIME
+    });
+    const target = Object.values(bundle.canvasGraph?.objects ?? {}).find((object) => object.nodeId);
+    if (!target) {
+      throw new Error("Expected fixture canvas object.");
+    }
+    const binding = createDataBinding({
+      dataSourceId: "data_other",
+      targetObjectId: target.id,
+      fieldMap: { title: "name" },
+      sourceRevision: bundle.baseRevision,
+      createdAt: TEST_TIME
+    });
+
+    expect(() => applyDataBindingToBundle(bundle, source, binding)).toThrow("Data binding source mismatch");
+  });
 });

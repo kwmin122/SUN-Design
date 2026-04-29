@@ -112,6 +112,9 @@ export function applyDataBindingToBundle(
   source: DataSource,
   binding: DataBinding
 ): ProjectBundle {
+  if (binding.dataSourceId !== source.id) {
+    throw new Error(`Data binding source mismatch: ${binding.dataSourceId}`);
+  }
   const preview = previewDataBinding(source, binding);
   if (preview.state === "error") {
     throw new Error(`Data binding has invalid fields: ${preview.diagnostics.join(", ")}`);

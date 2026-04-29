@@ -1,4 +1,5 @@
 import { stableHash } from "./ids.js";
+import { applyEditPatchesToBundle } from "./patches.js";
 import {
   AssetLifecycleEventSchema,
   ProjectAssetUrlSchema,
@@ -6,6 +7,7 @@ import {
   type AssetLifecycleEvent,
   type AssetLifecycleEventType,
   type AssetRef,
+  type EditPatch,
   type ProjectAssetUrl,
   type ProjectBundle
 } from "./schemas.js";
@@ -66,13 +68,32 @@ export function replaceAssetReference(
     createProjectAssetUrl(bundle.id, input.previousAssetId),
     createProjectAssetUrl(bundle.id, input.nextAsset.id)
   ]);
-
-  return ProjectBundleSchema.parse({
+  const materialized = ProjectBundleSchema.parse({
     ...bundle,
     assets,
     assetLifecycle: [...bundle.assetLifecycle, event],
     projectAssetUrls: urls
   });
+  const nodeIds = Object.values(materialized.editGraph.nodes)
+    .filter((node) => node.assetId === input.previousAssetId)
+    .map((node) => node.id);
+  if (nodeIds.length === 0) {
+    return materialized;
+  }
+
+  const createdAt = input.createdAt ?? event.createdAt;
+  const nextUrl = createProjectAssetUrl(materialized.id, input.nextAsset.id).url;
+  const patches: EditPatch[] = nodeIds.map((nodeId) => ({
+    id: `patch_${stableHash(`${materialized.baseRevision}:${nodeId}:replace:${input.previousAssetId}:${input.nextAsset.id}`)}`,
+    nodeId,
+    op: "replaceAsset",
+    value: nextUrl,
+    source: "system",
+    baseRevision: materialized.baseRevision,
+    createdAt
+  }));
+
+  return applyEditPatchesToBundle(materialized, patches);
 }
 
 export function relinkAssetSource(

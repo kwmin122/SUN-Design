@@ -27,6 +27,7 @@ import type {
   BundleVersion,
   CanvasComment,
   CanvasConstraints,
+  CanvasObject,
   CanvasOperation,
   ComponentStateRule,
   ContextAttachment,
@@ -330,13 +331,29 @@ export function EditorShell() {
 
   const loadOrCreateBundle = useCallback(() => {
     const saved = loadLocalProjectBundle();
-    if (saved) {
-      const ensuredSaved = ensureCanvasGraph(saved);
-      setTweaks(readArtifactTweaks(saved.tweakValues));
+    if (saved.status === "loaded") {
+      const ensuredSaved = ensureCanvasGraph(saved.bundle);
+      setTweaks(readArtifactTweaks(saved.bundle.tweakValues));
       saveLocalProjectBundle(ensuredSaved);
       setProjectBundle(ensuredSaved);
       projectBundleRef.current = ensuredSaved;
       resetRuntime();
+      return;
+    }
+    if (saved.status === "invalid") {
+      const fallback = ensureCanvasGraph(createFixtureBundle(tweaks));
+      setProjectBundle(fallback);
+      projectBundleRef.current = fallback;
+      resetRuntime();
+      const loadError: PreviewError = {
+        id: createLocalId("local_load_error"),
+        source: "bridge",
+        severity: "error",
+        code: "local-project-load-rejected",
+        message: `Saved project was preserved but could not load: ${saved.error}`,
+        createdAt: new Date().toISOString()
+      };
+      setDiagnostics((current) => [loadError, ...current].slice(0, 30));
       return;
     }
 
@@ -1176,6 +1193,7 @@ export function EditorShell() {
       projectId: current.id,
       kind,
       name: phase09SourceName(kind),
+      ...phase09SourceEvidence(kind),
       rights: kind === "image" ? "user-provided-context" : "fixture-summary",
       createdAt
     });
@@ -1249,6 +1267,9 @@ export function EditorShell() {
       ...(mode === "editable" ? { html: PHASE_09_SAFE_WEB_SNAPSHOT_HTML } : {}),
       createdAt
     });
+    const bundleWithSnapshotObject = snapshot.status === "editable"
+      ? appendWebSnapshotCanvasObject(current, snapshot)
+      : current;
     const job = createIngestionJob({
       sourceId: source.id,
       status: snapshot.status === "blocked" ? "blocked" : source.parseStatus,
@@ -1257,7 +1278,7 @@ export function EditorShell() {
     });
 
     commitBundle(ProjectBundleSchema.parse({
-      ...current,
+      ...bundleWithSnapshotObject,
       sourceRecords: upsertById(current.sourceRecords, source),
       ingestionJobs: upsertById(current.ingestionJobs, job),
       webSnapshots: upsertById(current.webSnapshots, snapshot),
@@ -1298,6 +1319,7 @@ export function EditorShell() {
       projectId: current.id,
       kind: "image",
       name: "제품 이미지.png",
+      ...phase09SourceEvidence("image"),
       rights: "user-provided-context",
       createdAt
     });
@@ -1325,6 +1347,8 @@ export function EditorShell() {
       projectId: current.id,
       kind: "csv",
       name: "team-data.csv",
+      localPath: "fixtures/team-data.csv",
+      mimeType: "text/csv",
       bytes: "name,role\n민지,PM\n유진,Designer\n서연,Engineer",
       rights: "fixture-data",
       createdAt
@@ -1361,6 +1385,8 @@ export function EditorShell() {
       projectId: current.id,
       kind: "csv",
       name: "team-data.csv",
+      localPath: "fixtures/team-data.csv",
+      mimeType: "text/csv",
       bytes: "name,role\n민지,PM\n유진,Designer\n서연,Engineer",
       rights: "fixture-data",
       createdAt
@@ -2189,6 +2215,34 @@ function phase09SourceName(kind: "image" | "document" | "slideDeck" | "spreadshe
   }
 }
 
+function phase09SourceEvidence(
+  kind: "image" | "document" | "slideDeck" | "spreadsheet" | "figma" | "codebase"
+): { localPath: string; mimeType: string } {
+  switch (kind) {
+    case "image":
+      return { localPath: "fixtures/product-screenshot.png", mimeType: "image/png" };
+    case "document":
+      return {
+        localPath: "fixtures/product-requirements.docx",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      };
+    case "slideDeck":
+      return {
+        localPath: "fixtures/product-intro.pptx",
+        mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+      };
+    case "spreadsheet":
+      return {
+        localPath: "fixtures/market-data.xlsx",
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      };
+    case "figma":
+      return { localPath: "fixtures/figma-export.json", mimeType: "application/json" };
+    case "codebase":
+      return { localPath: "fixtures/app-codebase-manifest.json", mimeType: "application/json" };
+  }
+}
+
 function phase09ParsedArtifact(source: SourceRecord, createdAt: string): ParsedContextArtifact | undefined {
   switch (source.kind) {
     case "document":
@@ -2240,6 +2294,49 @@ function createPhase09Asset(id: string, filename: string): AssetRef {
     mimeType: "image/png",
     license: "phase-09-fixture"
   };
+}
+
+function appendWebSnapshotCanvasObject(bundle: ProjectBundle, snapshot: { canvasObjectIds: string[]; createdAt: string }): ProjectBundle {
+  const objectId = snapshot.canvasObjectIds[0];
+  if (!objectId) {
+    return bundle;
+  }
+  const graph = bundle.canvasGraph ?? deriveCanvasGraph(bundle);
+  if (graph.objects[objectId]) {
+    return ProjectBundleSchema.parse({ ...bundle, canvasGraph: graph });
+  }
+  const parent = Object.values(graph.objects).find((object) => object.kind === "artboard")
+    ?? graph.objects[graph.rootObjectIds[0] ?? ""];
+  if (!parent) {
+    return ProjectBundleSchema.parse({ ...bundle, canvasGraph: graph });
+  }
+  const snapshotObject: CanvasObject = {
+    id: objectId,
+    kind: "section",
+    name: "Editable Web Snapshot",
+    parentId: parent.id,
+    childIds: [],
+    locked: false,
+    hidden: false
+  };
+  const parentChildIds = parent.childIds.includes(objectId)
+    ? parent.childIds
+    : [...parent.childIds, objectId];
+  return ProjectBundleSchema.parse({
+    ...bundle,
+    canvasGraph: {
+      ...graph,
+      objects: {
+        ...graph.objects,
+        [parent.id]: {
+          ...parent,
+          childIds: parentChildIds
+        },
+        [objectId]: snapshotObject
+      },
+      updatedAt: snapshot.createdAt
+    }
+  });
 }
 
 function upsertById<T extends { id: string }>(items: T[], item: T): T[] {

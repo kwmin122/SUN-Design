@@ -231,10 +231,18 @@ function makeEditNode(input: {
     node.textPreview = input.textPreview;
   }
   if (input.kind === "image" && input.attrs.src) {
-    node.assetId = `asset_${stableHash(input.attrs.src)}`;
+    node.assetId = assetIdFromImageSource(input.attrs.src);
   }
 
   return node;
+}
+
+function assetIdFromImageSource(src: string): string {
+  const projectAssetUrl = src.match(/^kdesign:\/\/asset\/[^/]+\/([^/?#]+)$/);
+  if (projectAssetUrl?.[1]) {
+    return decodeURIComponent(projectAssetUrl[1]);
+  }
+  return `asset_${stableHash(src)}`;
 }
 
 function editablePropsForKind(kind: EditNodeKind): string[] {

@@ -14,6 +14,8 @@ import type {
   VariationSet
 } from "./schemas.js";
 import { validateAgentDirectionSafety, validateAgentOutputScope } from "./agent-output.js";
+import { validatePublicSourceUrl } from "./context-ingestion.js";
+import { validateSyncEnvelope } from "./sync.js";
 
 const COMPONENT_STATES = new Set(["default", "hover", "pressed", "disabled"]);
 
@@ -33,7 +35,23 @@ export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
   const sourceIds = new Set(bundle.sourceRecords.map((source) => source.id));
   const assetIds = new Set(bundle.assets.map((asset) => asset.id));
   const dataSourceIds = new Set(bundle.dataSources.map((source) => source.id));
+  const dataSourcesById = new Map(bundle.dataSources.map((source) => [source.id, source]));
   const noteIds = new Set(bundle.generatedNotes.map((note) => note.id));
+
+  for (const source of bundle.sourceRecords) {
+    for (const assetId of source.assetIds) {
+      assertAsset(assetIds, assetId, "Source record");
+    }
+    if (source.sourceUrl) {
+      const validation = validatePublicSourceUrl(source.sourceUrl);
+      if (!validation.valid && source.parseStatus !== "blocked") {
+        throw new Error(`Source record URL is not public: ${source.id}`);
+      }
+    }
+    if (source.kind !== "unsupported" && source.parseStatus !== "queued" && !hasSourceEvidence(source)) {
+      throw new Error(`Source record missing provenance evidence: ${source.id}`);
+    }
+  }
 
   for (const job of bundle.ingestionJobs) {
     assertSource(sourceIds, job.sourceId, "Ingestion job");
@@ -77,6 +95,16 @@ export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
     if (!dataSourceIds.has(binding.dataSourceId)) {
       throw new Error(`data binding references missing data source: ${binding.dataSourceId}`);
     }
+    const dataSource = dataSourcesById.get(binding.dataSourceId);
+    if (!dataSource) {
+      throw new Error(`data binding references missing data source: ${binding.dataSourceId}`);
+    }
+    const fields = new Set(dataSource.fields);
+    for (const sourceField of Object.values(binding.fieldMap)) {
+      if (!fields.has(sourceField)) {
+        throw new Error(`Data binding references missing source field: ${sourceField}`);
+      }
+    }
     const object = assertCanvasObject(bundle, binding.targetObjectId, "Data binding");
     if (binding.targetNodeId) {
       if (!bundle.editGraph.nodes[binding.targetNodeId]) {
@@ -109,13 +137,25 @@ export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
     }
   }
   if (bundle.syncEnvelope) {
-    if (bundle.syncEnvelope.localRevision !== bundle.baseRevision) {
-      throw new Error(`sync envelope local revision is stale: ${bundle.syncEnvelope.localRevision}`);
-    }
-    if (bundle.syncEnvelope.status === "synced" && !bundle.syncEnvelope.remoteDocumentId) {
-      throw new Error("synced sync envelope requires remote document id");
+    const diagnostics = validateSyncEnvelope(bundle, bundle.syncEnvelope);
+    if (diagnostics.length > 0) {
+      throw new Error(`sync envelope validation failed: ${diagnostics.join(", ")}`);
     }
   }
+}
+
+function hasSourceEvidence(source: ProjectBundle["sourceRecords"][number]): boolean {
+  return Boolean(
+    source.sourceUrl ||
+    source.localPath ||
+    source.mimeType ||
+    source.diagnostics.some((diagnostic) => (
+      diagnostic.startsWith("inline-source-bytes") ||
+      diagnostic.startsWith("deterministic-fixture") ||
+      diagnostic.startsWith("unsupported-source-type") ||
+      diagnostic.startsWith("blocked-url")
+    ))
+  );
 }
 
 function assertPrototypeIntegrity(bundle: ProjectBundle): void {

@@ -50,6 +50,28 @@ describe("sync foundation", () => {
     expect(validateSyncEnvelope(bundle, envelope)).toContain("synced-missing-remote-document-id");
   });
 
+  it("rejects synced envelopes whose remote revision no longer matches local state", () => {
+    const bundle = createBundle();
+    const envelope = {
+      ...createSyncEnvelope({ bundle, createdAt: TEST_TIME }),
+      status: "synced" as const,
+      remoteRevision: "rev_remote_old"
+    };
+
+    expect(validateSyncEnvelope(bundle, envelope)).toContain("synced-remote-revision-mismatch");
+  });
+
+  it("requires diagnostics for diverged envelopes", () => {
+    const bundle = createBundle();
+    const envelope = {
+      ...createSyncEnvelope({ bundle, createdAt: TEST_TIME }),
+      status: "diverged" as const,
+      diagnostics: []
+    };
+
+    expect(validateSyncEnvelope(bundle, envelope)).toContain("diverged-sync-envelope-needs-diagnostics");
+  });
+
   it("marks sync as diverged with diagnostics", () => {
     const bundle = createBundle();
     const next = markSyncDiverged(bundle, "remote revision changed", TEST_TIME);

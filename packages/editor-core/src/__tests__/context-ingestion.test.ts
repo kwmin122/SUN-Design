@@ -161,6 +161,7 @@ describe("context ingestion foundation", () => {
     expect(editable.status).toBe("editable");
     expect(editable.normalizedHtml).toContain("data-cdx-id");
     expect(editable.normalizedHtml).not.toContain("<script");
+    expect(editable.canvasObjectIds).toHaveLength(1);
     expect(referenceOnly.status).toBe("referenceOnly");
     expect(blocked.status).toBe("blocked");
     expect(blocked.diagnostics.join(" ")).toContain("blocked-url");
@@ -169,10 +170,17 @@ describe("context ingestion foundation", () => {
   it("rejects unsafe URLs and unsupported source types with diagnostics", () => {
     expect(validatePublicSourceUrl("javascript:alert(1)").valid).toBe(false);
     expect(validatePublicSourceUrl("http://localhost:3000/private").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://localhost./private").valid).toBe(false);
     expect(validatePublicSourceUrl("http://169.254.169.254/latest/meta-data").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://100.64.0.1/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://100.127.255.255/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://100.128.0.1/").valid).toBe(true);
+    expect(validatePublicSourceUrl("http://[::]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[fd00::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[fe80::1]/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[fe90::1]/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[febf::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::ffff:127.0.0.1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::ffff:10.0.0.1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[::ffff:169.254.169.254]/").valid).toBe(false);

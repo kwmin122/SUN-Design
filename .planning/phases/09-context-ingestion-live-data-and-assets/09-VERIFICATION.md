@@ -16,7 +16,22 @@ Generated: 2026-04-29T11:40:24+09:00
 
 ## Overall: NEEDS FIXES
 
-Fix the issues listed below, then re-run `/sunco:verify 9`.
+Post-fix remediation was applied after this formal verification failure. The formal result remains NEEDS FIXES until `/sunco:verify 9` is re-run, but the listed blockers now have code/test coverage.
+
+## Post-Fix Remediation
+
+Generated: 2026-04-29T13:44:00+09:00
+
+| Fix Area | Status | Evidence |
+|----------|--------|----------|
+| Legacy context attachment migration on persisted load | FIXED | `parseProjectBundleJson` runs migration before `ensureCanvasGraph` and integrity validation; persistence regression added. |
+| Corrupt local project reload data loss | FIXED | `loadLocalProjectBundle` now returns a typed invalid result, preserves the saved payload, stores load diagnostics, and the shell loads an unsaved fallback. Browser regression added. |
+| URL guard hardening | FIXED | `validatePublicSourceUrl` now blocks `localhost.`, `::`, full `fe80::/10`, `100.64.0.0/10`, and IPv4-mapped private addresses; persisted non-blocked `sourceUrl` values are validated. |
+| Persisted source/data/sync invariants | FIXED | Source `assetIds`, source provenance evidence, binding `fieldMap`, sync remote revision mismatch, and diverged diagnostics are validated on load. |
+| Data binding creation invariant | FIXED | `applyDataBindingToBundle` rejects mismatched `binding.dataSourceId` and `source.id`. |
+| Asset replacement behavior | FIXED | `replaceAssetReference` now materializes typed `replaceAsset` patches for dependent image edit nodes and preserves stable `kdesign://asset/...` URLs. |
+| Editable web snapshot mapping | FIXED | Editable snapshots receive deterministic canvas section object ids, and the web shell persists matching canvas objects. |
+| Guardrails after remediation | PASS | `pnpm lint`, `pnpm typecheck`, `npx tsc --noEmit`, `pnpm test` (20 files / 117 tests), and `pnpm e2e` (28 browser tests) passed. |
 
 ## Layer Details
 
@@ -122,13 +137,13 @@ No interactive approval was requested after automated layers found blocking issu
 
 ## Issues to Fix
 
-- [ ] Wire legacy `source.contextAttachments` migration into `parseProjectBundleJson` before integrity validation and add a persistence regression.
-- [ ] Stop `loadLocalProjectBundle` from deleting saved local work on parse/integrity failure; preserve the payload or surface a recoverable diagnostics path.
-- [ ] Harden `validatePublicSourceUrl` for `localhost.`, unspecified IPv6 `::`, full `fe80::/10`, `100.64.0.0/10`, and persisted `sourceUrl` validation.
-- [ ] Validate `sourceRecords[].assetIds[]` during persisted integrity checks.
-- [ ] Reject persisted data bindings whose `fieldMap` references missing source fields.
-- [ ] Make `applyDataBindingToBundle` reject mismatched `binding.dataSourceId` and `source.id`.
-- [ ] Validate sync `remoteRevision` and conflict diagnostics so `synced` cannot overclaim divergent remote state.
-- [ ] Make asset replacement update dependent stored references through typed operations or narrow the Phase 09 claim and tests honestly.
-- [ ] Make editable web snapshots create mapped editable canvas sections, or stop labeling metadata-only snapshots as editable.
-- [ ] Enforce or explicitly diagnose missing source URL/local path/MIME/type evidence for ingested sources.
+- [x] Wire legacy `source.contextAttachments` migration into `parseProjectBundleJson` before integrity validation and add a persistence regression.
+- [x] Stop `loadLocalProjectBundle` from deleting saved local work on parse/integrity failure; preserve the payload or surface a recoverable diagnostics path.
+- [x] Harden `validatePublicSourceUrl` for `localhost.`, unspecified IPv6 `::`, full `fe80::/10`, `100.64.0.0/10`, and persisted `sourceUrl` validation.
+- [x] Validate `sourceRecords[].assetIds[]` during persisted integrity checks.
+- [x] Reject persisted data bindings whose `fieldMap` references missing source fields.
+- [x] Make `applyDataBindingToBundle` reject mismatched `binding.dataSourceId` and `source.id`.
+- [x] Validate sync `remoteRevision` and conflict diagnostics so `synced` cannot overclaim divergent remote state.
+- [x] Make asset replacement update dependent stored references through typed operations or narrow the Phase 09 claim and tests honestly.
+- [x] Make editable web snapshots create mapped editable canvas sections, or stop labeling metadata-only snapshots as editable.
+- [x] Enforce or explicitly diagnose missing source URL/local path/MIME/type evidence for ingested sources.

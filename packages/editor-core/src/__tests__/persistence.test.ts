@@ -86,6 +86,26 @@ describe("project bundle persistence", () => {
     expect(() => parseProjectBundleJson(JSON.stringify(parsed))).toThrow();
   });
 
+  it("migrates legacy context attachments before persisted integrity validation", () => {
+    const bundle = createBundle();
+    const raw = JSON.parse(serializeProjectBundle(bundle));
+    raw.source = {
+      ...raw.source,
+      contextAttachments: [{
+        id: "legacy_doc",
+        kind: "document",
+        name: "Legacy requirements.docx",
+        status: "verified",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      }]
+    };
+
+    const parsed = parseProjectBundleJson(JSON.stringify(raw));
+    const migrated = parsed.sourceRecords.find((source) => source.name === "Legacy requirements.docx");
+    expect(migrated?.id).toMatch(/^source_/);
+    expect(migrated?.localPath).toBe("legacy-context/legacy_doc");
+  });
+
   it("rejects persisted prototype references to missing canvas objects", () => {
     const bundle = ensureCanvasGraph(createBundle());
     const raw = JSON.parse(serializeProjectBundle(bundle));
@@ -451,6 +471,8 @@ describe("project bundle persistence", () => {
       hash: "hash_doc",
       createdAt: AGENT_TEST_TIME,
       importedAt: AGENT_TEST_TIME,
+      localPath: "fixtures/doc.docx",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       assetIds: [],
       parseStatus: "parsed",
       usageStatus: "candidate",
@@ -459,6 +481,20 @@ describe("project bundle persistence", () => {
     raw.parsedContextArtifacts[0].sourceId = "source_valid";
     raw.parsedContextArtifacts[0].assetIds = ["missing-asset"];
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Parsed context artifact references missing asset");
+
+    raw.parsedContextArtifacts = [];
+    raw.sourceRecords[0].assetIds = ["missing-source-asset"];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Source record references missing asset");
+
+    raw.sourceRecords[0].assetIds = [];
+    raw.sourceRecords[0].sourceUrl = "http://[::]/";
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Source record URL is not public");
+
+    delete raw.sourceRecords[0].sourceUrl;
+    delete raw.sourceRecords[0].localPath;
+    delete raw.sourceRecords[0].mimeType;
+    raw.sourceRecords[0].diagnostics = [];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Source record missing provenance evidence");
   });
 
   it("rejects persisted Phase 09 snapshot data asset and sync corruption", () => {
@@ -472,6 +508,7 @@ describe("project bundle persistence", () => {
       hash: "hash_web",
       createdAt: AGENT_TEST_TIME,
       importedAt: AGENT_TEST_TIME,
+      sourceUrl: "https://example.com",
       assetIds: [],
       parseStatus: "parsed",
       usageStatus: "candidate",
@@ -517,6 +554,10 @@ describe("project bundle persistence", () => {
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("data binding references missing data source");
 
     raw.dataBindings[0].dataSourceId = "data_valid";
+    raw.dataBindings[0].fieldMap = { title: "missing-field" };
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Data binding references missing source field");
+
+    raw.dataBindings[0].fieldMap = { title: "name" };
     raw.dataBindings[0].sourceRevision = "rev_stale";
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Data binding source revision is stale");
 
@@ -550,7 +591,17 @@ describe("project bundle persistence", () => {
       localRevision: raw.baseRevision,
       diagnostics: []
     };
-    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("synced sync envelope");
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("synced-missing-remote-document-id");
+
+    raw.syncEnvelope = {
+      id: "sync_remote_corrupt",
+      status: "synced",
+      remoteDocumentId: "remote_doc",
+      localRevision: raw.baseRevision,
+      remoteRevision: "rev_remote_old",
+      diagnostics: []
+    };
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("synced-remote-revision-mismatch");
   });
 });
 

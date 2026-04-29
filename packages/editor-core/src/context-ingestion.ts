@@ -38,7 +38,10 @@ export function createSourceRecord(input: {
 }): SourceRecord {
   const createdAt = input.createdAt ?? new Date().toISOString();
   const hashInput = input.bytes ?? input.sourceUrl ?? input.localPath ?? input.name;
-  const diagnostics = input.uncertainty ? [`uncertain:${input.uncertainty}`] : [];
+  const diagnostics = [
+    ...(input.uncertainty ? [`uncertain:${input.uncertainty}`] : []),
+    ...(input.bytes && !input.sourceUrl && !input.localPath && !input.mimeType ? ["inline-source-bytes"] : [])
+  ];
   return SourceRecordSchema.parse({
     id: `source_${stableHash(`${input.projectId}:${input.kind}:${input.name}:${hashInput}`)}`,
     kind: input.kind,
@@ -87,6 +90,7 @@ export function migrateContextAttachmentsToSourceRecords(
       kind: sourceKindForAttachment(attachment.kind),
       name: attachment.name,
       ...(attachment.sourceUrl ? { sourceUrl: attachment.sourceUrl } : {}),
+      ...(!attachment.sourceUrl ? { localPath: `legacy-context/${attachment.id}` } : {}),
       ...(attachment.mimeType ? { mimeType: attachment.mimeType } : {}),
       rights: attachment.status === "unknown" ? "unknown-rights" : "user-provided-context",
       ...(attachment.note ? { uncertainty: attachment.note } : {}),
@@ -447,7 +451,7 @@ export function createWebSnapshot(input: {
     sanitizedHtml: normalized.html.sanitized,
     normalizedHtml: normalized.html.normalized,
     ...(input.screenshotAssetId ? { screenshotAssetId: input.screenshotAssetId } : {}),
-    canvasObjectIds: [],
+    canvasObjectIds: [`snapshot_canvas_${stableHash(`${input.sourceId}:${validation.normalizedUrl}`)}`],
     diagnostics: normalized.sanitizerReport.changes.map((change) => `${change.kind}:${change.target}`),
     createdAt
   });
@@ -527,8 +531,8 @@ function diagnosticsForSourceKind(source: SourceRecord, expected: SourceKind): s
 }
 
 function isPrivateHostname(hostname: string): boolean {
-  const normalized = hostname.toLowerCase().replace(/^\[|\]$/g, "");
-  if (["localhost", "0.0.0.0", "::1"].includes(normalized) || normalized.endsWith(".localhost")) {
+  const normalized = hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.+$/g, "");
+  if (["localhost", "0.0.0.0", "::", "::1"].includes(normalized) || normalized.endsWith(".localhost")) {
     return true;
   }
   const mappedIpv4 = ipv4FromMappedIpv6(normalized);
@@ -542,8 +546,7 @@ function isPrivateHostname(hostname: string): boolean {
     return (
       normalized.startsWith("fc") ||
       normalized.startsWith("fd") ||
-      normalized.startsWith("fe80:") ||
-      normalized === "fe80::1"
+      isIpv6LinkLocal(normalized)
     );
   }
   return false;
@@ -555,12 +558,22 @@ function isPrivateIpv4Hostname(hostname: string): boolean {
     /^127\./.test(hostname) ||
     /^10\./.test(hostname) ||
     /^169\.254\./.test(hostname) ||
+    /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(hostname) ||
     /^192\.168\./.test(hostname)
   ) {
     return true;
   }
   const private172 = hostname.match(/^172\.(\d+)\./);
   return Boolean(private172 && Number(private172[1]) >= 16 && Number(private172[1]) <= 31);
+}
+
+function isIpv6LinkLocal(hostname: string): boolean {
+  const first = hostname.split(":")[0];
+  if (!first || !/^[0-9a-f]{1,4}$/.test(first)) {
+    return false;
+  }
+  const value = Number.parseInt(first, 16);
+  return value >= 0xfe80 && value <= 0xfebf;
 }
 
 function ipv4FromMappedIpv6(hostname: string): string | undefined {
