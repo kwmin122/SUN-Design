@@ -169,7 +169,12 @@ describe("context ingestion foundation", () => {
   it("rejects unsafe URLs and unsupported source types with diagnostics", () => {
     expect(validatePublicSourceUrl("javascript:alert(1)").valid).toBe(false);
     expect(validatePublicSourceUrl("http://localhost:3000/private").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://169.254.169.254/latest/meta-data").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[::1]/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[fd00::1]/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[fe80::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("https://example.com/product").valid).toBe(true);
+    expect(validatePublicSourceUrl("https://fc-public.example.com/product").valid).toBe(true);
 
     const blocked = rejectUnsupportedSource({
       projectId: "project",

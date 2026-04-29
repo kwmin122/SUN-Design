@@ -1356,11 +1356,23 @@ export function EditorShell() {
       reportWorkflowError("data_binding_rejected", new Error("No canvas object available for data binding."));
       return;
     }
-    const source = current.dataSources[0] ?? parseCsvDataSource({
+    const createdAt = new Date().toISOString();
+    const fallbackSourceRecord = createSourceRecord({
+      projectId: current.id,
+      kind: "csv",
+      name: "team-data.csv",
+      bytes: "name,role\n민지,PM\n유진,Designer\n서연,Engineer",
+      rights: "fixture-data",
+      createdAt
+    });
+    const existingDataSource = current.dataSources.find((item) => (
+      current.sourceRecords.some((sourceRecord) => sourceRecord.id === item.sourceId)
+    ));
+    const source = existingDataSource ?? parseCsvDataSource({
       name: "팀 데이터.csv",
-      sourceId: "source_phase09_csv",
+      sourceId: fallbackSourceRecord.id,
       csv: "name,role\n민지,PM\n유진,Designer\n서연,Engineer",
-      createdAt: new Date().toISOString()
+      createdAt
     });
     const binding: DataBinding = createDataBinding({
       dataSourceId: source.id,
@@ -1369,9 +1381,17 @@ export function EditorShell() {
       fieldMap: { title: "name", subtitle: "role" },
       rowLimit: 3,
       sourceRevision: current.baseRevision,
-      createdAt: new Date().toISOString()
+      createdAt
     });
-    commitBundle(applyDataBindingToBundle(current, source, binding), { trackUndo: true });
+    const sourceRecords = current.sourceRecords.some((sourceRecord) => sourceRecord.id === source.sourceId)
+      ? current.sourceRecords
+      : upsertById(current.sourceRecords, fallbackSourceRecord);
+    const validSourceIds = new Set(sourceRecords.map((sourceRecord) => sourceRecord.id));
+    commitBundle(applyDataBindingToBundle(ProjectBundleSchema.parse({
+      ...current,
+      sourceRecords,
+      dataSources: current.dataSources.filter((item) => validSourceIds.has(item.sourceId))
+    }), source, binding), { trackUndo: true });
   }, [commitBundle, reportWorkflowError, selectedObjectId]);
 
   const createPhase09SyncEnvelope = useCallback(() => {

@@ -43,7 +43,7 @@ Exposed the Phase 09 editor-core foundation as visible web studio workflows. The
 | Web snapshot states covered | PASS | `editable`, `referenceOnly`, and `blocked` states are UI-tested. |
 | Unsafe URL blocked | PASS | `javascript:` capture stays blocked and never becomes editable. |
 | Asset provenance visible | PASS | Stable `kdesign://asset/...` URLs and lifecycle events render. |
-| Data binding preview | PASS | Deterministic Korean rows render in the UI. |
+| Data binding preview | PASS | Deterministic Korean rows render in the UI. Bind-before-import creates a matching CSV source record and reloads without corrupt persisted references. |
 | Sync copy preserves DATA-01 boundary | PASS | UI says `DATA-01 foundation only` and displays divergence diagnostics. |
 | Responsive overflow checks | PASS | Phase 09 context/assets spec checks desktop, tablet, and mobile body width. |
 
@@ -57,6 +57,11 @@ Exposed the Phase 09 editor-core foundation as visible web studio workflows. The
 - `npx tsc --noEmit`: PASS
 - `pnpm lint`: PASS
 - `pnpm typecheck`: PASS
+
+## Post-Review Remediation
+
+- Fixed the `Bind data` before `Import CSV` path so fallback CSV data is backed by a persisted `SourceRecord` before the `DataSource` and `DataBinding` are written.
+- Added a browser regression that checks source/data-source reference integrity in localStorage and verifies reload readiness plus the Korean binding preview.
 
 ## Deviations
 

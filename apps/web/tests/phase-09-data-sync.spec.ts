@@ -10,6 +10,30 @@ async function openFreshProject(page: Page) {
   await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
 }
 
+test("binds fallback CSV data before explicit import without corrupting persisted sources", async ({ page }) => {
+  await openFreshProject(page);
+
+  await page.getByTestId("phase-09-create-data-binding").click();
+  await expect(page.getByTestId("phase-09-data-binding-preview")).toContainText("민지");
+
+  const saved = await page.evaluate((key) => {
+    const parsed = JSON.parse(window.localStorage.getItem(key) ?? "{}");
+    const sourceIds = new Set(parsed.sourceRecords.map((source: { id: string }) => source.id));
+    return {
+      sourceRecords: parsed.sourceRecords.length,
+      dataSources: parsed.dataSources.length,
+      sourceLinked: parsed.dataSources.every((source: { sourceId: string }) => sourceIds.has(source.sourceId))
+    };
+  }, STORAGE_KEY);
+  expect(saved.sourceRecords).toBeGreaterThan(0);
+  expect(saved.dataSources).toBeGreaterThan(0);
+  expect(saved.sourceLinked).toBe(true);
+
+  await page.reload();
+  await expect(page.getByTestId("diagnostics-readiness")).toContainText("ready");
+  await expect(page.getByTestId("phase-09-data-binding-preview")).toContainText("민지");
+});
+
 test("binds deterministic data and persists sync foundation diagnostics", async ({ page }) => {
   await openFreshProject(page);
 

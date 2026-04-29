@@ -527,18 +527,31 @@ function diagnosticsForSourceKind(source: SourceRecord, expected: SourceKind): s
 }
 
 function isPrivateHostname(hostname: string): boolean {
-  const normalized = hostname.toLowerCase();
+  const normalized = hostname.toLowerCase().replace(/^\[|\]$/g, "");
   if (["localhost", "0.0.0.0", "::1"].includes(normalized) || normalized.endsWith(".localhost")) {
     return true;
   }
-  if (/^127\./.test(normalized) || /^10\./.test(normalized) || /^192\.168\./.test(normalized)) {
+  if (
+    /^127\./.test(normalized) ||
+    /^10\./.test(normalized) ||
+    /^169\.254\./.test(normalized) ||
+    /^192\.168\./.test(normalized)
+  ) {
     return true;
   }
   const private172 = normalized.match(/^172\.(\d+)\./);
   if (private172 && Number(private172[1]) >= 16 && Number(private172[1]) <= 31) {
     return true;
   }
-  return normalized.startsWith("fc") || normalized.startsWith("fd");
+  if (normalized.includes(":")) {
+    return (
+      normalized.startsWith("fc") ||
+      normalized.startsWith("fd") ||
+      normalized.startsWith("fe80:") ||
+      normalized === "fe80::1"
+    );
+  }
+  return false;
 }
 
 function sourceList(bundle: ProjectBundle): string[] {

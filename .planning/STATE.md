@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 09 executed; verify next |
+| Current phase | Phase 09 executed with post-review blockers closed; verify next |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -45,7 +45,7 @@
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is executed in two waves: Wave 1 built editor-core context/data/asset/sync schemas, helpers, integrity, handoff inclusion, and regression tests; Wave 2 exposed the visible web studio workflows and browser coverage. The next step is `/sunco:verify 9`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is executed in two waves: Wave 1 built editor-core context/data/asset/sync schemas, helpers, integrity, handoff inclusion, and regression tests; Wave 2 exposed the visible web studio workflows and browser coverage. Post-review blockers for bind-before-import persisted reference integrity and private/link-local URL validation are closed. The next step is `/sunco:verify 9`.
 
 ## Key Decisions Carried Forward
 
@@ -140,10 +140,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 09 context was captured in `.planning/phases/09-context-ingestion-live-data-and-assets/09-CONTEXT.md`, locking the scope to real source ingestion, provenance, generated `source-notes.md`/`design-context.md`, safe editable web snapshots, local-first data bindings, asset lifecycle, stable project URLs, and server-portable sync semantics while deferring production hosted storage, authenticated scraping, Dev Mode, publish/export fidelity, collaboration, and full Figma roundtrip.
 - Phase 09 execution plans were created in `.planning/phases/09-context-ingestion-live-data-and-assets/`: Wave 1 core editor-core source/data/asset/sync foundation and Wave 2 web context queue, notes viewer, web snapshot, data binding, asset provenance, and local/mock sync UI. DATA-01 remains foundation-only until hosted-account sync semantics are implemented and verified.
 - Phase 09 execution completed in `12b011e` and `326750f`: editor-core now has source/context/data/asset/sync persisted models with reload integrity checks, and the web studio exposes context ingestion, generated notes, web snapshot states, asset provenance, data binding preview, and DATA-01 foundation-only sync diagnostics.
+- Phase 09 post-review remediation closed two blockers: fallback data binding now writes a matching CSV `SourceRecord` before persistence, and public URL validation now rejects IPv4 link-local plus IPv6 loopback/private/link-local targets. Regression gates now include 27 browser tests.
 
 ---
-*Last updated: 2026-04-29 after Phase 09 execution*
+*Last updated: 2026-04-29 after Phase 09 post-review remediation*
 - **phase**: 9
-- **last_updated**: 2026-04-29T09:50:00+09:00
+- **last_updated**: 2026-04-29T10:05:00+09:00
 - **status**: executed
 - **next_action**: /sunco:verify 9
