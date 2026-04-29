@@ -20,12 +20,14 @@ import {
   materializeStoredStateExport,
   writeWorkerBundleFixture
 } from "../export-worker.js";
-import { createEditableSubsetPptx } from "../pptx.js";
+import { createEditableSubsetPptx, createRasterizedPptx } from "../pptx.js";
+import { renderBundlePreview } from "../render.js";
 import { writeDeterministicZip } from "../zip.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
-const OUT_DIR = path.join(ROOT, ".tmp-export-worker/phase-10");
-const FIXTURE_PATH = path.join(OUT_DIR, "phase-10-worker-export-bundle.json");
+const OUT_DIR = path.join(ROOT, ".tmp-export-worker/phase-10-fixture");
+const FIXTURE_PATH = path.join(OUT_DIR, "phase-10-worker-export-bundle.generated.json");
+const COMMITTED_FIXTURE_PATH = path.join(ROOT, "apps/web/tests/fixtures/phase-10-worker-export-bundle.json");
 const NOW = "2026-04-29T00:00:00.000Z";
 
 describe("Phase 10 export worker", () => {
@@ -79,10 +81,12 @@ describe("Phase 10 export worker", () => {
     const editableRels = await readZipText("slides-editable.pptx", "ppt/slides/_rels/slide1.xml.rels");
     expect(editableSlide).toContain("K-Design Studio");
     expect(editableSlide).toContain("frame:");
+    expect(editableSlide).toContain("button:");
     expect(editableSlide).toContain("<p:pic>");
     expect(editableSlide).toContain("editable-diagnostics");
     expect(editableSlide).toContain("editable-subset:skipped:");
-    expect(editableSlide).toContain("unsupported-pptx-node:button");
+    expect(editableSlide).toContain("<a:prstGeom prst=\"rect\">");
+    expect(editableSlide).not.toContain("unsupported-pptx-node:button");
     expect(editableRels).toContain("Target=\"../media/asset_1bgo2te.svg\"");
     await expectZipContains("site.zip", ["index.html", "manifest.json", "project-bundle.json"]);
 
@@ -92,18 +96,23 @@ describe("Phase 10 export worker", () => {
     expect(fixture.exportArtifacts.find((artifact) => artifact.kind === "pdf")?.bytes).toBeGreaterThan(20_000);
     expect(fixture.exportArtifacts.find((artifact) => artifact.kind === "gif")?.diagnostics).toContain("animation-frames:3");
     const editableArtifact = fixture.exportArtifacts.find((artifact) => artifact.filename === "slides-editable.pptx");
-    expect(editableArtifact?.diagnostics).toContain("editable-subset:skipped:7");
-    expect(editableArtifact?.diagnostics).toContain("unsupported-pptx-node:button");
+    expect(editableArtifact?.diagnostics.some((diagnostic) => diagnostic.startsWith("editable-subset:skipped:"))).toBe(true);
+    expect(editableArtifact?.diagnostics).not.toContain("unsupported-pptx-node:button");
     expect(fixture.exportVerifications.some((item) => item.kind === "signature")).toBe(true);
     expect(fixture.exportVerifications.some((item) => item.kind === "visual-diff")).toBe(true);
+    expect(fixture.exportVerifications.filter((item) => item.kind === "visual-diff").every((item) => item.expectedHash !== item.actualHash)).toBe(true);
     expect(fixture.exportVerifications.some((item) => item.kind === "manifest")).toBe(true);
     expect(fixture.exportVerifications.some((item) => item.kind === "roundtrip")).toBe(true);
     expect(fixture.publishPreviews[0]?.url).toMatch(/^kdesign:\/\/publish\/phase-10-worker-fixture\/publish_/);
     const roundtripManifest = JSON.parse(fixture.codeRoundtripPackages[0]!.manifestJson);
     expect(roundtripManifest.sourceOfTruth).toBe("ProjectBundle");
     expect(roundtripManifest.projectBundle.id).toBe("phase-10-worker-fixture");
+    expect(roundtripManifest.projectBundleHash).toEqual(expect.any(String));
     expect(roundtripManifest.exportArtifacts.length).toBeGreaterThan(0);
     expect(fixture.html.normalized).not.toContain("live iframe DOM");
+    const committedFixture = parseProjectBundleJson(await readFile(COMMITTED_FIXTURE_PATH, "utf8"));
+    const generatedFixture = parseProjectBundleJson(await readFile(FIXTURE_PATH, "utf8"));
+    expect(workerFixtureContract(generatedFixture)).toEqual(workerFixtureContract(committedFixture));
   });
 
   it("exposes plan-level public APIs and rejects unsafe paths", async () => {
@@ -120,11 +129,15 @@ describe("Phase 10 export worker", () => {
     });
 
     expect(typeof createEditableSubsetPptx).toBe("function");
+    expect(typeof createRasterizedPptx).toBe("function");
     expect(typeof exportAnimationGif).toBe("function");
     expect(typeof exportAnimationMp4).toBe("function");
     const editableSubset = createEditableSubsetPptx(bundle, { createdAt: NOW });
     expect(Buffer.from(editableSubset.data).subarray(0, 2).toString("latin1")).toBe("PK");
     expect(editableSubset.diagnostics.some((diagnostic) => diagnostic.startsWith("editable-subset:mapped:"))).toBe(true);
+    const rasterized = createRasterizedPptx(bundle);
+    expect(Buffer.from(rasterized.data).subarray(0, 2).toString("latin1")).toBe("PK");
+    expect(rasterized.diagnostics).toContain("pptx-rasterized:preview-missing");
 
     const html = await materializeStoredStateExport({
       bundle,
@@ -180,6 +193,29 @@ describe("Phase 10 export worker", () => {
       createdAt: NOW
     })).rejects.toThrow("approved roots");
   });
+
+  it("blocks local and external resource requests during worker rendering", async () => {
+    await rm(OUT_DIR, { recursive: true, force: true });
+    await mkdir(OUT_DIR, { recursive: true });
+    const base = normalizeHtml({
+      id: "phase-10-network-fixture",
+      title: "Phase 10 Network Fixture",
+      html: BASIC_LANDING_FIXTURE_HTML
+    });
+    const bundle = ProjectBundleSchema.parse({
+      ...base,
+      html: {
+        ...base.html,
+        normalized: `${base.html.normalized}<img src="http://127.0.0.1:9/private.png" alt="blocked">`
+      },
+      createdAt: NOW,
+      updatedAt: NOW
+    });
+
+    const rendered = await renderBundlePreview(bundle, path.join(OUT_DIR, "network-render"));
+    expect(rendered.diagnostics).toContain("blocked-resource-requests:1");
+    expect(rendered.diagnostics.some((diagnostic) => diagnostic.includes("127.0.0.1"))).toBe(true);
+  });
 });
 
 function withAnimationTemplate(bundle: ProjectBundle): ProjectBundle {
@@ -188,6 +224,27 @@ function withAnimationTemplate(bundle: ProjectBundle): ProjectBundle {
     title: "Animation template",
     createdAt: NOW
   });
+}
+
+function workerFixtureContract(bundle: ProjectBundle) {
+  const roundtripManifest = JSON.parse(bundle.codeRoundtripPackages[0]?.manifestJson ?? "{}");
+  return {
+    id: bundle.id,
+    artifactFiles: bundle.exportArtifacts
+      .map((artifact) => `${artifact.kind}:${artifact.filename}:${artifact.viewport}`)
+      .sort(),
+    verificationKinds: bundle.exportVerifications
+      .map((verification) => `${verification.kind}:${verification.status}`)
+      .sort(),
+    publishPreviewCount: bundle.publishPreviews.length,
+    roundtripRuntime: bundle.codeRoundtripPackages[0]?.runtime,
+    roundtripManifestSource: roundtripManifest.sourceOfTruth,
+    hasProjectBundleHash: typeof roundtripManifest.projectBundleHash === "string",
+    editablePptxDiagnostics: bundle.exportArtifacts
+      .find((artifact) => artifact.filename === "slides-editable.pptx")
+      ?.diagnostics.filter((diagnostic) => diagnostic.startsWith("editable-subset:") || diagnostic.startsWith("unsupported-pptx-node:"))
+      .sort()
+  };
 }
 
 async function expectSignature(filename: string, signature: string): Promise<void> {

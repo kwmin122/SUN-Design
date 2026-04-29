@@ -35,6 +35,8 @@ test("creates export publish and code roundtrip records and loads worker artifac
   await expect(page.getByTestId("phase-10-export-artifacts")).toContainText(".pptx");
   await expect(page.getByTestId("phase-10-export-artifacts")).toContainText(".gif");
   await expect(page.getByTestId("phase-10-export-artifacts")).toContainText(".mp4");
+  await expect(page.getByTestId("phase-10-export-artifacts")).toContainText("web-local-record");
+  await expect(page.getByTestId("phase-10-export-artifacts")).toContainText("animation-template-required");
   await expect(page.getByTestId("phase-10-export-verifications")).toContainText("signature");
   await expect(page.getByTestId("phase-10-export-verifications")).toContainText("manifest");
 

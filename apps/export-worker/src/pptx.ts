@@ -1,4 +1,6 @@
-import type { AssetRef, EditNode, ProjectBundle } from "@kdesign/editor-core";
+import { readFileSync } from "node:fs";
+
+import type { AssetRef, CanvasObject, EditNode, ProjectBundle } from "@kdesign/editor-core";
 
 import { createZipArchive } from "./zip.js";
 
@@ -15,6 +17,15 @@ type EditableBuild = {
   slideXml: string;
 };
 
+type EditablePptxNode = {
+  id: string;
+  kind: string;
+  name: string;
+  textPreview?: string;
+  tagName?: string;
+  assetId?: string;
+};
+
 const MAX_EDITABLE_NODES = 18;
 
 export function createPptxBytes(
@@ -26,8 +37,8 @@ export function createPptxBytes(
   } = {}
 ): Uint8Array {
   const mediaFiles: MediaFile[] = [];
-  const slideXml = mode === "rasterized" && input.previewPng
-    ? rasterSlideXml(bundle.title, input.renderDiagnostics ?? [])
+  const slideXml = mode === "rasterized"
+    ? rasterSlideXml(bundle.title, input.renderDiagnostics ?? [], Boolean(input.previewPng))
     : buildEditableSlide(bundle, mediaFiles).slideXml;
   if (mode === "rasterized" && input.previewPng) {
     mediaFiles.push({
@@ -62,6 +73,27 @@ export function createEditableSubsetPptx(
   return {
     data: createPptxBytes(bundle, "editableSubset"),
     diagnostics: collectEditableSubsetDiagnostics(bundle)
+  };
+}
+
+export function createRasterizedPptx(
+  bundle: ProjectBundle,
+  input: { pngArtifactPaths?: string[]; renderDiagnostics?: string[] } = {}
+): { data: Uint8Array; diagnostics: string[] } {
+  const previewPng = input.pngArtifactPaths?.[0]
+    ? new Uint8Array(readFileSync(input.pngArtifactPaths[0]))
+    : undefined;
+  return {
+    data: createPptxBytes(bundle, "rasterized", {
+      ...(previewPng ? { previewPng } : {}),
+      renderDiagnostics: input.renderDiagnostics ?? [
+        previewPng ? "pptx-rasterized:preview-artifact" : "pptx-rasterized:preview-missing"
+      ]
+    }),
+    diagnostics: [
+      "pptx-mode:rasterized",
+      previewPng ? "pptx-rasterized:preview-artifact" : "pptx-rasterized:preview-missing"
+    ]
   };
 }
 
@@ -119,18 +151,18 @@ function slideRelsXml(mediaFiles: MediaFile[]): string {
 </Relationships>`;
 }
 
-function rasterSlideXml(title: string, diagnostics: string[]): string {
+function rasterSlideXml(title: string, diagnostics: string[], hasPreview: boolean): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <p:cSld>
     <p:spTree>
       <p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
       <p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>
-      <p:pic>
+      ${hasPreview ? `<p:pic>
         <p:nvPicPr><p:cNvPr id="2" name="${escapeXml(title)} raster preview"/><p:cNvPicPr/><p:nvPr/></p:nvPicPr>
         <p:blipFill><a:blip r:embed="rIdPreview"/><a:stretch><a:fillRect/></a:stretch></p:blipFill>
         <p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="12192000" cy="6858000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>
-      </p:pic>
+      </p:pic>` : textBoxXml(2, "Raster preview missing", "Raster preview PNG was not provided.", 457200, 274320, 11277600, 914400)}
       ${textBoxXml(3, "Export diagnostics", diagnostics.join(" / "), 457200, 5943600, 11277600, 457200)}
     </p:spTree>
   </p:cSld>
@@ -162,14 +194,25 @@ function buildEditableSlide(bundle: ProjectBundle, mediaFiles: MediaFile[]): Edi
   };
 }
 
-function editableCandidates(bundle: ProjectBundle): EditNode[] {
-  return Object.values(bundle.editGraph.nodes)
-    .filter((node) => node.kind === "text" || node.kind === "image" || node.kind === "frame" || node.kind === "block");
+function editableCandidates(bundle: ProjectBundle): EditablePptxNode[] {
+  const editNodes: EditablePptxNode[] = Object.values(bundle.editGraph.nodes)
+    .filter((node) => (
+      node.kind === "text" ||
+      node.kind === "image" ||
+      node.kind === "frame" ||
+      node.kind === "block" ||
+      node.kind === "button"
+    ))
+    .map(editableFromEditNode);
+  const vectorLikeObjects = Object.values(bundle.canvasGraph?.objects ?? {})
+    .filter((object) => object.kind === "vectorLike")
+    .map(editableFromCanvasObject);
+  return [...editNodes, ...vectorLikeObjects];
 }
 
 function editableNodeXml(
   bundle: ProjectBundle,
-  node: EditNode,
+  node: EditablePptxNode,
   index: number,
   mediaFiles: MediaFile[],
   diagnostics: string[]
@@ -187,10 +230,13 @@ function editableNodeXml(
   const text = node.kind === "image"
     ? `Image placeholder: ${node.assetId ?? node.id}`
     : `${node.kind}: ${node.textPreview || node.tagName || node.id}`;
-  return textBoxXml(index + 3, `${node.kind} ${node.id}`, text.slice(0, 180), position.x, position.y, position.width, position.height);
+  if (node.kind === "text") {
+    return textBoxXml(index + 3, `${node.kind} ${node.id}`, text.slice(0, 180), position.x, position.y, position.width, position.height);
+  }
+  return rectangleXml(index + 3, `${node.kind} ${node.id}`, text.slice(0, 180), position.x, position.y, position.width, position.height);
 }
 
-function createImageMedia(bundle: ProjectBundle, node: EditNode, index: number): MediaFile | undefined {
+function createImageMedia(bundle: ProjectBundle, node: EditablePptxNode, index: number): MediaFile | undefined {
   if (!node.assetId) {
     return undefined;
   }
@@ -233,16 +279,19 @@ function decodeDataUrl(asset: AssetRef): { extension: string; contentType: strin
 }
 
 function unsupportedNodeDiagnostics(bundle: ProjectBundle): string[] {
-  const supported = new Set(["text", "image", "frame", "block"]);
-  const unsupported = Object.values(bundle.editGraph.nodes)
+  const supported = new Set(["text", "image", "frame", "block", "button", "vectorLike"]);
+  const editUnsupported = Object.values(bundle.editGraph.nodes)
     .filter((node) => !supported.has(node.kind))
     .map((node) => node.kind);
-  return [...new Set(unsupported)].map((kind) => `unsupported-pptx-node:${kind}`);
+  const canvasUnsupported = Object.values(bundle.canvasGraph?.objects ?? {})
+    .filter((object) => !supported.has(object.kind) && object.kind !== "page" && object.kind !== "artboard" && object.kind !== "section")
+    .map((object) => object.kind);
+  return [...new Set([...editUnsupported, ...canvasUnsupported])].map((kind) => `unsupported-pptx-node:${kind}`);
 }
 
 function pictureXml(
   id: number,
-  node: EditNode,
+  node: EditablePptxNode,
   relId: string,
   x: number,
   y: number,
@@ -270,6 +319,43 @@ function textBoxXml(
         <p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${width}" cy="${height}"/></a:xfrm><a:prstGeom prst="roundRect"><a:avLst/></a:prstGeom></p:spPr>
         <p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:r><a:t>${escapeXml(text)}</a:t></a:r></a:p></p:txBody>
       </p:sp>`;
+}
+
+function rectangleXml(
+  id: number,
+  name: string,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): string {
+  return `<p:sp>
+        <p:nvSpPr><p:cNvPr id="${id}" name="${escapeXml(name)}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>
+        <p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${width}" cy="${height}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>
+        <p:txBody><a:bodyPr wrap="square"/><a:lstStyle/><a:p><a:r><a:t>${escapeXml(text)}</a:t></a:r></a:p></p:txBody>
+      </p:sp>`;
+}
+
+function editableFromEditNode(node: EditNode): EditablePptxNode {
+  return {
+    id: node.id,
+    kind: node.kind,
+    name: node.textPreview || node.tagName || node.id,
+    tagName: node.tagName,
+    ...(node.textPreview ? { textPreview: node.textPreview } : {}),
+    ...(node.assetId ? { assetId: node.assetId } : {})
+  };
+}
+
+function editableFromCanvasObject(object: CanvasObject): EditablePptxNode {
+  return {
+    id: object.id,
+    kind: object.kind,
+    name: object.name,
+    textPreview: object.name,
+    tagName: object.kind
+  };
 }
 
 function gridPosition(index: number): { x: number; y: number; width: number; height: number } {

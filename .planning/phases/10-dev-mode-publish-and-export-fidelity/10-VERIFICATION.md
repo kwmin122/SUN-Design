@@ -14,6 +14,40 @@ Generated: 2026-04-29T22:52:15+09:00
 | 6 | Cross-model | FAIL | Skeptical fallback review agrees the remaining issues are structural, not just test gaps. |
 | 7 | Human eval | SKIPPED | Automated layers failed, so human approval was not requested. |
 
+## Post-Fix Update
+
+Generated: 2026-04-29T23:15:00+09:00
+
+Overall: FIXES APPLIED; READY FOR FORMAL RE-VERIFY.
+
+The blockers from this verification pass have been closed in code and tests:
+
+- Code roundtrip manifests now include `projectBundleHash`, parse the embedded `ProjectBundle`, reject embedded HTML/source tampering on append and persisted reload, and keep regression tests for both paths.
+- Export-worker rendering now aborts non-data/blob/about resource requests and records `blocked-resource-*` diagnostics; local URL render probes are rejected at request time.
+- Worker `visual-diff` records no longer self-compare the same current render value. PNG compares render baseline to the materialized PNG artifact; non-previewable formats are explicitly `degraded` with artifact-preview-required diagnostics instead of fake pass.
+- Worker fixture generation is hermetic against the committed web fixture by comparing a stable worker fixture contract, and the committed fixture was regenerated through the real worker output path.
+- Web fixture loading now uses `parseProjectBundleJson` so normal persisted integrity validation runs.
+- Browser GIF/MP4 export actions now apply the animation-template gate and record `animation-template-required`; all browser-created records include `web-local-record`.
+- PPTX support now exposes `createRasterizedPptx`, maps buttons/frames/blocks to editable rectangle shapes, includes vector-like canvas objects, and no longer treats `button` as unsupported.
+
+Fresh post-fix checks:
+
+| Command / Probe | Result |
+|-----------------|--------|
+| `pnpm lint` | PASS |
+| `pnpm typecheck` | PASS |
+| `npx tsc --noEmit` | PASS |
+| `pnpm --filter @kdesign/export-worker build && pnpm --filter @kdesign/export-worker test` | PASS: 1 file / 3 tests |
+| `pnpm --filter @kdesign/editor-core test -- --run packages/editor-core/src/__tests__/code-roundtrip.test.ts packages/editor-core/src/__tests__/persistence.test.ts` | PASS: 22 files / 127 tests |
+| `pnpm test` | PASS: 23 files / 135 tests |
+| `pnpm e2e` | PASS: 30 browser tests |
+| `manifest.projectBundle.html.normalized` append tamper probe | PASS: rejected with `projectBundleHash mismatch` |
+| `manifest.projectBundle.html.normalized` persisted reload tamper probe | PASS: rejected with `projectBundleHash mismatch` |
+| Playwright export render local URL probe | PASS: `blocked-resource-requests:1` |
+| Committed worker fixture parse/hash probe | PASS: `projectBundleHash` present, no `unsupported-pptx-node:button`, zero self-equal visual-diff records |
+
+Next action: rerun `/sunco:verify 10` formally from this fixed state.
+
 ## Overall: NEEDS FIXES
 
 Phase 10 must not proceed to `/sunco:ship 10`. Fix the issues listed below, then re-run `/sunco:verify 10`.
@@ -122,12 +156,12 @@ SKIPPED. Automated layers failed, so human approval was not requested and must n
 
 ## Issues to Fix
 
-- [ ] Deep-validate the complete embedded `manifest.projectBundle` snapshot, not only selected fields. Add regression tests for `projectBundle.html.normalized` and other non-selected-field tampering on append and persisted reload.
-- [ ] Block or rewrite all external/local resource loads during export-worker Playwright rendering. At minimum, abort network requests and add tests for `127.0.0.1`, private IPs, and external image/script/style URLs.
-- [ ] Replace self-comparison `visual-diff` records with a deterministic baseline/actual comparison, or revise the Phase 10 contract before marking EXP-10 verified.
-- [ ] Make worker fixture generation hermetic against the committed `apps/web/tests/fixtures/phase-10-worker-export-bundle.json`, or add an equality check proving the committed fixture equals worker output.
-- [ ] Load worker fixture records in the web UI through `parseProjectBundleJson` / integrity validation, not raw `ProjectBundleSchema.parse`.
-- [ ] Apply the animation-template gate to browser GIF/MP4 export actions; missing template should create failed/degraded records with `animation-template-required`, not a normal worker-required artifact.
-- [ ] Implement the planned `createRasterizedPptx(...)` public API.
-- [ ] Update editable PPTX subset behavior so `vectorLike`, `button`, and `frame` nodes map to simple rectangle shapes; do not assert `unsupported-pptx-node:button` as the expected behavior.
-- [ ] Ensure every browser-created export record includes `web-local-record` diagnostics where the plan requires it.
+- [x] Deep-validate the complete embedded `manifest.projectBundle` snapshot, not only selected fields. Add regression tests for `projectBundle.html.normalized` and other non-selected-field tampering on append and persisted reload.
+- [x] Block or rewrite all external/local resource loads during export-worker Playwright rendering. At minimum, abort network requests and add tests for `127.0.0.1`, private IPs, and external image/script/style URLs.
+- [x] Replace self-comparison `visual-diff` records with a deterministic baseline/actual comparison, or revise the Phase 10 contract before marking EXP-10 verified.
+- [x] Make worker fixture generation hermetic against the committed `apps/web/tests/fixtures/phase-10-worker-export-bundle.json`, or add an equality check proving the committed fixture equals worker output.
+- [x] Load worker fixture records in the web UI through `parseProjectBundleJson` / integrity validation, not raw `ProjectBundleSchema.parse`.
+- [x] Apply the animation-template gate to browser GIF/MP4 export actions; missing template should create failed/degraded records with `animation-template-required`, not a normal worker-required artifact.
+- [x] Implement the planned `createRasterizedPptx(...)` public API.
+- [x] Update editable PPTX subset behavior so `vectorLike`, `button`, and `frame` nodes map to simple rectangle shapes; do not assert `unsupported-pptx-node:button` as the expected behavior.
+- [x] Ensure every browser-created export record includes `web-local-record` diagnostics where the plan requires it.

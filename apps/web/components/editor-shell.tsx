@@ -126,6 +126,7 @@ import {
   parseFigmaExportSource,
   parseSlideDeckSource,
   parseSpreadsheetSource,
+  parseProjectBundleJson,
   previewDataBinding,
   publishDesignSystem,
   promoteVariationDirection,
@@ -220,6 +221,13 @@ const ACCENT_BACKGROUNDS: Record<ArtifactTweaks["pointColor"], string> = {
   teal: "#edf7f5",
   blue: "#eef4ff"
 };
+
+function hasBrowserAnimationTemplate(bundle: ProjectBundle): boolean {
+  return Boolean(
+    bundle.prototypeGraph?.interactions.some((interaction) => interaction.transition || interaction.trigger === "timed") ||
+    bundle.slideDecks.some((deck) => deck.slides.length > 0)
+  );
+}
 
 const TWEAK_PROFILES: Record<TweakProfileId, TweakProfile> = {
   fixture: {
@@ -735,19 +743,31 @@ export function EditorShell() {
       return;
     }
 
-    const cleanHtml = createStandaloneHtml(current);
-    const materializedBytes = new TextEncoder().encode(cleanHtml).byteLength;
-    const exportDiagnostics = diagnostics ?? (kind === "html"
-      ? ["browser-materialized", "html-standalone"]
-      : ["worker-required", "browser-export-request"]);
+    const isAnimationExport = kind === "gif" || kind === "mp4";
+    const animationBlocked = isAnimationExport && !hasBrowserAnimationTemplate(current);
+    const cleanHtml = kind === "html" ? createStandaloneHtml(current) : "";
+    const materializedBytes = animationBlocked
+      ? 0
+      : kind === "html"
+        ? new TextEncoder().encode(cleanHtml).byteLength
+        : 0;
+    const exportDiagnostics = [
+      "web-local-record",
+      ...(diagnostics ?? (kind === "html"
+        ? ["browser-materialized", "html-standalone"]
+        : ["worker-required", "browser-export-request"])),
+      ...(animationBlocked ? ["animation-template-required"] : [])
+    ];
     const job = createExportJob({
       bundle: current,
       kind,
       viewport: previewDevice
     });
-    const materializedJob = kind === "html"
-      ? { ...job, bytes: materializedBytes, cleanHtml }
-      : job;
+    const materializedJob = animationBlocked
+      ? { ...job, status: "failed" as const, bytes: 0 }
+      : kind === "html"
+        ? { ...job, bytes: materializedBytes, cleanHtml }
+        : job;
     const issues = current.qualityIssues.length > 0 ? current.qualityIssues : runKoreanQualityAudit(current);
     const bundleWithJob = ProjectBundleSchema.parse({
       ...current,
@@ -757,7 +777,7 @@ export function EditorShell() {
     });
     const shaInput = kind === "html"
       ? cleanHtml
-      : `${bundleWithJob.id}:${materializedJob.id}:${materializedJob.kind}:${materializedJob.viewport}:worker-required`;
+      : `${bundleWithJob.id}:${materializedJob.id}:${materializedJob.kind}:${materializedJob.viewport}:${animationBlocked ? "animation-template-required" : "worker-required"}`;
     const sha256 = stableHash(shaInput);
     const artifact = createExportArtifactRecord(bundleWithJob, {
       jobId: materializedJob.id,
@@ -773,26 +793,36 @@ export function EditorShell() {
     const signature = createExportVerification({
       artifactId: artifact.id,
       kind: "signature",
-      status: kind === "html" ? "passed" : "degraded",
+      status: animationBlocked ? "failed" : kind === "html" ? "passed" : "degraded",
       expectedHash: sha256,
       actualHash: sha256,
-      diagnostics: kind === "html" ? ["browser-materialized-signature"] : ["worker-required-signature"],
+      diagnostics: animationBlocked
+        ? ["animation-template-required"]
+        : kind === "html"
+          ? ["browser-materialized-signature"]
+          : ["worker-required-signature"],
       createdAt: materializedJob.createdAt
     });
     const manifest = createExportVerification({
       artifactId: artifact.id,
       kind: "manifest",
-      status: kind === "html" ? "passed" : "degraded",
-      diagnostics: kind === "html" ? ["browser-materialized-manifest"] : ["worker-required-manifest"],
+      status: animationBlocked ? "failed" : kind === "html" ? "passed" : "degraded",
+      diagnostics: animationBlocked
+        ? ["animation-template-required"]
+        : kind === "html"
+          ? ["browser-materialized-manifest"]
+          : ["worker-required-manifest"],
       createdAt: materializedJob.createdAt
     });
     const visualDiff = createExportVerification({
       artifactId: artifact.id,
       kind: "visual-diff",
-      status: kind === "html" ? "passed" : "degraded",
-      expectedHash: sha256,
-      actualHash: sha256,
-      diagnostics: kind === "html" ? ["browser-materialized-visual-diff"] : ["worker-required-visual-diff"],
+      status: animationBlocked ? "failed" : "degraded",
+      expectedHash: `${kind}:browser-record:${sha256}`,
+      actualHash: `worker-required:${sha256}`,
+      diagnostics: animationBlocked
+        ? ["animation-template-required"]
+        : ["browser-visual-diff-worker-required"],
       createdAt: materializedJob.createdAt
     });
     const withArtifact = appendExportArtifact(bundleWithJob, artifact, signature);
@@ -972,7 +1002,7 @@ export function EditorShell() {
 
   const loadPhase10WorkerFixture = useCallback(() => {
     try {
-      const workerBundle = ProjectBundleSchema.parse(workerExportBundle);
+      const workerBundle = parseProjectBundleJson(JSON.stringify(workerExportBundle));
       preserveInvalidLocalProjectRef.current = false;
       commitBundle(workerBundle, { trackUndo: true });
       setSelectedNodeId(null);

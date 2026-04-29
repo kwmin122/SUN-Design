@@ -52,6 +52,7 @@ describe("code roundtrip packages", () => {
     const manifest = JSON.parse(roundtripPackage.manifestJson);
     expect(manifest.sourceOfTruth).toBe("ProjectBundle");
     expect(manifest.projectBundle.id).toBe(bundle.id);
+    expect(manifest.projectBundleHash).toEqual(expect.any(String));
     expect(manifest.baseRevision).toBe(bundle.baseRevision);
     expect(manifest.canvasGraph.rootObjectIds.length).toBeGreaterThan(0);
     expect(manifest.editGraph.rootNodeIds.length).toBeGreaterThan(0);
@@ -85,8 +86,7 @@ describe("code roundtrip packages", () => {
       createdAt: NOW
     });
     const manifest = JSON.parse(roundtripPackage.manifestJson);
-    manifest.canvasGraph = { rootObjectIds: ["tampered-object"], objects: {} };
-    manifest.projectBundle.canvasGraph = manifest.canvasGraph;
+    manifest.canvasGraph = { ...manifest.canvasGraph, rootObjectIds: ["tampered-object"] };
 
     expect(() => createCodeRoundtripPackage(bundle, {
       runtime: "codex",
@@ -97,13 +97,21 @@ describe("code roundtrip packages", () => {
 
     const artifactManifest = JSON.parse(roundtripPackage.manifestJson);
     artifactManifest.exportArtifacts[0].sha256 = "tampered-sha";
-    artifactManifest.projectBundle.exportArtifacts = artifactManifest.exportArtifacts;
     expect(() => createCodeRoundtripPackage(bundle, {
       runtime: "codex",
       artifactIds: [artifactId],
       manifestJson: JSON.stringify(artifactManifest),
       createdAt: NOW
     })).toThrow("Code roundtrip manifest exportArtifacts.");
+
+    const htmlManifest = JSON.parse(roundtripPackage.manifestJson);
+    htmlManifest.projectBundle.html.normalized = `${htmlManifest.projectBundle.html.normalized}<span>tampered</span>`;
+    expect(() => createCodeRoundtripPackage(bundle, {
+      runtime: "codex",
+      artifactIds: [artifactId],
+      manifestJson: JSON.stringify(htmlManifest),
+      createdAt: NOW
+    })).toThrow("Code roundtrip manifest projectBundleHash mismatch");
   });
 
   it("validates roundtrip imports and records source revision conflicts", () => {

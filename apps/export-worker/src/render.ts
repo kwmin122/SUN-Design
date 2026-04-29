@@ -24,6 +24,20 @@ export async function renderBundlePreview(
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage({ viewport: PREVIEW_VIEWPORT });
+    const blockedResourceUrls: string[] = [];
+    await page.route("**/*", async (route) => {
+      const requestUrl = route.request().url();
+      if (
+        requestUrl.startsWith("about:") ||
+        requestUrl.startsWith("blob:") ||
+        requestUrl.startsWith("data:")
+      ) {
+        await route.continue();
+        return;
+      }
+      blockedResourceUrls.push(requestUrl);
+      await route.abort("blockedbyclient");
+    });
     await page.setContent(html, { waitUntil: "load" });
     await page.addStyleTag({
       content: `
@@ -70,7 +84,11 @@ export async function renderBundlePreview(
       animationFrames,
       diagnostics: [
         `playwright-render:${PREVIEW_VIEWPORT.width}x${PREVIEW_VIEWPORT.height}`,
-        `animation-frames:${animationFrames.length}`
+        `animation-frames:${animationFrames.length}`,
+        ...(blockedResourceUrls.length > 0 ? [
+          `blocked-resource-requests:${blockedResourceUrls.length}`,
+          ...blockedResourceUrls.slice(0, 4).map((requestUrl) => `blocked-resource:${requestUrl}`)
+        ] : [])
       ]
     };
   } finally {

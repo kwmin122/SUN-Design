@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { BASIC_LANDING_FIXTURE_HTML } from "../fixtures.js";
 import { ensureCanvasGraph } from "../canvas-graph.js";
+import { createCodeRoundtripPackage, appendCodeRoundtripPackage } from "../code-roundtrip.js";
+import { createExportJob } from "../export.js";
+import { appendExportArtifact, createExportArtifactRecord } from "../export-fidelity.js";
 import { normalizeHtml } from "../normalize.js";
 import {
   createMemoryProjectRepository,
@@ -310,6 +313,43 @@ describe("project bundle persistence", () => {
       updatedAt: "2026-04-28T00:00:04.000Z"
     }];
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Agent run references missing output id");
+  });
+
+  it("rejects persisted code roundtrip package manifest tampering", () => {
+    let bundle = ensureCanvasGraph(createBundle());
+    const job = createExportJob({
+      bundle,
+      kind: "zip",
+      viewport: "desktop",
+      createdAt: AGENT_TEST_TIME
+    });
+    bundle = {
+      ...bundle,
+      exportJobs: [job]
+    };
+    const artifact = createExportArtifactRecord(bundle, {
+      jobId: job.id,
+      kind: "zip",
+      filename: "roundtrip.zip",
+      bytes: 1024,
+      sha256: "sha256-roundtrip",
+      viewport: "desktop",
+      filePath: "artifacts/roundtrip.zip",
+      createdAt: AGENT_TEST_TIME
+    });
+    bundle = appendExportArtifact(bundle, artifact);
+    const roundtripPackage = createCodeRoundtripPackage(bundle, {
+      runtime: "codex",
+      artifactIds: [artifact.id],
+      createdAt: AGENT_TEST_TIME
+    });
+    const withPackage = appendCodeRoundtripPackage(bundle, roundtripPackage);
+    const raw = JSON.parse(serializeProjectBundle(withPackage));
+    const manifest = JSON.parse(raw.codeRoundtripPackages[0].manifestJson);
+    manifest.projectBundle.html.normalized = `${manifest.projectBundle.html.normalized}<span>tampered</span>`;
+    raw.codeRoundtripPackages[0].manifestJson = JSON.stringify(manifest);
+
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("projectBundleHash mismatch");
   });
 
   it("rejects persisted agent output safety violations", () => {
@@ -780,7 +820,7 @@ describe("project bundle persistence", () => {
       manifestJson: JSON.stringify(tamperedManifest),
       createdAt: AGENT_TEST_TIME
     }];
-    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip manifest canvasGraph mismatch");
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip manifest missing projectBundleHash");
 
     const artifactTamperedManifest = {
       ...tamperedManifest,
@@ -807,7 +847,7 @@ describe("project bundle persistence", () => {
       manifestJson: JSON.stringify(artifactTamperedManifest),
       createdAt: AGENT_TEST_TIME
     }];
-    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip manifest exportArtifacts.");
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip manifest missing projectBundleHash");
 
     raw.codeRoundtripPackages = [{
       id: "roundtrip_pkg_corrupt",

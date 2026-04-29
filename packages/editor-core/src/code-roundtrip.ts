@@ -94,6 +94,7 @@ export function createCodeRoundtripManifest(
     runtime: input.runtime,
     artifactIds: [...input.artifactIds],
     instructionsPath: input.instructionPath ?? DEFAULT_INSTRUCTION_PATH,
+    projectBundleHash: stableHash(stableStringify(snapshot)),
     projectBundle: snapshot,
     canvasGraph: snapshot.canvasGraph ?? null,
     editGraph: snapshot.editGraph,
@@ -122,6 +123,7 @@ export function validateCodeRoundtripPackageManifest(
   }
 
   for (const requiredKey of [
+    "projectBundleHash",
     "projectBundle",
     "canvasGraph",
     "editGraph",
@@ -136,9 +138,16 @@ export function validateCodeRoundtripPackageManifest(
   }
 
   const projectBundle = getRecord(manifest, "projectBundle", roundtripPackage.id);
-  if (projectBundle["id"] !== bundle.id || projectBundle["baseRevision"] !== roundtripPackage.sourceRevision) {
+  const parsedProjectBundle = ProjectBundleSchema.parse(projectBundle);
+  if (parsedProjectBundle.id !== bundle.id || parsedProjectBundle.baseRevision !== roundtripPackage.sourceRevision) {
     throw new Error(`Code roundtrip manifest project bundle mismatch: ${roundtripPackage.id}`);
   }
+  assertManifestValue(
+    manifest,
+    "projectBundleHash",
+    stableHash(stableStringify(parsedProjectBundle)),
+    roundtripPackage.id
+  );
 
   const exportArtifacts = getRecordArray(manifest, "exportArtifacts", roundtripPackage.id);
   const manifestArtifactIds = new Set(exportArtifacts.map((artifact) => artifact["id"]).filter((id): id is string => typeof id === "string"));
@@ -156,6 +165,8 @@ export function validateCodeRoundtripPackageManifest(
   assertManifestDeepEqual(manifest["assets"], bundle.assets, "assets", roundtripPackage.id);
   assertManifestDeepEqual(manifest["designSystem"], bundle.designSystem ?? null, "designSystem", roundtripPackage.id);
   assertManifestDeepEqual(manifest["sourceRecords"], bundle.sourceRecords, "sourceRecords", roundtripPackage.id);
+  assertManifestDeepEqual(parsedProjectBundle.html, bundle.html, "projectBundle.html", roundtripPackage.id);
+  assertManifestDeepEqual(parsedProjectBundle.source, bundle.source, "projectBundle.source", roundtripPackage.id);
   assertProjectBundleSnapshotField(projectBundle, manifest, "canvasGraph", roundtripPackage.id);
   assertProjectBundleSnapshotField(projectBundle, manifest, "editGraph", roundtripPackage.id);
   assertProjectBundleSnapshotField(projectBundle, manifest, "assets", roundtripPackage.id);

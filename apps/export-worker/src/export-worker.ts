@@ -339,6 +339,7 @@ async function materializeExportSpec(input: {
     diagnostics: artifactDiagnostics,
     createdAt: jobCreatedAt
   });
+  const artifactHash = sha256Hex(bytes);
   const signature = createExportVerification({
     artifactId: artifact.id,
     kind: "signature",
@@ -350,10 +351,12 @@ async function materializeExportSpec(input: {
     ? createExportVerification({
       artifactId: artifact.id,
       kind: "visual-diff",
-      status: "passed",
-      expectedHash: sha256Hex(input.rendered.png),
-      actualHash: sha256Hex(input.rendered.png),
-      diagnostics: ["visual-diff:deterministic-render"],
+      status: input.spec.kind === "png" ? "passed" : "degraded",
+      expectedHash: `render:${sha256Hex(input.rendered.png)}`,
+      actualHash: `${input.spec.kind}:${artifactHash}`,
+      diagnostics: input.spec.kind === "png"
+        ? ["visual-diff:render-vs-png-artifact"]
+        : [`visual-diff:${input.spec.kind}:artifact-preview-required`],
       createdAt: jobCreatedAt
     })
     : undefined;
