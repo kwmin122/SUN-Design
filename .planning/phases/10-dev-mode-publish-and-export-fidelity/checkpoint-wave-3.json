@@ -3,8 +3,8 @@
   "phase": "10",
   "phase_name": "Dev Mode Publish And Export Fidelity",
   "phase_slug": "10-dev-mode-publish-and-export-fidelity",
-  "wave_completed": 2,
-  "timestamp": "2026-04-29T19:02:00+09:00",
+  "wave_completed": 3,
+  "timestamp": "2026-04-29T19:18:00+09:00",
   "plans_completed": [
     {
       "id": "10-01",
@@ -31,16 +31,22 @@
         "apps/export-worker/src/__tests__/export-worker.test.ts",
         "apps/web/tests/fixtures/phase-10-worker-export-bundle.json"
       ]
-    }
-  ],
-  "plans_pending": [
+    },
     {
       "id": "10-03",
       "title": "Expose Dev Mode, publish, export, and roundtrip workflows in the web studio",
-      "wave": 3,
-      "status": "pending"
+      "status": "completed",
+      "lint_status": "PASS",
+      "summary_path": ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-03-SUMMARY.md",
+      "last_commit": "pending",
+      "files_written": [
+        "apps/web/components/dev-mode-panel.tsx",
+        "apps/web/components/export-publish-panel.tsx",
+        "apps/web/tests/phase-10-export-publish.spec.ts"
+      ]
     }
   ],
+  "plans_pending": [],
   "blast_radius": {
     "risk": "HIGH",
     "files_in_scope": 31,
@@ -49,5 +55,5 @@
   "lint_gate_overrides": [],
   "branch": "main",
   "interrupted": false,
-  "next_wave": 3
+  "next_wave": null
 }

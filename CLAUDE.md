@@ -96,6 +96,6 @@ This prompt is not a general engineering prompt. It is the production standard f
 
 Phase 10: Dev Mode, Publish, and Export Fidelity
 
-Goal: execute Dev Mode inspect/code/readiness/version diff, real stored-state export materialization, static publish preview, code-agent roundtrip, and PPTX/animation export foundations.
+Goal: Dev Mode inspect/code/readiness/version diff, real stored-state export materialization, static publish preview, code-agent roundtrip, and PPTX/animation export foundations.
 
-Phase 10 should proceed through `/sunco:execute 10`. Execution must preserve the full Claude Design / Paper / Figma-level product target while keeping Phase 10 scoped to Dev Mode, publish preview, export fidelity, and code roundtrip. Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.
+Phase 10 execution is complete and should proceed through `/sunco:verify 10`. Verification must preserve the full Claude Design / Paper / Figma-level product target while keeping Phase 10 scoped to Dev Mode, publish preview, export fidelity, and code roundtrip. Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.

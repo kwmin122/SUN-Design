@@ -32,6 +32,7 @@ import type {
   ComponentStateRule,
   ContextAttachment,
   CreationMode,
+  DevCodeSnippetKind,
   EditPatch,
   ExportKind,
   FidelityTarget,
@@ -76,6 +77,25 @@ import {
   createGeneratedProjectBundle,
   createMockContextAttachment,
   createExportJob,
+  createExportArtifactRecord,
+  createExportVerification,
+  appendExportArtifact,
+  createPublishPreview,
+  appendPublishPreview,
+  createCodeRoundtripPackage,
+  appendCodeRoundtripPackage,
+  validateCodeRoundtripImport,
+  appendCodeRoundtripImport,
+  createDevModeInspectReport,
+  appendDevModeReport,
+  createDevCodeSnippet,
+  appendDevCodeSnippet,
+  markReadyForDev,
+  markReadyForDevChanged,
+  createVersionDiffRecord,
+  appendVersionDiffRecord,
+  createAssetDownloadRecord,
+  appendAssetDownloadRecord,
   createGeneratedDesignContext,
   createGeneratedSourceNotes,
   createComponentPlaygroundState,
@@ -127,6 +147,7 @@ import {
   validateSyncEnvelope
 } from "@kdesign/editor-core";
 import { createPreviewNonce } from "@kdesign/preview-runtime";
+import workerExportBundle from "../tests/fixtures/phase-10-worker-export-bundle.json";
 
 import { DiagnosticsPanel } from "./diagnostics-panel";
 import { PreviewFrame } from "./preview-frame";
@@ -135,6 +156,8 @@ import { CanvasObjectInspector } from "./canvas-object-inspector";
 import { ComponentInstancePanel } from "./component-instance-panel";
 import { ComponentPlaygroundPanel, type ComponentPlaygroundState } from "./component-playground-panel";
 import { DesignSystemPanel } from "./design-system-panel";
+import { DevModePanel } from "./dev-mode-panel";
+import { ExportPublishPanel } from "./export-publish-panel";
 import { PresentationMode } from "./presentation-mode";
 import { PrototypePanel } from "./prototype-panel";
 import { SlideDeckPanel } from "./slide-deck-panel";
@@ -289,6 +312,7 @@ export function EditorShell() {
   const [chatTab, setChatTab] = useState<"chat" | "comments">("chat");
   const [tweaksEnabled, setTweaksEnabled] = useState(true);
   const [toolMode, setToolMode] = useState<"comment" | "edit" | "draw">("edit");
+  const [devModeOpen, setDevModeOpen] = useState(false);
   const [tweaks, setTweaks] = useState<ArtifactTweaks>(DEFAULT_TWEAKS);
   const [prompt, setPrompt] = useState("한국어 SaaS 제품 랜딩 페이지를 high fidelity로 만들어줘");
   const [creationMode, setCreationMode] = useState<CreationMode>("prototype");
@@ -415,6 +439,17 @@ export function EditorShell() {
   const appendDiagnostic = useCallback((error: PreviewError) => {
     setDiagnostics((current) => [error, ...current].slice(0, 30));
   }, []);
+
+  const reportWorkflowError = useCallback((code: string, error: unknown) => {
+    appendDiagnostic({
+      id: createLocalId("workflow_error"),
+      source: "bridge",
+      severity: "warning",
+      code,
+      message: error instanceof Error ? error.message : "Workflow update rejected.",
+      createdAt: new Date().toISOString()
+    });
+  }, [appendDiagnostic]);
 
   const canvasGraph = useMemo(
     () => projectBundle ? projectBundle.canvasGraph ?? deriveCanvasGraph(projectBundle) : undefined,
@@ -693,7 +728,7 @@ export function EditorShell() {
     }), { trackUndo: true });
   }, [commitBundle]);
 
-  const createExport = useCallback((kind: ExportKind) => {
+  const createExport = useCallback((kind: ExportKind, diagnostics: string[] = ["web-local-record"]) => {
     const current = projectBundleRef.current;
     if (!current) {
       return;
@@ -705,13 +740,212 @@ export function EditorShell() {
       viewport: previewDevice
     });
     const issues = current.qualityIssues.length > 0 ? current.qualityIssues : runKoreanQualityAudit(current);
-    commitBundle(ProjectBundleSchema.parse({
+    const bundleWithJob = ProjectBundleSchema.parse({
       ...current,
       exportJobs: [job, ...current.exportJobs],
       qualityIssues: issues,
       updatedAt: job.createdAt
+    });
+    const sha256 = stableHash(`${bundleWithJob.id}:${job.id}:${job.kind}:${job.viewport}:${job.bytes}:${diagnostics.join(",")}`);
+    const artifact = createExportArtifactRecord(bundleWithJob, {
+      jobId: job.id,
+      kind,
+      filename: job.filename,
+      bytes: job.bytes,
+      sha256,
+      viewport: job.viewport,
+      filePath: `web-local/${job.filename}`,
+      diagnostics,
+      createdAt: job.createdAt
+    });
+    const signature = createExportVerification({
+      artifactId: artifact.id,
+      kind: "signature",
+      expectedHash: sha256,
+      actualHash: sha256,
+      diagnostics: ["web-local-signature"],
+      createdAt: job.createdAt
+    });
+    const manifest = createExportVerification({
+      artifactId: artifact.id,
+      kind: "manifest",
+      status: "passed",
+      diagnostics: ["web-local-manifest"],
+      createdAt: job.createdAt
+    });
+    const withArtifact = appendExportArtifact(bundleWithJob, artifact, signature);
+    commitBundle(ProjectBundleSchema.parse({
+      ...withArtifact,
+      exportVerifications: [manifest, ...withArtifact.exportVerifications]
     }), { trackUndo: true });
   }, [commitBundle, previewDevice]);
+
+  const createPhase10InspectReport = useCallback((objectId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const rect = selectedRect
+        ? { x: selectedRect.x, y: selectedRect.y, width: selectedRect.width, height: selectedRect.height }
+        : undefined;
+      const report = createDevModeInspectReport(current, {
+        objectId,
+        ...(rect ? { renderedRect: rect } : {})
+      });
+      commitBundle(appendDevModeReport(current, report), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("dev_mode_inspect_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError, selectedRect]);
+
+  const createPhase10CodeSnippet = useCallback((objectId: string, kind: DevCodeSnippetKind) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const snippet = createDevCodeSnippet(current, { objectId, kind });
+      commitBundle(appendDevCodeSnippet(current, snippet), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("dev_code_snippet_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const markPhase10Ready = useCallback((objectId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const changed = markReadyForDevChanged(current, objectId);
+      commitBundle(markReadyForDev(changed, {
+        objectId,
+        label: "Ready for dev handoff",
+        reviewer: "K-Design Studio"
+      }), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("ready_for_dev_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createPhase10VersionDiff = useCallback((objectId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const fromRevision = current.versions[0]?.id ?? current.baseRevision;
+      const diff = createVersionDiffRecord(current, { fromRevision, objectIds: [objectId] });
+      commitBundle(appendVersionDiffRecord(current, diff), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("version_diff_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createPhase10AssetDownload = useCallback((assetId: string) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const fallbackAsset: AssetRef = {
+        id: assetId,
+        kind: "image",
+        status: "verified",
+        mimeType: "image/png",
+        localPath: `${assetId}.png`
+      };
+      const prepared = ProjectBundleSchema.parse({
+        ...current,
+        assets: current.assets.some((asset) => asset.id === assetId) ? current.assets : [...current.assets, fallbackAsset],
+        projectAssetUrls: upsertAssetUrls(current.projectAssetUrls, createProjectAssetUrl(current.id, assetId))
+      });
+      const record = createAssetDownloadRecord(prepared, { assetId });
+      commitBundle(appendAssetDownloadRecord(prepared, record), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("asset_download_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
+
+  const createPhase10PublishPreview = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const prepared = current.exportArtifacts.length > 0 ? current : (() => {
+        createExport("html");
+        return projectBundleRef.current ?? current;
+      })();
+      const artifactIds = prepared.exportArtifacts.map((artifact) => artifact.id);
+      const preview = createPublishPreview(prepared, {
+        artifactIds,
+        viewports: [previewDevice],
+        diagnostics: ["static-local-preview", "web-local-record"]
+      });
+      commitBundle(appendPublishPreview(prepared, preview), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("publish_preview_rejected", error);
+    }
+  }, [commitBundle, createExport, previewDevice, reportWorkflowError]);
+
+  const createPhase10RoundtripPackage = useCallback((runtime: AgentRuntime) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const prepared = current.exportArtifacts.length > 0 ? current : (() => {
+        createExport("zip");
+        return projectBundleRef.current ?? current;
+      })();
+      const roundtripPackage = createCodeRoundtripPackage(prepared, {
+        runtime,
+        artifactIds: prepared.exportArtifacts.map((artifact) => artifact.id)
+      });
+      commitBundle(appendCodeRoundtripPackage(prepared, roundtripPackage), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("code_roundtrip_package_rejected", error);
+    }
+  }, [commitBundle, createExport, reportWorkflowError]);
+
+  const createPhase10RoundtripConflict = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    try {
+      const prepared = current.codeRoundtripPackages.length > 0 ? current : (() => {
+        createPhase10RoundtripPackage("codex");
+        return projectBundleRef.current ?? current;
+      })();
+      const roundtripPackage = prepared.codeRoundtripPackages[0];
+      if (!roundtripPackage) {
+        throw new Error("No code roundtrip package available.");
+      }
+      const roundtripImport = validateCodeRoundtripImport(prepared, {
+        packageId: roundtripPackage.id,
+        runtime: roundtripPackage.runtime,
+        sourceRevision: "source-revision-mismatch"
+      });
+      commitBundle(appendCodeRoundtripImport(prepared, roundtripImport), { trackUndo: true });
+    } catch (error) {
+      reportWorkflowError("code_roundtrip_import_rejected", error);
+    }
+  }, [commitBundle, createPhase10RoundtripPackage, reportWorkflowError]);
+
+  const loadPhase10WorkerFixture = useCallback(() => {
+    try {
+      const workerBundle = ProjectBundleSchema.parse(workerExportBundle);
+      preserveInvalidLocalProjectRef.current = false;
+      commitBundle(workerBundle, { trackUndo: true });
+      setSelectedNodeId(null);
+      setSelectedObjectId(null);
+    } catch (error) {
+      reportWorkflowError("worker_fixture_rejected", error);
+    }
+  }, [commitBundle, reportWorkflowError]);
 
   const applyDesignSystem = useCallback(() => {
     const current = projectBundleRef.current;
@@ -838,17 +1072,6 @@ export function EditorShell() {
       });
     }
   }, [appendDiagnostic, canvasGraph]);
-
-  const reportWorkflowError = useCallback((code: string, error: unknown) => {
-    appendDiagnostic({
-      id: createLocalId("workflow_error"),
-      source: "bridge",
-      severity: "warning",
-      code,
-      message: error instanceof Error ? error.message : "Workflow update rejected.",
-      createdAt: new Date().toISOString()
-    });
-  }, [appendDiagnostic]);
 
   const createPrototypeVariable = useCallback((input: {
     name: string;
@@ -1727,6 +1950,17 @@ export function EditorShell() {
             />
             <span />
           </label>
+          <button
+            className={devModeOpen ? "active dev-mode-toggle" : "dev-mode-toggle"}
+            data-testid="phase-10-dev-mode-toggle"
+            type="button"
+            onClick={() => {
+              setDevModeOpen((current) => !current);
+              setTweaksEnabled(true);
+            }}
+          >
+            Dev Mode
+          </button>
           <div className="mode-tools">
             <button className={toolMode === "comment" ? "active" : ""} type="button" onClick={() => setToolMode("comment")}>
               <MessageSquare size={15} /> Comment
@@ -1784,6 +2018,25 @@ export function EditorShell() {
 
           {tweaksEnabled ? (
             <aside className="tweaks-rail" aria-label="Tweaks panel">
+              {devModeOpen ? (
+                <DevModePanel
+                  bundle={projectBundle}
+                  selectedObject={selectedObject}
+                  onCreateInspectReport={createPhase10InspectReport}
+                  onCreateCodeSnippet={createPhase10CodeSnippet}
+                  onMarkReady={markPhase10Ready}
+                  onCreateVersionDiff={createPhase10VersionDiff}
+                  onCreateAssetDownload={createPhase10AssetDownload}
+                />
+              ) : null}
+              <ExportPublishPanel
+                bundle={projectBundle}
+                onCreateExport={createExport}
+                onCreatePublishPreview={createPhase10PublishPreview}
+                onCreateCodeRoundtrip={createPhase10RoundtripPackage}
+                onImportRoundtripConflict={createPhase10RoundtripConflict}
+                onLoadWorkerFixture={loadPhase10WorkerFixture}
+              />
               {canvasGraph ? (
                 <>
                   <CanvasObjectInspector
