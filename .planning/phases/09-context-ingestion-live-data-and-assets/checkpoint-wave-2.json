@@ -1,0 +1,47 @@
+{
+  "schema": "sunco-checkpoint-v1",
+  "phase": "09",
+  "phase_name": "Context Ingestion, Live Data, and Assets",
+  "phase_slug": "09-context-ingestion-live-data-and-assets",
+  "wave_completed": 2,
+  "timestamp": "2026-04-29T09:50:00+09:00",
+  "plans_completed": [
+    {
+      "id": "09-01",
+      "title": "Build context, data, asset, and sync core foundation",
+      "status": "completed",
+      "lint_status": "PASS",
+      "summary_path": ".planning/phases/09-context-ingestion-live-data-and-assets/09-01-SUMMARY.md",
+      "last_commit": "12b011e",
+      "files_written": [
+        "packages/editor-core/src/context-ingestion.ts",
+        "packages/editor-core/src/data-bindings.ts",
+        "packages/editor-core/src/asset-lifecycle.ts",
+        "packages/editor-core/src/sync.ts"
+      ]
+    },
+    {
+      "id": "09-02",
+      "title": "Expose context ingestion, live data, and asset workflows in the web studio",
+      "status": "completed",
+      "lint_status": "PASS",
+      "summary_path": ".planning/phases/09-context-ingestion-live-data-and-assets/09-02-SUMMARY.md",
+      "last_commit": "326750f",
+      "files_written": [
+        "apps/web/components/editor-shell.tsx",
+        "apps/web/tests/phase-09-context-assets.spec.ts",
+        "apps/web/tests/phase-09-data-sync.spec.ts"
+      ]
+    }
+  ],
+  "plans_pending": [],
+  "blast_radius": {
+    "risk": "HIGH",
+    "files_in_scope": 19,
+    "files_transitively_affected": 20
+  },
+  "lint_gate_overrides": [],
+  "branch": "main",
+  "interrupted": false,
+  "next_wave": null
+}
