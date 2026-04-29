@@ -46,7 +46,7 @@ Built the editor-core Phase 09 foundation: `ProjectBundle` now persists source r
 | Phase 09 schemas and defaults exist | PASS | `sourceRecords`, `parsedContextArtifacts`, `syncEnvelope`, and related records parse. |
 | Source notes and design context generated | PASS | `source-notes.md` and `design-context.md` covered by unit tests. |
 | Structured summaries for document/slide/sheet/Figma/codebase/URL | PASS | Deterministic helper tests cover all input families. |
-| Unsafe URL and unsupported source negative tests | PASS | `javascript:`, localhost, IPv4 link-local, IPv6 loopback, IPv6 private, and IPv6 link-local URLs are rejected; unsupported source creates blocked diagnostics. |
+| Unsafe URL and unsupported source negative tests | PASS | `javascript:`, localhost, IPv4 link-local, IPv6 loopback, IPv6 private, IPv6 link-local, and IPv4-mapped IPv6 private URLs are rejected; unsupported source creates blocked diagnostics. |
 | Data binding helpers validate mappings | PASS | Missing source fields return error diagnostics. |
 | Asset replacement/relink preserves audit records | PASS | Stable `kdesign://asset/...` URLs and lifecycle events covered. |
 | Sync helper remains DATA-01 foundation-only | PASS | Diagnostics explicitly preserve hosted-sync boundary. |

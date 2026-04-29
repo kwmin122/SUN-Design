@@ -531,16 +531,11 @@ function isPrivateHostname(hostname: string): boolean {
   if (["localhost", "0.0.0.0", "::1"].includes(normalized) || normalized.endsWith(".localhost")) {
     return true;
   }
-  if (
-    /^127\./.test(normalized) ||
-    /^10\./.test(normalized) ||
-    /^169\.254\./.test(normalized) ||
-    /^192\.168\./.test(normalized)
-  ) {
-    return true;
+  const mappedIpv4 = ipv4FromMappedIpv6(normalized);
+  if (mappedIpv4) {
+    return isPrivateIpv4Hostname(mappedIpv4);
   }
-  const private172 = normalized.match(/^172\.(\d+)\./);
-  if (private172 && Number(private172[1]) >= 16 && Number(private172[1]) <= 31) {
+  if (isPrivateIpv4Hostname(normalized)) {
     return true;
   }
   if (normalized.includes(":")) {
@@ -552,6 +547,39 @@ function isPrivateHostname(hostname: string): boolean {
     );
   }
   return false;
+}
+
+function isPrivateIpv4Hostname(hostname: string): boolean {
+  if (
+    hostname === "0.0.0.0" ||
+    /^127\./.test(hostname) ||
+    /^10\./.test(hostname) ||
+    /^169\.254\./.test(hostname) ||
+    /^192\.168\./.test(hostname)
+  ) {
+    return true;
+  }
+  const private172 = hostname.match(/^172\.(\d+)\./);
+  return Boolean(private172 && Number(private172[1]) >= 16 && Number(private172[1]) <= 31);
+}
+
+function ipv4FromMappedIpv6(hostname: string): string | undefined {
+  const dotted = hostname.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/);
+  if (dotted?.[1]) {
+    return dotted[1];
+  }
+  const hex = hostname.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  if (!hex?.[1] || !hex[2]) {
+    return undefined;
+  }
+  const high = Number.parseInt(hex[1], 16);
+  const low = Number.parseInt(hex[2], 16);
+  return [
+    (high >> 8) & 255,
+    high & 255,
+    (low >> 8) & 255,
+    low & 255
+  ].join(".");
 }
 
 function sourceList(bundle: ProjectBundle): string[] {

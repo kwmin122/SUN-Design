@@ -55,12 +55,12 @@
 ## Post-Review Remediation
 
 - Closed data-binding persistence blocker: clicking `Bind data` before `Import CSV` now creates a matching fallback CSV `SourceRecord`, filters stale data sources without source records, and reloads without integrity deletion.
-- Closed safe URL blocker: `validatePublicSourceUrl` now rejects IPv4 link-local and IPv6 loopback/private/link-local targets, including `169.254.169.254`, `::1`, `fd00::1`, and `fe80::1`.
+- Closed safe URL blocker: `validatePublicSourceUrl` now rejects IPv4 link-local, IPv6 loopback/private/link-local, and IPv4-mapped IPv6 private targets, including `169.254.169.254`, `::1`, `fd00::1`, `fe80::1`, `::ffff:127.0.0.1`, `::ffff:10.0.0.1`, and `::ffff:169.254.169.254`.
 - Added regression coverage:
   - `apps/web/tests/phase-09-data-sync.spec.ts` verifies bind-before-import, source/data-source reference integrity, and reload.
-  - `packages/editor-core/src/__tests__/context-ingestion.test.ts` verifies link-local and IPv6 private URL rejection.
+  - `packages/editor-core/src/__tests__/context-ingestion.test.ts` verifies link-local, IPv6 private, and IPv4-mapped IPv6 private URL rejection.
 - Post-remediation gates:
-  - URL adversarial probe: PASS — four reported unsafe URLs rejected with `private-or-local-url`; `https://example.com/product` accepted.
+  - URL adversarial probe: PASS — reported unsafe IPv4, IPv6, and IPv4-mapped IPv6 URLs rejected with `private-or-local-url`; `https://example.com/product`, `https://fc-public.example.com/product`, and `http://[::ffff:93.184.216.34]/` accepted.
   - `pnpm --filter @kdesign/editor-core test -- src/__tests__/context-ingestion.test.ts`: PASS — 19 files / 105 tests.
   - `pnpm e2e -- apps/web/tests/phase-09-data-sync.spec.ts`: PASS — 2 browser tests.
   - `pnpm --filter @kdesign/web typecheck`: PASS.

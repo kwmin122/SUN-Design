@@ -173,8 +173,12 @@ describe("context ingestion foundation", () => {
     expect(validatePublicSourceUrl("http://[::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[fd00::1]/").valid).toBe(false);
     expect(validatePublicSourceUrl("http://[fe80::1]/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[::ffff:127.0.0.1]/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[::ffff:10.0.0.1]/").valid).toBe(false);
+    expect(validatePublicSourceUrl("http://[::ffff:169.254.169.254]/").valid).toBe(false);
     expect(validatePublicSourceUrl("https://example.com/product").valid).toBe(true);
     expect(validatePublicSourceUrl("https://fc-public.example.com/product").valid).toBe(true);
+    expect(validatePublicSourceUrl("http://[::ffff:93.184.216.34]/").valid).toBe(true);
 
     const blocked = rejectUnsupportedSource({
       projectId: "project",
