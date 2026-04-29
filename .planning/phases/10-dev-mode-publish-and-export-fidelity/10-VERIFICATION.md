@@ -18,6 +18,8 @@ Generated: 2026-04-29T22:10:10+09:00
 
 Phase 10 must not proceed to `/sunco:ship 10`. Fix the issues listed below, then re-run `/sunco:verify 10`.
 
+Post-fix update: the blockers listed in this verification result have been addressed in code, regression tests, and the worker fixture. This file remains the last formal `/sunco:verify 10` result until verification is rerun; current route is `/sunco:verify 10`, not `/sunco:ship 10`.
+
 ## Layer Details
 
 ### Layer 1 - Multi-Agent Review
@@ -118,13 +120,13 @@ SKIPPED. Automated layers failed, so human approval was not requested and must n
 
 ## Issues to Fix
 
-- [ ] Deep-validate code roundtrip manifests: embedded `projectBundle`, `canvasGraph`, `editGraph`, `assets`, `designSystem`, `sourceRecords`, and `exportArtifacts` must structurally match the current stored `ProjectBundle`, and persisted tampering must reject on load.
-- [ ] Add regression tests for deep manifest tampering, not only top-level manifest mismatches.
-- [ ] Implement the planned animation public APIs `exportAnimationGif(...)` and `exportAnimationMp4(...)`.
-- [ ] Normalize MP4 export failures to `mp4-export-failed` with stderr/diagnostic evidence and avoid indefinite ffmpeg hangs.
-- [ ] Enforce the GIF/MP4 animation-template gate: bundles without prototype or slide-deck animation templates must produce failed verification diagnostic `animation-template-required` instead of synthetic successful exports.
-- [ ] Add deterministic `visual-diff` export verification records for rendered exports, or revise the Phase 10 contract before verifying.
-- [ ] Align the required code roundtrip runtime mismatch error string with the plan contract (`Code roundtrip runtime mismatch`) or update the plan before verifying.
-- [ ] Expose or rename the editable PPTX subset API so the plan's `createEditableSubsetPptx(...)` acceptance criterion is satisfied, or update the plan contract.
+- [x] Deep-validate code roundtrip manifests: embedded `projectBundle`, `canvasGraph`, `editGraph`, `assets`, `designSystem`, `sourceRecords`, and referenced `exportArtifacts` must structurally match the stored `ProjectBundle`, and persisted tampering must reject on load.
+- [x] Add regression tests for deep manifest tampering, not only top-level manifest mismatches.
+- [x] Implement the planned animation public APIs `exportAnimationGif(...)` and `exportAnimationMp4(...)`.
+- [x] Normalize MP4 export failures to `mp4-export-failed` with stderr/diagnostic evidence and avoid indefinite ffmpeg hangs.
+- [x] Enforce the GIF/MP4 animation-template gate: bundles without prototype or slide-deck animation templates must produce failed verification diagnostic `animation-template-required` instead of synthetic successful exports.
+- [x] Add deterministic `visual-diff` export verification records for rendered exports, or revise the Phase 10 contract before verifying.
+- [x] Align the required code roundtrip runtime mismatch error string with the plan contract (`Code roundtrip runtime mismatch`) or update the plan before verifying.
+- [x] Expose or rename the editable PPTX subset API so the plan's `createEditableSubsetPptx(...)` acceptance criterion is satisfied, or update the plan contract.
 - [ ] Consider routing worker fixture loading through `parseProjectBundleJson` / integrity validation instead of `ProjectBundleSchema.parse`.
 - [ ] Consider blocking external network/resource requests in Playwright render exports to keep worker output deterministic and local-first.

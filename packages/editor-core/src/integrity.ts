@@ -751,7 +751,7 @@ function assertCodeRoundtripImportIntegrity(
   }
   const roundtripPackage = bundle.codeRoundtripPackages.find((item) => item.id === roundtripImport.packageId);
   if (roundtripPackage && roundtripImport.runtime !== roundtripPackage.runtime) {
-    throw new Error(`Code roundtrip import runtime does not match package: ${roundtripImport.id}`);
+    throw new Error(`Code roundtrip runtime mismatch: ${roundtripImport.id}`);
   }
   if (roundtripImport.status === "validated") {
     assertKnownRevision(revisionIds, roundtripImport.sourceRevision, "Code roundtrip import");

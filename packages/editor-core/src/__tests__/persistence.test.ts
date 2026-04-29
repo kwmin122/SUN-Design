@@ -754,6 +754,61 @@ describe("project bundle persistence", () => {
     }];
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip manifest");
 
+    const tamperedCanvasGraph = { rootObjectIds: ["tampered-object"], objects: {} };
+    const tamperedManifest = {
+      sourceOfTruth: "ProjectBundle",
+      projectId: String(raw.id),
+      baseRevision: raw.baseRevision,
+      sourceRevision: raw.baseRevision,
+      runtime: "codex",
+      artifactIds: ["artifact_valid"],
+      instructionsPath: "docs/prompts/context-driven-design-agent-prompt.md",
+      projectBundle: { ...raw, canvasGraph: tamperedCanvasGraph, codeRoundtripPackages: [] },
+      canvasGraph: tamperedCanvasGraph,
+      editGraph: raw.editGraph,
+      assets: raw.assets,
+      designSystem: raw.designSystem ?? null,
+      sourceRecords: raw.sourceRecords,
+      exportArtifacts: raw.exportArtifacts
+    };
+    raw.codeRoundtripPackages = [{
+      id: "roundtrip_pkg_tampered_manifest",
+      runtime: "codex",
+      sourceRevision: raw.baseRevision,
+      artifactIds: ["artifact_valid"],
+      instructionPath: "docs/prompts/context-driven-design-agent-prompt.md",
+      manifestJson: JSON.stringify(tamperedManifest),
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip manifest canvasGraph mismatch");
+
+    const artifactTamperedManifest = {
+      ...tamperedManifest,
+      projectBundle: {
+        ...raw,
+        codeRoundtripPackages: [],
+        exportArtifacts: [{
+          ...(raw.exportArtifacts as Array<Record<string, unknown>>)[0],
+          sha256: "tampered-sha"
+        }]
+      },
+      canvasGraph: raw.canvasGraph,
+      exportArtifacts: [{
+        ...(raw.exportArtifacts as Array<Record<string, unknown>>)[0],
+        sha256: "tampered-sha"
+      }]
+    };
+    raw.codeRoundtripPackages = [{
+      id: "roundtrip_pkg_artifact_tampered_manifest",
+      runtime: "codex",
+      sourceRevision: raw.baseRevision,
+      artifactIds: ["artifact_valid"],
+      instructionPath: "docs/prompts/context-driven-design-agent-prompt.md",
+      manifestJson: JSON.stringify(artifactTamperedManifest),
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip manifest exportArtifacts.");
+
     raw.codeRoundtripPackages = [{
       id: "roundtrip_pkg_corrupt",
       runtime: "codex",

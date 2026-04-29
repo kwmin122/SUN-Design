@@ -146,7 +146,22 @@ export function validateCodeRoundtripPackageManifest(
     if (!manifestArtifactIds.has(artifactId)) {
       throw new Error(`Code roundtrip manifest missing export artifact: ${artifactId}`);
     }
+    const manifestArtifact = exportArtifacts.find((artifact) => artifact["id"] === artifactId);
+    const storedArtifact = bundle.exportArtifacts.find((artifact) => artifact.id === artifactId);
+    assertManifestDeepEqual(manifestArtifact, storedArtifact, `exportArtifacts.${artifactId}`, roundtripPackage.id);
   }
+
+  assertManifestDeepEqual(manifest["canvasGraph"], bundle.canvasGraph ?? null, "canvasGraph", roundtripPackage.id);
+  assertManifestDeepEqual(manifest["editGraph"], bundle.editGraph, "editGraph", roundtripPackage.id);
+  assertManifestDeepEqual(manifest["assets"], bundle.assets, "assets", roundtripPackage.id);
+  assertManifestDeepEqual(manifest["designSystem"], bundle.designSystem ?? null, "designSystem", roundtripPackage.id);
+  assertManifestDeepEqual(manifest["sourceRecords"], bundle.sourceRecords, "sourceRecords", roundtripPackage.id);
+  assertProjectBundleSnapshotField(projectBundle, manifest, "canvasGraph", roundtripPackage.id);
+  assertProjectBundleSnapshotField(projectBundle, manifest, "editGraph", roundtripPackage.id);
+  assertProjectBundleSnapshotField(projectBundle, manifest, "assets", roundtripPackage.id);
+  assertProjectBundleSnapshotField(projectBundle, manifest, "designSystem", roundtripPackage.id);
+  assertProjectBundleSnapshotField(projectBundle, manifest, "sourceRecords", roundtripPackage.id);
+  assertProjectBundleSnapshotField(projectBundle, manifest, "exportArtifacts", roundtripPackage.id);
 }
 
 export function validateCodeRoundtripImport(
@@ -280,6 +295,48 @@ function assertManifestValue(
   if (manifest[key] !== expected) {
     throw new Error(`Code roundtrip manifest ${key} mismatch: ${packageId}`);
   }
+}
+
+function assertProjectBundleSnapshotField(
+  projectBundle: Record<string, unknown>,
+  manifest: Record<string, unknown>,
+  key: string,
+  packageId: string
+): void {
+  assertManifestDeepEqual(
+    normalizeManifestSnapshotField(key, projectBundle[key]),
+    normalizeManifestSnapshotField(key, manifest[key]),
+    `projectBundle.${key}`,
+    packageId
+  );
+}
+
+function normalizeManifestSnapshotField(key: string, value: unknown): unknown {
+  if ((key === "canvasGraph" || key === "designSystem") && value === undefined) {
+    return null;
+  }
+  return value;
+}
+
+function assertManifestDeepEqual(
+  actual: unknown,
+  expected: unknown,
+  label: string,
+  packageId: string
+): void {
+  if (stableStringify(actual) !== stableStringify(expected)) {
+    throw new Error(`Code roundtrip manifest ${label} mismatch: ${packageId}`);
+  }
+}
+
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableStringify(item)).join(",")}]`;
+  }
+  if (isRecord(value)) {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
 }
 
 function getStringArray(

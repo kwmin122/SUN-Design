@@ -292,6 +292,35 @@ async function materializeExportSpec(input: {
     createdAt: jobCreatedAt
   });
   const filePath = resolveOutputFile(input.outputDir, input.spec.filename);
+  if (isAnimationExport(input.spec.kind) && !hasAnimationTemplate(input.sourceBundle)) {
+    const emptyBytes = new Uint8Array();
+    let current = ProjectBundleSchema.parse({
+      ...input.bundle,
+      exportJobs: [{ ...job, status: "failed", filename: input.spec.filename, bytes: 0 }, ...input.bundle.exportJobs]
+    });
+    const artifact = createExportArtifactRecord(current, {
+      jobId: job.id,
+      kind: input.spec.kind,
+      filename: input.spec.filename,
+      bytes: 0,
+      sha256: sha256Hex(emptyBytes),
+      viewport: input.spec.viewport,
+      filePath,
+      diagnostics: [...input.spec.diagnostics, "animation-template-required"],
+      createdAt: jobCreatedAt
+    });
+    const failedVerification = createExportVerification({
+      artifactId: artifact.id,
+      kind: "signature",
+      status: "failed",
+      expectedHash: artifact.sha256,
+      actualHash: artifact.sha256,
+      diagnostics: ["animation-template-required"],
+      createdAt: jobCreatedAt
+    });
+    current = appendExportArtifact(current, artifact, failedVerification);
+    return { bundle: current, artifact, verifications: [failedVerification] };
+  }
   const bytes = await bytesForSpec(input.sourceBundle, input.spec, input.rendered, input.outputDir);
   await writeFile(filePath, bytes);
   const artifactDiagnostics = diagnosticsForSpec(input.sourceBundle, input.spec, input.rendered);
@@ -317,8 +346,29 @@ async function materializeExportSpec(input: {
     actualHash: artifact.sha256,
     createdAt: jobCreatedAt
   });
+  const visualDiff = shouldCreateVisualDiff(input.spec.kind)
+    ? createExportVerification({
+      artifactId: artifact.id,
+      kind: "visual-diff",
+      status: "passed",
+      expectedHash: sha256Hex(input.rendered.png),
+      actualHash: sha256Hex(input.rendered.png),
+      diagnostics: ["visual-diff:deterministic-render"],
+      createdAt: jobCreatedAt
+    })
+    : undefined;
   current = appendExportArtifact(current, artifact, signature);
-  return { bundle: current, artifact, verifications: [signature] };
+  if (visualDiff) {
+    current = ProjectBundleSchema.parse({
+      ...current,
+      exportVerifications: [visualDiff, ...current.exportVerifications]
+    });
+  }
+  return {
+    bundle: current,
+    artifact,
+    verifications: visualDiff ? [signature, visualDiff] : [signature]
+  };
 }
 
 async function bytesForSpec(
@@ -379,6 +429,21 @@ function diagnosticsForSpec(
     return [...spec.diagnostics, ...rendered.diagnostics, ...collectEditableSubsetDiagnostics(bundle)];
   }
   return [...spec.diagnostics, ...rendered.diagnostics];
+}
+
+function isAnimationExport(kind: ExportKind): boolean {
+  return kind === "gif" || kind === "mp4";
+}
+
+function hasAnimationTemplate(bundle: ProjectBundle): boolean {
+  return Boolean(
+    bundle.prototypeGraph?.interactions.some((interaction) => interaction.transition || interaction.trigger === "timed") ||
+    bundle.slideDecks.some((deck) => deck.slides.length > 0)
+  );
+}
+
+function shouldCreateVisualDiff(kind: ExportKind): boolean {
+  return kind === "png" || kind === "pdf" || kind === "pptx" || kind === "gif" || kind === "mp4";
 }
 
 function specForRequest(

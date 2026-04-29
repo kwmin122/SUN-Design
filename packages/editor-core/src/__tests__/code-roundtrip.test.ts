@@ -76,6 +76,36 @@ describe("code roundtrip packages", () => {
     })).toThrow("Code roundtrip manifest");
   });
 
+  it("rejects deep roundtrip manifest tampering", () => {
+    const bundle = createBundleWithArtifact();
+    const artifactId = bundle.exportArtifacts[0]!.id;
+    const roundtripPackage = createCodeRoundtripPackage(bundle, {
+      runtime: "codex",
+      artifactIds: [artifactId],
+      createdAt: NOW
+    });
+    const manifest = JSON.parse(roundtripPackage.manifestJson);
+    manifest.canvasGraph = { rootObjectIds: ["tampered-object"], objects: {} };
+    manifest.projectBundle.canvasGraph = manifest.canvasGraph;
+
+    expect(() => createCodeRoundtripPackage(bundle, {
+      runtime: "codex",
+      artifactIds: [artifactId],
+      manifestJson: JSON.stringify(manifest),
+      createdAt: NOW
+    })).toThrow("Code roundtrip manifest canvasGraph mismatch");
+
+    const artifactManifest = JSON.parse(roundtripPackage.manifestJson);
+    artifactManifest.exportArtifacts[0].sha256 = "tampered-sha";
+    artifactManifest.projectBundle.exportArtifacts = artifactManifest.exportArtifacts;
+    expect(() => createCodeRoundtripPackage(bundle, {
+      runtime: "codex",
+      artifactIds: [artifactId],
+      manifestJson: JSON.stringify(artifactManifest),
+      createdAt: NOW
+    })).toThrow("Code roundtrip manifest exportArtifacts.");
+  });
+
   it("validates roundtrip imports and records source revision conflicts", () => {
     let bundle = createBundleWithArtifact();
     const artifactId = bundle.exportArtifacts[0]!.id;

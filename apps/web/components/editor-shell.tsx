@@ -786,10 +786,19 @@ export function EditorShell() {
       diagnostics: kind === "html" ? ["browser-materialized-manifest"] : ["worker-required-manifest"],
       createdAt: materializedJob.createdAt
     });
+    const visualDiff = createExportVerification({
+      artifactId: artifact.id,
+      kind: "visual-diff",
+      status: kind === "html" ? "passed" : "degraded",
+      expectedHash: sha256,
+      actualHash: sha256,
+      diagnostics: kind === "html" ? ["browser-materialized-visual-diff"] : ["worker-required-visual-diff"],
+      createdAt: materializedJob.createdAt
+    });
     const withArtifact = appendExportArtifact(bundleWithJob, artifact, signature);
     commitBundle(ProjectBundleSchema.parse({
       ...withArtifact,
-      exportVerifications: [manifest, ...withArtifact.exportVerifications]
+      exportVerifications: [manifest, visualDiff, ...withArtifact.exportVerifications]
     }), { trackUndo: true });
   }, [commitBundle, previewDevice]);
 

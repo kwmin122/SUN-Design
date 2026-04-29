@@ -2,18 +2,25 @@ import { mkdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseProjectBundleJson, ProjectBundleSchema } from "@kdesign/editor-core";
+import {
+  BASIC_LANDING_FIXTURE_HTML,
+  createSlideDeck,
+  normalizeHtml,
+  parseProjectBundleJson,
+  ProjectBundleSchema,
+  type ProjectBundle
+} from "@kdesign/editor-core";
 import { unzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 
-import { BASIC_LANDING_FIXTURE_HTML, normalizeHtml } from "@kdesign/editor-core";
-
+import { exportAnimationGif, exportAnimationMp4 } from "../animation.js";
 import {
   materializeCodeRoundtripPackage,
   materializeStaticPublishPreview,
   materializeStoredStateExport,
   writeWorkerBundleFixture
 } from "../export-worker.js";
+import { createEditableSubsetPptx } from "../pptx.js";
 import { writeDeterministicZip } from "../zip.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
@@ -25,7 +32,7 @@ describe("Phase 10 export worker", () => {
   it("writes deterministic artifacts and a web-loadable ProjectBundle fixture", async () => {
     await rm(OUT_DIR, { recursive: true, force: true });
     await mkdir(OUT_DIR, { recursive: true });
-    const bundle = ProjectBundleSchema.parse({
+    const bundle = withAnimationTemplate(ProjectBundleSchema.parse({
       ...normalizeHtml({
         id: "phase-10-worker-fixture",
         title: "Phase 10 Worker Fixture",
@@ -33,7 +40,7 @@ describe("Phase 10 export worker", () => {
       }),
       createdAt: NOW,
       updatedAt: NOW
-    });
+    }));
 
     const result = await writeWorkerBundleFixture({
       bundle,
@@ -88,6 +95,7 @@ describe("Phase 10 export worker", () => {
     expect(editableArtifact?.diagnostics).toContain("editable-subset:skipped:7");
     expect(editableArtifact?.diagnostics).toContain("unsupported-pptx-node:button");
     expect(fixture.exportVerifications.some((item) => item.kind === "signature")).toBe(true);
+    expect(fixture.exportVerifications.some((item) => item.kind === "visual-diff")).toBe(true);
     expect(fixture.exportVerifications.some((item) => item.kind === "manifest")).toBe(true);
     expect(fixture.exportVerifications.some((item) => item.kind === "roundtrip")).toBe(true);
     expect(fixture.publishPreviews[0]?.url).toMatch(/^kdesign:\/\/publish\/phase-10-worker-fixture\/publish_/);
@@ -110,6 +118,13 @@ describe("Phase 10 export worker", () => {
       createdAt: NOW,
       updatedAt: NOW
     });
+
+    expect(typeof createEditableSubsetPptx).toBe("function");
+    expect(typeof exportAnimationGif).toBe("function");
+    expect(typeof exportAnimationMp4).toBe("function");
+    const editableSubset = createEditableSubsetPptx(bundle, { createdAt: NOW });
+    expect(Buffer.from(editableSubset.data).subarray(0, 2).toString("latin1")).toBe("PK");
+    expect(editableSubset.diagnostics.some((diagnostic) => diagnostic.startsWith("editable-subset:mapped:"))).toBe(true);
 
     const html = await materializeStoredStateExport({
       bundle,
@@ -136,6 +151,26 @@ describe("Phase 10 export worker", () => {
     expect(roundtrip.package.manifestJson).toContain("\"projectBundle\"");
     expect(roundtrip.artifact.filename).toBe("code-agent-package.zip");
 
+    const blockedGif = await materializeStoredStateExport({
+      bundle,
+      kind: "gif",
+      viewport: "desktop",
+      outputDir: OUT_DIR,
+      createdAt: NOW
+    });
+    expect(blockedGif.artifact.diagnostics).toContain("animation-template-required");
+    expect(blockedGif.verifications[0]?.status).toBe("failed");
+
+    const animatedGif = await materializeStoredStateExport({
+      bundle: withAnimationTemplate(bundle),
+      kind: "gif",
+      viewport: "desktop",
+      outputDir: OUT_DIR,
+      createdAt: NOW
+    });
+    expect(animatedGif.artifact.diagnostics).toContain("animation-frames:3");
+    expect(animatedGif.verifications.some((verification) => verification.kind === "visual-diff")).toBe(true);
+
     expect(() => writeDeterministicZip([{ path: "../escape.txt", data: "owned" }])).toThrow("Unsafe zip entry path");
     await expect(materializeStoredStateExport({
       bundle,
@@ -146,6 +181,14 @@ describe("Phase 10 export worker", () => {
     })).rejects.toThrow("approved roots");
   });
 });
+
+function withAnimationTemplate(bundle: ProjectBundle): ProjectBundle {
+  return createSlideDeck(bundle, {
+    id: "deck_phase10_animation",
+    title: "Animation template",
+    createdAt: NOW
+  });
+}
 
 async function expectSignature(filename: string, signature: string): Promise<void> {
   const bytes = await readFile(path.join(OUT_DIR, filename));

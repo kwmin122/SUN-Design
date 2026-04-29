@@ -54,6 +54,17 @@ export function createPptxBytes(
   return createZipArchive(files);
 }
 
+export function createEditableSubsetPptx(
+  bundle: ProjectBundle,
+  input: { deckId?: string; createdAt?: string } = {}
+): { data: Uint8Array; diagnostics: string[] } {
+  void input;
+  return {
+    data: createPptxBytes(bundle, "editableSubset"),
+    diagnostics: collectEditableSubsetDiagnostics(bundle)
+  };
+}
+
 export function collectEditableSubsetDiagnostics(bundle: ProjectBundle): string[] {
   const candidates = editableCandidates(bundle);
   const selected = candidates.slice(0, MAX_EDITABLE_NODES);

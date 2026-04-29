@@ -35,18 +35,36 @@ export function createGifBytes(framePngs: Uint8Array[]): Uint8Array {
   const frames = framePngs.map((frame) => PNG.sync.read(Buffer.from(frame)));
   const width = frames[0]!.width;
   const height = frames[0]!.height;
+  return encodeGifFrames(frames, { width, height, delayMs: 180 });
+}
+
+export function exportAnimationGif(
+  frames: Uint8Array[],
+  input: { width: number; height: number; delayMs: number }
+): Uint8Array {
+  if (frames.length === 0) {
+    throw new Error("GIF export requires rendered frames.");
+  }
+  const decodedFrames = frames.map((frame) => PNG.sync.read(Buffer.from(frame)));
+  return encodeGifFrames(decodedFrames, input);
+}
+
+function encodeGifFrames(
+  frames: PNG[],
+  input: { width: number; height: number; delayMs: number }
+): Uint8Array {
   const { GIFEncoder, applyPalette, quantize } = require("gifenc") as GifencModule;
   const gif = GIFEncoder();
   for (const frame of frames) {
-    if (frame.width !== width || frame.height !== height) {
+    if (frame.width !== input.width || frame.height !== input.height) {
       throw new Error("GIF export frames must have the same size.");
     }
     const rgba = new Uint8Array(frame.data.buffer, frame.data.byteOffset, frame.data.byteLength);
     const palette = quantize(rgba, 256);
     const indexed = applyPalette(rgba, palette);
-    gif.writeFrame(indexed, width, height, {
+    gif.writeFrame(indexed, input.width, input.height, {
       palette,
-      delay: 180,
+      delay: input.delayMs,
       repeat: 0
     });
   }
@@ -58,7 +76,6 @@ export async function createMp4Bytes(framePngs: Uint8Array[], workDir: string): 
   if (framePngs.length === 0) {
     throw new Error("MP4 export requires rendered frames.");
   }
-  const ffmpegPath = resolveFfmpegPath();
   const framesDir = path.join(workDir, "mp4-frames");
   await rm(framesDir, { recursive: true, force: true });
   await mkdir(framesDir, { recursive: true });
@@ -67,19 +84,43 @@ export async function createMp4Bytes(framePngs: Uint8Array[], workDir: string): 
   }
   const outputPath = path.join(workDir, "animation.mp4");
   await rm(outputPath, { force: true });
-  await execFileAsync(ffmpegPath, [
-    "-y",
-    "-framerate",
-    "6",
-    "-i",
-    path.join(framesDir, "frame-%03d.png"),
-    "-vf",
-    "format=yuv420p",
-    "-movflags",
-    "+faststart",
-    outputPath
-  ]);
+  await exportAnimationMp4(
+    Array.from({ length: framePngs.length }, (_, index) => path.join(framesDir, `frame-${String(index).padStart(3, "0")}.png`)),
+    { outputPath, fps: 6 }
+  );
   return new Uint8Array(await readFile(outputPath));
+}
+
+export async function exportAnimationMp4(
+  framePaths: string[],
+  input: { outputPath: string; fps: number }
+): Promise<void> {
+  if (framePaths.length === 0) {
+    throw new Error("mp4-export-failed: no frames");
+  }
+  const framePattern = path.join(path.dirname(framePaths[0]!), "frame-%03d.png");
+  try {
+    const ffmpegPath = resolveFfmpegPath();
+    await execFileAsync(ffmpegPath, [
+      "-y",
+      "-framerate",
+      String(input.fps),
+      "-i",
+      framePattern,
+      "-vf",
+      "format=yuv420p",
+      "-movflags",
+      "+faststart",
+      input.outputPath
+    ], { timeout: 30_000 });
+  } catch (error) {
+    const detail = error && typeof error === "object" && "stderr" in error
+      ? String((error as { stderr?: unknown }).stderr ?? "")
+      : error instanceof Error
+        ? error.message
+        : "unknown";
+    throw new Error(`mp4-export-failed: ${detail}`);
+  }
 }
 
 export function ffmpegDiagnostic(): string {
