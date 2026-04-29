@@ -61,16 +61,25 @@ describe("Phase 10 export worker", () => {
     await expectMinBytes("animation.gif", 20_000);
     await expectMinBytes("animation.mp4", 20_000);
     await expectZipContains("slides-raster.pptx", ["ppt/media/preview.png"]);
-    await expectZipContains("slides-editable.pptx", ["ppt/slides/slide1.xml"]);
+    await expectZipContains("slides-editable.pptx", ["ppt/slides/slide1.xml", "ppt/media/asset_1bgo2te.svg"]);
     const editableSlide = await readZipText("slides-editable.pptx", "ppt/slides/slide1.xml");
+    const editableRels = await readZipText("slides-editable.pptx", "ppt/slides/_rels/slide1.xml.rels");
     expect(editableSlide).toContain("K-Design Studio");
     expect(editableSlide).toContain("frame:");
+    expect(editableSlide).toContain("<p:pic>");
+    expect(editableSlide).toContain("editable-diagnostics");
+    expect(editableSlide).toContain("editable-subset:skipped:");
+    expect(editableSlide).toContain("unsupported-node-kind:button");
+    expect(editableRels).toContain("Target=\"../media/asset_1bgo2te.svg\"");
 
     const fixture = parseProjectBundleJson(await readFile(FIXTURE_PATH, "utf8"));
     expect(fixture.exportArtifacts).toHaveLength(8);
     expect(fixture.exportArtifacts.find((artifact) => artifact.kind === "png")?.bytes).toBeGreaterThan(20_000);
     expect(fixture.exportArtifacts.find((artifact) => artifact.kind === "pdf")?.bytes).toBeGreaterThan(20_000);
     expect(fixture.exportArtifacts.find((artifact) => artifact.kind === "gif")?.diagnostics).toContain("animation-frames:3");
+    const editableArtifact = fixture.exportArtifacts.find((artifact) => artifact.filename === "slides-editable.pptx");
+    expect(editableArtifact?.diagnostics).toContain("editable-subset:skipped:7");
+    expect(editableArtifact?.diagnostics).toContain("unsupported-node-kind:button");
     expect(fixture.exportVerifications.some((item) => item.kind === "signature")).toBe(true);
     expect(fixture.exportVerifications.some((item) => item.kind === "manifest")).toBe(true);
     expect(fixture.publishPreviews[0]?.url).toMatch(/^kdesign:\/\/publish\/phase-10-worker-fixture\/publish_/);

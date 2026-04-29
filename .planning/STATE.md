@@ -24,7 +24,7 @@
 | Phase 09 status | shipped |
 | Phase 10 status | executed |
 | Phase 11 status | context |
-| Requirement coverage | 49/49 v1 complete; 26/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
+| Requirement coverage | 49/49 v1 complete; 26/46 v2 requirements complete; 10 Phase 10 v2 requirements executed and awaiting verify; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
 | Next action | Run `/sunco:verify 10` |
 
 ## Phase Queue

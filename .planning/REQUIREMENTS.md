@@ -249,22 +249,22 @@
 | SLIDE-01 | Phase 08 | complete |
 | SLIDE-02 | Phase 08 | complete |
 | SLIDE-03 | Phase 08 | complete |
-| SLIDE-04 | Phase 10 | planned |
-| SLIDE-05 | Phase 10 | planned |
+| SLIDE-04 | Phase 10 | executed; verify pending |
+| SLIDE-05 | Phase 10 | executed; verify pending |
 | CTX-01 | Phase 09 | complete |
 | CTX-02 | Phase 09 | complete |
 | CTX-03 | Phase 09 | complete |
 | DATA-01 | Phase 09 | foundation complete; hosted account sync deferred |
 | DATA-02 | Phase 09 | complete |
 | ASSET-01 | Phase 09 | complete |
-| DEV-01 | Phase 10 | planned |
-| DEV-02 | Phase 10 | planned |
-| DEV-03 | Phase 10 | planned |
-| DEV-04 | Phase 10 | planned |
-| EXP-09 | Phase 10 | planned |
-| EXP-10 | Phase 10 | planned |
-| EXP-11 | Phase 10 | planned |
-| EXP-12 | Phase 10 | planned |
+| DEV-01 | Phase 10 | executed; verify pending |
+| DEV-02 | Phase 10 | executed; verify pending |
+| DEV-03 | Phase 10 | executed; verify pending |
+| DEV-04 | Phase 10 | executed; verify pending |
+| EXP-09 | Phase 10 | executed; verify pending |
+| EXP-10 | Phase 10 | executed; verify pending |
+| EXP-11 | Phase 10 | executed; verify pending |
+| EXP-12 | Phase 10 | executed; verify pending |
 | COLL-01 | Phase 11 | planned |
 | COLL-02 | Phase 11 | planned |
 | COLL-03 | Phase 11 | planned |

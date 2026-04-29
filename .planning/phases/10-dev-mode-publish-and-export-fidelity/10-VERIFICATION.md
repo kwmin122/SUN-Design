@@ -86,7 +86,9 @@
   - MP4: the same rendered frames encoded with bundled ffmpeg.
 - Strengthened PPTX output:
   - Raster PPTX embeds the rendered PNG as slide media.
-  - Editable-subset PPTX maps stored edit graph text/image/frame/block nodes into slide shapes.
+  - Editable-subset PPTX maps stored edit graph text/frame/block nodes into slide shapes.
+  - Editable-subset PPTX embeds supported stored image assets as PPT media relationships instead of text-only placeholders.
+  - Editable-subset PPTX writes in-slide diagnostics for mapped, skipped, and unsupported node kinds.
 - Strengthened roundtrip:
   - Incoming patch payloads are parsed and applied against the current stored bundle to catch unsafe style, URL, and attribute values.
   - Incoming canvas-operation payloads are restricted to `setObjectName`, `setObjectVisibility`, `setObjectLock`, and `setLayoutConstraints`.

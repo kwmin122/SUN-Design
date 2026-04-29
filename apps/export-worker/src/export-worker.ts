@@ -19,7 +19,7 @@ import {
 } from "@kdesign/editor-core";
 
 import { createGifBytes, createMp4Bytes, ffmpegDiagnostic } from "./animation.js";
-import { createPptxBytes, type PptxMode } from "./pptx.js";
+import { collectEditableSubsetDiagnostics, createPptxBytes, type PptxMode } from "./pptx.js";
 import { renderBundlePreview, type RenderedBundlePreview } from "./render.js";
 import { createZipArchive } from "./zip.js";
 
@@ -82,6 +82,7 @@ export async function materializePhase10Exports(input: {
     const bytes = await bytesForSpec(sourceBundle, spec, rendered, input.outDir);
     await writeFile(filePath, bytes);
     const sha256 = hashBytes(bytes);
+    const artifactDiagnostics = diagnosticsForSpec(sourceBundle, spec, rendered);
     current = ProjectBundleSchema.parse({
       ...current,
       exportJobs: [{ ...job, filename: spec.filename, bytes: bytes.byteLength }, ...current.exportJobs]
@@ -94,7 +95,7 @@ export async function materializePhase10Exports(input: {
       sha256,
       viewport: spec.viewport,
       filePath,
-      diagnostics: [...spec.diagnostics, ...rendered.diagnostics],
+      diagnostics: artifactDiagnostics,
       createdAt: jobCreatedAt
     });
     const signature = createExportVerification({
@@ -111,7 +112,7 @@ export async function materializePhase10Exports(input: {
       filePath,
       bytes: bytes.byteLength,
       sha256,
-      diagnostics: [...spec.diagnostics, ...rendered.diagnostics]
+      diagnostics: artifactDiagnostics
     });
   }
 
@@ -213,6 +214,17 @@ async function bytesForSpec(
     return createGifBytes(rendered.animationFrames);
   }
   return createMp4Bytes(rendered.animationFrames, path.join(outDir, ".render"));
+}
+
+function diagnosticsForSpec(
+  bundle: ProjectBundle,
+  spec: ExportSpec,
+  rendered: RenderedBundlePreview
+): string[] {
+  if (spec.kind === "pptx" && spec.pptxMode === "editableSubset") {
+    return [...spec.diagnostics, ...rendered.diagnostics, ...collectEditableSubsetDiagnostics(bundle)];
+  }
+  return [...spec.diagnostics, ...rendered.diagnostics];
 }
 
 function encode(value: string): Uint8Array {
