@@ -19,9 +19,9 @@ Built a local `@kdesign/export-worker` workspace package that materializes real 
 
 | # | Task | Commit | Notes |
 |---|------|--------|-------|
-| 1 | Create export-worker workspace package | pending | Added package, tsconfig, root build reference, lockfile updates, and `.tmp-export-worker/` ignore. |
-| 2 | Materialize export artifacts | pending | Added deterministic HTML/ZIP/PNG/PDF/PPTX/GIF/MP4 writers and manifest output. |
-| 3 | Emit web-loadable worker fixture | pending | Worker test writes `phase-10-worker-export-bundle.json` containing artifact/publish/roundtrip records. |
+| 1 | Create export-worker workspace package | 48aa64b | Added package, tsconfig, root build reference, lockfile updates, and `.tmp-export-worker/` ignore. |
+| 2 | Materialize export artifacts | 48aa64b | Added deterministic HTML/ZIP/PNG/PDF/PPTX/GIF/MP4 writers and manifest output. |
+| 3 | Emit web-loadable worker fixture | 48aa64b | Worker test writes `phase-10-worker-export-bundle.json` containing artifact/publish/roundtrip records. |
 
 ## Key Files
 

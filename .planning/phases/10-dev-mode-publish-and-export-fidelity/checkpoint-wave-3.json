@@ -38,7 +38,7 @@
       "status": "completed",
       "lint_status": "PASS",
       "summary_path": ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-03-SUMMARY.md",
-      "last_commit": "pending",
+      "last_commit": "c2811d0",
       "files_written": [
         "apps/web/components/dev-mode-panel.tsx",
         "apps/web/components/export-publish-panel.tsx",

@@ -19,9 +19,9 @@ Exposed Phase 10 in the web studio. The right rail now has Dev Mode inspection/c
 
 | # | Task | Commit | Notes |
 |---|------|--------|-------|
-| 1 | Create Dev Mode product panel | pending | Added panel, top toggle, stored-state actions, reload persistence, and E2E coverage. |
-| 2 | Create export/publish/roundtrip product panel | pending | Added export actions, publish preview, code roundtrip, worker fixture loading, and E2E coverage. |
-| 3 | Update docs and full gate | pending | Updated `CLAUDE.md` and ran full lint/typecheck/unit/e2e gate. |
+| 1 | Create Dev Mode product panel | c2811d0 | Added panel, top toggle, stored-state actions, reload persistence, and E2E coverage. |
+| 2 | Create export/publish/roundtrip product panel | c2811d0 | Added export actions, publish preview, code roundtrip, worker fixture loading, and E2E coverage. |
+| 3 | Update docs and full gate | c2811d0 | Updated `CLAUDE.md` and ran full lint/typecheck/unit/e2e gate. |
 
 ## Key Files
 

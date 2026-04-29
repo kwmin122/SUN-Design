@@ -19,9 +19,9 @@ Built the shared editor-core contract layer for Phase 10. `ProjectBundle` now pe
 
 | # | Task | Commit | Notes |
 |---|------|--------|-------|
-| 1 | Extend ProjectBundle with Phase 10 shared schemas | pending | Implemented in this plan commit. |
-| 2 | Create Dev Mode and export contract helpers | pending | Added `dev-mode.ts`, `export-fidelity.ts`, and `code-roundtrip.ts`. |
-| 3 | Persisted integrity and handoff coverage | pending | Added Phase 10 reload validation and portable handoff includes. |
+| 1 | Extend ProjectBundle with Phase 10 shared schemas | b304dd9 | Implemented in this plan commit. |
+| 2 | Create Dev Mode and export contract helpers | b304dd9 | Added `dev-mode.ts`, `export-fidelity.ts`, and `code-roundtrip.ts`. |
+| 3 | Persisted integrity and handoff coverage | b304dd9 | Added Phase 10 reload validation and portable handoff includes. |
 
 ## Key Files
 
