@@ -1511,6 +1511,99 @@ button {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.phase-09-context {
+  gap: 12px;
+}
+
+.phase-09-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.phase-09-actions button {
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.phase-09-record-list,
+.phase-09-notes-grid {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.phase-09-record {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+  padding: 8px;
+}
+
+.phase-09-record strong,
+.phase-09-record span,
+.phase-09-record small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.phase-09-record strong {
+  font-size: 12px;
+}
+
+.phase-09-record span,
+.phase-09-record small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.phase-09-record.state-editable,
+.phase-09-record.state-ready,
+.phase-09-record.state-parsed {
+  border-color: rgba(36, 118, 92, 0.38);
+  background: #edf8f2;
+}
+
+.phase-09-record.state-referenceOnly,
+.phase-09-record.state-partial,
+.phase-09-record.state-diverged {
+  border-color: rgba(194, 137, 62, 0.42);
+  background: #fff7e5;
+}
+
+.phase-09-record.state-blocked,
+.phase-09-record.state-error,
+.phase-09-record.state-rejected {
+  border-color: rgba(185, 74, 67, 0.44);
+  background: #fff0ef;
+}
+
+.phase-09-notes-grid pre {
+  max-height: 150px;
+  margin: 0;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--text);
+  padding: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .export-actions button,
 .handoff-actions button,
 .quality-button {

@@ -39,19 +39,26 @@ import type {
   PreviewDevice,
   PreviewError,
   PreviewNodeRect,
+  ParsedContextArtifact,
+  ProjectAssetUrl,
   PrototypeActionKind,
   PrototypeInteraction,
   PrototypeTrigger,
   PrototypeVariable,
   ProjectBundle,
   SlideDeck,
-  SlideFeedback
+  SlideFeedback,
+  AssetRef,
+  DataBinding,
+  GeneratedNote,
+  SourceRecord
 } from "@kdesign/editor-core";
 import {
   BASIC_LANDING_FIXTURE_HTML,
   ProjectBundleSchema,
   addCodeComponentReference,
   addComponentStateRule,
+  applyDataBindingToBundle,
   addPrototypeInteraction,
   addPrototypeVariable,
   addSlide,
@@ -67,7 +74,15 @@ import {
   createGeneratedProjectBundle,
   createMockContextAttachment,
   createExportJob,
+  createGeneratedDesignContext,
+  createGeneratedSourceNotes,
   createComponentPlaygroundState,
+  createDataBinding,
+  createIngestionJob,
+  createProjectAssetUrl,
+  createSourceRecord,
+  createSyncEnvelope,
+  createWebSnapshot,
   createAgentContextPackage,
   createAgentHandoff,
   createCanvaHandoff,
@@ -80,9 +95,20 @@ import {
   learnDesignSystem,
   listCanvasObjects,
   mapTokenToCode,
+  markSyncDiverged,
   playPrototypeInteraction,
+  parseCodebaseFolderManifest,
+  parseCsvDataSource,
+  parseDocumentSource,
+  parseFigmaExportSource,
+  parseSlideDeckSource,
+  parseSpreadsheetSource,
+  previewDataBinding,
   publishDesignSystem,
   promoteVariationDirection,
+  rejectUnsupportedSource,
+  relinkAssetSource,
+  replaceAssetReference,
   rejectDesignSystemItems,
   remixDesignSystem,
   rollbackDesignSystem,
@@ -92,7 +118,9 @@ import {
   findNodeIdsByClass,
   ingestAgentOutput,
   normalizeHtml,
-  parseAgentOutputJson
+  parseAgentOutputJson,
+  validatePublicSourceUrl,
+  validateSyncEnvelope
 } from "@kdesign/editor-core";
 import { createPreviewNonce } from "@kdesign/preview-runtime";
 
@@ -275,6 +303,7 @@ export function EditorShell() {
   const [redoStack, setRedoStack] = useState<ProjectBundle[]>([]);
   const [playgroundState, setPlaygroundState] = useState<ComponentPlaygroundState | null>(null);
   const [presentationState, setPresentationState] = useState<PresentationState | null>(null);
+  const [webSnapshotUrl, setWebSnapshotUrl] = useState("https://example.com/product");
 
   useEffect(() => {
     projectBundleRef.current = projectBundle;
@@ -370,6 +399,14 @@ export function EditorShell() {
   const selectedNode = resolvedSelectedNodeId && projectBundle ? projectBundle.editGraph.nodes[resolvedSelectedNodeId] : undefined;
   const selectedRect = resolvedSelectedNodeId ? nodeRects[resolvedSelectedNodeId] : undefined;
   const hoveredRect = hoveredNodeId ? nodeRects[hoveredNodeId] : undefined;
+  const dataBindingPreview = useMemo(() => {
+    const binding = projectBundle?.dataBindings[0];
+    const source = binding ? projectBundle?.dataSources.find((item) => item.id === binding.dataSourceId) : undefined;
+    return binding && source ? previewDataBinding(source, binding) : undefined;
+  }, [projectBundle]);
+  const syncDiagnostics = useMemo(() => (
+    projectBundle?.syncEnvelope ? validateSyncEnvelope(projectBundle, projectBundle.syncEnvelope) : []
+  ), [projectBundle]);
 
   useEffect(() => {
     setTextDraft(selectedNode?.textPreview ?? "");
@@ -1110,6 +1147,260 @@ export function EditorShell() {
     }), { trackUndo: true });
   }, [commitBundle]);
 
+  const addPhase09ContextSource = useCallback((
+    kind: "image" | "document" | "slideDeck" | "spreadsheet" | "figma" | "codebase" | "unsupported"
+  ) => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const createdAt = new Date().toISOString();
+    if (kind === "unsupported") {
+      const blocked = rejectUnsupportedSource({
+        projectId: current.id,
+        name: "비지원 압축 파일.exe",
+        mimeType: "application/x-msdownload",
+        reason: "binary executable",
+        createdAt
+      });
+      commitBundle(ProjectBundleSchema.parse({
+        ...current,
+        sourceRecords: upsertById(current.sourceRecords, blocked.source),
+        ingestionJobs: upsertById(current.ingestionJobs, blocked.job),
+        updatedAt: createdAt
+      }), { trackUndo: true });
+      return;
+    }
+
+    const source = createSourceRecord({
+      projectId: current.id,
+      kind,
+      name: phase09SourceName(kind),
+      rights: kind === "image" ? "user-provided-context" : "fixture-summary",
+      createdAt
+    });
+    const parsedSource: SourceRecord = {
+      ...source,
+      parseStatus: kind === "image" ? "parsed" : "partial",
+      diagnostics: kind === "image" ? source.diagnostics : [...source.diagnostics, "deterministic-fixture-summary"]
+    };
+    const job = createIngestionJob({
+      sourceId: parsedSource.id,
+      status: parsedSource.parseStatus,
+      diagnostics: parsedSource.diagnostics,
+      createdAt
+    });
+    const artifact = phase09ParsedArtifact(parsedSource, createdAt);
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      sourceRecords: upsertById(current.sourceRecords, parsedSource),
+      ingestionJobs: upsertById(current.ingestionJobs, job),
+      parsedContextArtifacts: artifact
+        ? upsertById(current.parsedContextArtifacts, artifact)
+        : current.parsedContextArtifacts,
+      updatedAt: createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const generatePhase09Notes = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const createdAt = new Date().toISOString();
+    const sourceNotes = createGeneratedSourceNotes(current, createdAt);
+    const designContext = createGeneratedDesignContext(current, createdAt);
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      generatedNotes: upsertNotes(upsertNotes(current.generatedNotes, sourceNotes), designContext),
+      updatedAt: createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const capturePhase09Snapshot = useCallback((mode: "editable" | "referenceOnly" | "blocked") => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const createdAt = new Date().toISOString();
+    const url = mode === "blocked" ? "javascript:alert(1)" : webSnapshotUrl;
+    if (mode === "blocked") {
+      setWebSnapshotUrl(url);
+    }
+    const validation = validatePublicSourceUrl(url);
+    const baseSource = createSourceRecord({
+      projectId: current.id,
+      kind: "webCapture",
+      name: `Web snapshot ${current.webSnapshots.length + 1}`,
+      sourceUrl: url,
+      rights: validation.valid ? "public-url-reference" : "blocked-url",
+      createdAt
+    });
+    const source: SourceRecord = {
+      ...baseSource,
+      parseStatus: validation.valid ? (mode === "referenceOnly" ? "partial" : "parsed") : "blocked",
+      usageStatus: validation.valid ? "candidate" : "blocked",
+      diagnostics: validation.valid ? baseSource.diagnostics : [`blocked-url:${validation.reason ?? "unknown"}`]
+    };
+    const snapshot = createWebSnapshot({
+      bundle: current,
+      sourceId: source.id,
+      url,
+      ...(mode === "editable" ? { html: PHASE_09_SAFE_WEB_SNAPSHOT_HTML } : {}),
+      createdAt
+    });
+    const job = createIngestionJob({
+      sourceId: source.id,
+      status: snapshot.status === "blocked" ? "blocked" : source.parseStatus,
+      diagnostics: snapshot.diagnostics,
+      createdAt
+    });
+
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      sourceRecords: upsertById(current.sourceRecords, source),
+      ingestionJobs: upsertById(current.ingestionJobs, job),
+      webSnapshots: upsertById(current.webSnapshots, snapshot),
+      updatedAt: createdAt
+    }), { trackUndo: true });
+  }, [commitBundle, webSnapshotUrl]);
+
+  const replacePhase09Asset = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const baseAsset = current.assets[0] ?? createPhase09Asset("asset_phase09_original", "product-shot.png");
+    const bundleWithAsset = current.assets.some((asset) => asset.id === baseAsset.id)
+      ? current
+      : ProjectBundleSchema.parse({
+        ...current,
+        assets: [...current.assets, baseAsset],
+        projectAssetUrls: upsertAssetUrls(current.projectAssetUrls, createProjectAssetUrl(current.id, baseAsset.id))
+      });
+    const nextAsset = createPhase09Asset("asset_phase09_replacement", "replacement-product-shot.png");
+    commitBundle(replaceAssetReference(bundleWithAsset, {
+      previousAssetId: baseAsset.id,
+      nextAsset,
+      reason: "Phase 09 deterministic replacement",
+      createdAt: new Date().toISOString()
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const relinkPhase09Asset = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const createdAt = new Date().toISOString();
+    const asset = current.assets[0] ?? createPhase09Asset("asset_phase09_original", "product-shot.png");
+    const source = current.sourceRecords.find((item) => item.kind === "image") ?? createSourceRecord({
+      projectId: current.id,
+      kind: "image",
+      name: "제품 이미지.png",
+      rights: "user-provided-context",
+      createdAt
+    });
+    const prepared = ProjectBundleSchema.parse({
+      ...current,
+      assets: current.assets.some((item) => item.id === asset.id) ? current.assets : [...current.assets, asset],
+      sourceRecords: upsertById(current.sourceRecords, source),
+      projectAssetUrls: upsertAssetUrls(current.projectAssetUrls, createProjectAssetUrl(current.id, asset.id))
+    });
+    commitBundle(relinkAssetSource(prepared, {
+      assetId: asset.id,
+      sourceId: source.id,
+      reason: "Phase 09 source provenance link",
+      createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const importPhase09CsvData = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const createdAt = new Date().toISOString();
+    const source = createSourceRecord({
+      projectId: current.id,
+      kind: "csv",
+      name: "team-data.csv",
+      bytes: "name,role\n민지,PM\n유진,Designer\n서연,Engineer",
+      rights: "fixture-data",
+      createdAt
+    });
+    const dataSource = parseCsvDataSource({
+      name: "팀 데이터.csv",
+      sourceId: source.id,
+      csv: "name,role\n민지,PM\n유진,Designer\n서연,Engineer",
+      createdAt
+    });
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      sourceRecords: upsertById(current.sourceRecords, source),
+      dataSources: upsertById(current.dataSources, dataSource),
+      updatedAt: createdAt
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const createPhase09DataBinding = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const graph = current.canvasGraph ?? deriveCanvasGraph(current);
+    const target = selectedObjectId
+      ? graph.objects[selectedObjectId]
+      : Object.values(graph.objects).find((object) => object.nodeId);
+    if (!target) {
+      reportWorkflowError("data_binding_rejected", new Error("No canvas object available for data binding."));
+      return;
+    }
+    const source = current.dataSources[0] ?? parseCsvDataSource({
+      name: "팀 데이터.csv",
+      sourceId: "source_phase09_csv",
+      csv: "name,role\n민지,PM\n유진,Designer\n서연,Engineer",
+      createdAt: new Date().toISOString()
+    });
+    const binding: DataBinding = createDataBinding({
+      dataSourceId: source.id,
+      targetObjectId: target.id,
+      ...(target.nodeId ? { targetNodeId: target.nodeId } : {}),
+      fieldMap: { title: "name", subtitle: "role" },
+      rowLimit: 3,
+      sourceRevision: current.baseRevision,
+      createdAt: new Date().toISOString()
+    });
+    commitBundle(applyDataBindingToBundle(current, source, binding), { trackUndo: true });
+  }, [commitBundle, reportWorkflowError, selectedObjectId]);
+
+  const createPhase09SyncEnvelope = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    const envelope = createSyncEnvelope({
+      bundle: current,
+      accountHint: "local-mock-account",
+      createdAt: new Date().toISOString()
+    });
+    commitBundle(ProjectBundleSchema.parse({
+      ...current,
+      syncEnvelope: envelope,
+      updatedAt: envelope.lastSyncedAt ?? new Date().toISOString()
+    }), { trackUndo: true });
+  }, [commitBundle]);
+
+  const markPhase09SyncDiverged = useCallback(() => {
+    const current = projectBundleRef.current;
+    if (!current) {
+      return;
+    }
+    commitBundle(markSyncDiverged(current, "local/mock remote revision diverged", new Date().toISOString()), {
+      trackUndo: true
+    });
+  }, [commitBundle]);
+
   const createTopShareLink = useCallback(() => {
     addShareLink("view");
     setTweaksEnabled(true);
@@ -1647,6 +1938,116 @@ export function EditorShell() {
                   />
                 ))}
               </section>
+              <section className="tweak-card phase-09-context" data-testid="phase-09-context-queue">
+                <h2>Phase 09 Context</h2>
+                <p className="tweak-description">출처, 요약, 권리, 데이터, 자산, 동기화 상태를 저장 모델로 관리합니다.</p>
+                <div className="phase-09-actions">
+                  <button type="button" data-testid="phase-09-add-image-source" onClick={() => addPhase09ContextSource("image")}>Image</button>
+                  <button type="button" data-testid="phase-09-add-doc-source" onClick={() => addPhase09ContextSource("document")}>DOCX</button>
+                  <button type="button" data-testid="phase-09-add-pptx-source" onClick={() => addPhase09ContextSource("slideDeck")}>PPTX</button>
+                  <button type="button" data-testid="phase-09-add-xlsx-source" onClick={() => addPhase09ContextSource("spreadsheet")}>XLSX</button>
+                  <button type="button" data-testid="phase-09-add-figma-source" onClick={() => addPhase09ContextSource("figma")}>Figma</button>
+                  <button type="button" data-testid="phase-09-add-codebase-source" onClick={() => addPhase09ContextSource("codebase")}>Codebase</button>
+                  <button type="button" data-testid="phase-09-add-unsupported-source" onClick={() => addPhase09ContextSource("unsupported")}>Block</button>
+                  <button type="button" data-testid="phase-09-generate-notes" onClick={generatePhase09Notes}>Notes</button>
+                </div>
+                <div className="phase-09-record-list">
+                  {projectBundle.sourceRecords.length === 0 ? <span>source records 없음</span> : projectBundle.sourceRecords.slice(0, 8).map((source) => (
+                    <article key={source.id} className={`phase-09-record state-${source.parseStatus}`}>
+                      <strong>{source.name}</strong>
+                      <span>{source.kind} · {source.parseStatus} · {source.usageStatus}</span>
+                      {source.diagnostics.length > 0 ? <small>{source.diagnostics.join(", ")}</small> : null}
+                    </article>
+                  ))}
+                </div>
+                <div className="phase-09-record-list" data-testid="phase-09-parsed-context-summaries">
+                  {projectBundle.parsedContextArtifacts.length === 0 ? <span>parsed summaries 없음</span> : projectBundle.parsedContextArtifacts.slice(0, 8).map((artifact) => (
+                    <article key={artifact.id} className="phase-09-record">
+                      <strong>{artifact.title}</strong>
+                      <span>{artifact.kind} · {artifact.summary}</span>
+                      <small>{[
+                        ...artifact.textBlocks.slice(0, 2),
+                        ...artifact.frameNames.slice(0, 2),
+                        ...artifact.tables.slice(0, 1).map((row) => Object.values(row).join(" / "))
+                      ].filter(Boolean).join(" · ")}</small>
+                    </article>
+                  ))}
+                </div>
+                <div className="phase-09-notes-grid">
+                  <pre data-testid="phase-09-source-notes">{projectBundle.generatedNotes.find((note) => note.path === "source-notes.md")?.content ?? "source-notes.md 없음"}</pre>
+                  <pre data-testid="phase-09-design-context">{projectBundle.generatedNotes.find((note) => note.path === "design-context.md")?.content ?? "design-context.md 없음"}</pre>
+                </div>
+              </section>
+              <section className="tweak-card phase-09-context" data-testid="phase-09-web-snapshot-list">
+                <h2>Snapshot & Assets</h2>
+                <label className="field-stack">
+                  <span>Public URL</span>
+                  <input
+                    data-testid="phase-09-web-snapshot-url"
+                    value={webSnapshotUrl}
+                    onChange={(event) => setWebSnapshotUrl(event.target.value)}
+                  />
+                </label>
+                <div className="phase-09-actions">
+                  <button type="button" data-testid="phase-09-capture-web-snapshot" onClick={() => capturePhase09Snapshot("editable")}>Editable</button>
+                  <button type="button" data-testid="phase-09-capture-reference-snapshot" onClick={() => capturePhase09Snapshot("referenceOnly")}>Reference</button>
+                  <button type="button" data-testid="phase-09-capture-blocked-snapshot" onClick={() => capturePhase09Snapshot("blocked")}>Unsafe</button>
+                  <button type="button" data-testid="phase-09-replace-asset" onClick={replacePhase09Asset}>Replace asset</button>
+                  <button type="button" data-testid="phase-09-relink-asset" onClick={relinkPhase09Asset}>Relink asset</button>
+                </div>
+                <div className="phase-09-record-list">
+                  {projectBundle.webSnapshots.length === 0 ? <span>snapshot 없음</span> : projectBundle.webSnapshots.slice(0, 6).map((snapshot) => (
+                    <article key={snapshot.id} className={`phase-09-record state-${snapshot.status}`}>
+                      <strong>{snapshot.status}</strong>
+                      <span>{snapshot.url}</span>
+                      <small>{snapshot.sourceId} · {snapshot.normalizedHtml ? "sanitized editable section" : "no editable html"} · {snapshot.diagnostics.join(", ")}</small>
+                    </article>
+                  ))}
+                </div>
+                <div className="phase-09-record-list" data-testid="phase-09-asset-provenance">
+                  {projectBundle.projectAssetUrls.length === 0 && projectBundle.assetLifecycle.length === 0 ? <span>asset provenance 없음</span> : (
+                    <>
+                      {projectBundle.projectAssetUrls.map((assetUrl) => (
+                        <article key={assetUrl.url} className="phase-09-record">
+                          <strong>{assetUrl.assetId}</strong>
+                          <span>{assetUrl.url}</span>
+                        </article>
+                      ))}
+                      {projectBundle.assetLifecycle.slice(0, 5).map((event) => (
+                        <article key={event.id} className="phase-09-record">
+                          <strong>{event.type}</strong>
+                          <span>{event.assetId} · {event.sourceId ?? event.nextAssetId ?? "no linked source"}</span>
+                        </article>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </section>
+              <section className="tweak-card phase-09-context" data-testid="phase-09-data-binding-preview">
+                <h2>Data & Sync</h2>
+                <div className="phase-09-actions">
+                  <button type="button" data-testid="phase-09-import-csv-data" onClick={importPhase09CsvData}>Import CSV</button>
+                  <button type="button" data-testid="phase-09-create-data-binding" onClick={createPhase09DataBinding}>Bind data</button>
+                  <button type="button" data-testid="phase-09-create-sync-envelope" onClick={createPhase09SyncEnvelope}>Sync envelope</button>
+                  <button type="button" data-testid="phase-09-mark-sync-diverged" onClick={markPhase09SyncDiverged}>Diverge</button>
+                </div>
+                <div className="phase-09-record-list">
+                  {dataBindingPreview ? dataBindingPreview.rows.map((row, index) => (
+                    <article key={`${row.title}-${index}`} className={`phase-09-record state-${dataBindingPreview.state}`}>
+                      <strong>{row.title}</strong>
+                      <span>{row.subtitle}</span>
+                    </article>
+                  )) : <span>data binding 없음</span>}
+                  {dataBindingPreview?.diagnostics.map((diagnostic) => <span key={diagnostic}>{diagnostic}</span>)}
+                </div>
+                <div className="phase-09-record-list" data-testid="phase-09-sync-status">
+                  <article className={`phase-09-record state-${projectBundle.syncEnvelope?.status ?? "localOnly"}`}>
+                    <strong>DATA-01 foundation only</strong>
+                    <span>{projectBundle.syncEnvelope?.status ?? "localOnly"} · {projectBundle.syncEnvelope?.remoteDocumentId ?? "no remote document"}</span>
+                    <small>{[...(projectBundle.syncEnvelope?.diagnostics ?? []), ...syncDiagnostics].join(", ")}</small>
+                  </article>
+                </div>
+              </section>
               <section className="tweak-card asset-card" data-testid="asset-manifest">
                 <h2>Context & Assets</h2>
                 <div className="source-meta">
@@ -1742,6 +2143,95 @@ export function EditorShell() {
       </section>
     </main>
   );
+}
+
+const PHASE_09_SAFE_WEB_SNAPSHOT_HTML = String.raw`<main class="phase-09-web-snapshot">
+  <section>
+    <h1>공식 제품 페이지 스냅샷</h1>
+    <p>공개 URL에서 가져온 안전한 HTML fixture입니다.</p>
+  </section>
+</main>`;
+
+function phase09SourceName(kind: "image" | "document" | "slideDeck" | "spreadsheet" | "figma" | "codebase"): string {
+  switch (kind) {
+    case "image":
+      return "제품 스크린샷.png";
+    case "document":
+      return "제품 요구사항.docx";
+    case "slideDeck":
+      return "기존 발표자료.pptx";
+    case "spreadsheet":
+      return "시장 데이터.xlsx";
+    case "figma":
+      return "Figma Frames.fig";
+    case "codebase":
+      return "app-codebase-manifest.json";
+  }
+}
+
+function phase09ParsedArtifact(source: SourceRecord, createdAt: string): ParsedContextArtifact | undefined {
+  switch (source.kind) {
+    case "document":
+      return parseDocumentSource({
+        source,
+        text: "브랜드 핵심 문장: 바이브코더가 실제 제품 화면을 더 빠르게 다듬는다.\n사용자: 한국어로 디자인을 만드는 개인 제작자.",
+        createdAt
+      });
+    case "slideDeck":
+      return parseSlideDeckSource({
+        source,
+        slideTitles: ["문제", "해결", "제품 데모"],
+        notes: ["발표자는 실제 화면과 편집 가능성을 강조한다."],
+        createdAt
+      });
+    case "spreadsheet":
+      return parseSpreadsheetSource({
+        source,
+        rows: [{ segment: "바이브코더", need: "빠른 편집" }, { segment: "디자이너", need: "출처 관리" }],
+        createdAt
+      });
+    case "figma":
+      return parseFigmaExportSource({
+        source,
+        frameNames: ["Landing / Desktop", "Editor / Canvas"],
+        componentNames: ["Primary CTA", "Inspector Panel"],
+        createdAt
+      });
+    case "codebase":
+      return parseCodebaseFolderManifest({
+        source,
+        files: [
+          { path: "apps/web/components/editor-shell.tsx", kind: "react", summary: "studio shell and workflow panels" },
+          { path: "packages/editor-core/src/schemas.ts", kind: "typescript", summary: "ProjectBundle source of truth" }
+        ],
+        createdAt
+      });
+    default:
+      return undefined;
+  }
+}
+
+function createPhase09Asset(id: string, filename: string): AssetRef {
+  return {
+    id,
+    kind: "image",
+    status: "cached",
+    localPath: `assets/${filename}`,
+    mimeType: "image/png",
+    license: "phase-09-fixture"
+  };
+}
+
+function upsertById<T extends { id: string }>(items: T[], item: T): T[] {
+  return [...items.filter((current) => current.id !== item.id), item];
+}
+
+function upsertNotes(items: GeneratedNote[], note: GeneratedNote): GeneratedNote[] {
+  return [...items.filter((current) => current.path !== note.path), note];
+}
+
+function upsertAssetUrls(items: ProjectAssetUrl[], item: ProjectAssetUrl): ProjectAssetUrl[] {
+  return [...items.filter((current) => current.assetId !== item.assetId), item];
 }
 
 function getTweakProfile(bundle: ProjectBundle): TweakProfile {
