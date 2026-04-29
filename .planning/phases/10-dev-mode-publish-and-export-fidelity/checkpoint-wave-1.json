@@ -1,0 +1,46 @@
+{
+  "schema": "sunco-checkpoint-v1",
+  "phase": "10",
+  "phase_name": "Dev Mode Publish And Export Fidelity",
+  "phase_slug": "10-dev-mode-publish-and-export-fidelity",
+  "wave_completed": 1,
+  "timestamp": "2026-04-29T18:56:00+09:00",
+  "plans_completed": [
+    {
+      "id": "10-01",
+      "title": "Build shared Phase 10 core contracts and Dev Mode helpers",
+      "status": "completed",
+      "lint_status": "PASS",
+      "summary_path": ".planning/phases/10-dev-mode-publish-and-export-fidelity/10-01-SUMMARY.md",
+      "last_commit": "b304dd9",
+      "files_written": [
+        "packages/editor-core/src/dev-mode.ts",
+        "packages/editor-core/src/export-fidelity.ts",
+        "packages/editor-core/src/code-roundtrip.ts"
+      ]
+    }
+  ],
+  "plans_pending": [
+    {
+      "id": "10-02",
+      "title": "Build real export worker and worker-to-UI artifact proof",
+      "wave": 2,
+      "status": "pending"
+    },
+    {
+      "id": "10-03",
+      "title": "Expose Dev Mode, publish, export, and roundtrip workflows in the web studio",
+      "wave": 3,
+      "status": "pending"
+    }
+  ],
+  "blast_radius": {
+    "risk": "HIGH",
+    "files_in_scope": 31,
+    "files_transitively_affected": 0
+  },
+  "lint_gate_overrides": [],
+  "branch": "main",
+  "interrupted": false,
+  "next_wave": 2
+}

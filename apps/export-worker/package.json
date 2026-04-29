@@ -1,0 +1,21 @@
+{
+  "name": "@kdesign/export-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.json --pretty false --force",
+    "typecheck": "tsc -b tsconfig.json --pretty false --force",
+    "test": "vitest run src/__tests__/export-worker.test.ts"
+  },
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "1.1.0",
+    "@kdesign/editor-core": "workspace:*",
+    "fflate": "0.8.2",
+    "gifenc": "1.0.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1",
+    "vitest": "4.1.5"
+  }
+}

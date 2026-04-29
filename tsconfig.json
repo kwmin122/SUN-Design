@@ -8,6 +8,9 @@
       "path": "./packages/preview-runtime"
     },
     {
+      "path": "./apps/export-worker"
+    },
+    {
       "path": "./apps/web"
     }
   ]
