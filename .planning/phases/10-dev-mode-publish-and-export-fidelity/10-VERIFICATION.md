@@ -1,24 +1,22 @@
 # Phase 10 Verification Results
 
-Generated: 2026-04-29T22:10:10+09:00
+Generated: 2026-04-29T22:52:15+09:00
 
 ## Summary
 
 | Layer | Name | Result | Notes |
 |-------|------|--------|-------|
-| 1 | Multi-agent review | FAIL | Correctness and security reviews found remaining Phase 10 contract gaps in animation export, roundtrip manifest integrity, and visual-diff proof. |
+| 1 | Multi-agent review | FAIL | Both correctness and security reviewers found remaining Phase 10 contract breaches. |
 | 2 | Guardrails | PASS | lint, typecheck, tsc, unit tests, export-worker tests, and browser e2e all pass. |
-| 3 | BDD criteria | FAIL | Most UI/core/export paths work, but 10-01 and 10-02 still have unmet plan criteria. |
-| 4 | Permission audit | WARN | No secrets or direct network calls found; support files and planning/status docs expanded beyond plan file lists. |
-| 5 | Adversarial | FAIL | Deep code-roundtrip manifest tampering is accepted on persisted reload. |
-| 6 | Cross-model | WARN | Skeptical review found no additional blocker but noted browser export is worker-record/degraded for non-HTML and this file must be fresh. |
-| 7 | Human eval | SKIPPED | Not requested because automated layers failed. |
+| 3 | BDD criteria | FAIL | Core happy paths pass, but several explicit plan acceptance criteria are not met. |
+| 4 | Permission audit | WARN | No secrets or direct code-level HTTP clients found; support files and planning docs expanded beyond plan file lists. |
+| 5 | Adversarial | FAIL | Local probes reproduced manifest tamper acceptance and export-render network access. |
+| 6 | Cross-model | FAIL | Skeptical fallback review agrees the remaining issues are structural, not just test gaps. |
+| 7 | Human eval | SKIPPED | Automated layers failed, so human approval was not requested. |
 
 ## Overall: NEEDS FIXES
 
 Phase 10 must not proceed to `/sunco:ship 10`. Fix the issues listed below, then re-run `/sunco:verify 10`.
-
-Post-fix update: the blockers listed in this verification result have been addressed in code, regression tests, and the worker fixture. This file remains the last formal `/sunco:verify 10` result until verification is rerun; current route is `/sunco:verify 10`, not `/sunco:ship 10`.
 
 ## Layer Details
 
@@ -26,22 +24,20 @@ Post-fix update: the blockers listed in this verification result have been addre
 
 **Agent 1 (implementation correctness): FAIL**
 
-- FAIL: Animation exports ignore the Phase 10 template gate. Plan 10-02 requires GIF/MP4 only for prototype or slide-deck animation artifacts, otherwise failed verification diagnostic `animation-template-required`; the worker always renders synthetic frames and writes GIF/MP4 bytes for any bundle. Evidence: `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-02-PLAN.md:158`, `apps/export-worker/src/export-worker.ts:348`, `apps/export-worker/src/render.ts:46`, `apps/export-worker/src/__tests__/export-worker.test.ts:28`.
-- FAIL: `apps/export-worker/src/animation.ts` does not expose the planned public `exportAnimationGif(...)` / `exportAnimationMp4(...)` APIs and does not normalize MP4 failures as `mp4-export-failed`. Evidence: `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-02-PLAN.md:143`, `apps/export-worker/src/animation.ts:30`, `apps/export-worker/src/animation.ts:57`.
-- FAIL: Code roundtrip manifest validation is shallow. The validator checks top-level ids/revision/runtime/instruction path and artifact id presence, but not equality of embedded `projectBundle`, `canvasGraph`, `editGraph`, `assets`, `designSystem`, `sourceRecords`, or `exportArtifacts`. Evidence: `packages/editor-core/src/code-roundtrip.ts:124`, `packages/editor-core/src/code-roundtrip.ts:138`, `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-01-PLAN.md:176`.
-- FAIL: Export fidelity lacks deterministic visual-diff verification. `ExportVerificationSchema` supports `visual-diff`, but worker/web paths emit only `signature`, `manifest`, and `roundtrip`. Evidence: `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-CONTEXT.md:24`, `packages/editor-core/src/schemas.ts:612`, `apps/export-worker/src/export-worker.ts:313`, `apps/web/components/editor-shell.tsx:773`.
-- WARN: Dev Mode token reporting includes all design-system tokens instead of selected-object scoped token references. Evidence: `packages/editor-core/src/dev-mode.ts:37`, `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-CONTEXT.md:19`.
-- WARN: Web fixture loading uses `ProjectBundleSchema.parse` rather than the persistence/integrity path. Evidence: `apps/web/components/editor-shell.tsx:964`, `packages/editor-core/src/integrity.ts:574`.
-- PASS: Ready markers, version diffs, ZIP entry safety, static publish URL shape, worker materializer API names, and top Export wiring are materially improved after the blocker fix.
+- FAIL: Code roundtrip deep manifest validation is incomplete. The validator accepts a tampered `manifest.projectBundle.html.normalized` because it checks only selected embedded fields rather than the full serialized `ProjectBundle` snapshot. Evidence: `packages/editor-core/src/code-roundtrip.ts`, plan requirement in `10-01-PLAN.md`.
+- FAIL: Worker fixture integrity is not guaranteed. The worker test writes `.tmp-export-worker/phase-10/phase-10-worker-export-bundle.json`, while the web UI imports the committed `apps/web/tests/fixtures/phase-10-worker-export-bundle.json`; generated and committed fixtures can drift. Evidence: `apps/export-worker/src/__tests__/export-worker.test.ts`, `apps/web/components/editor-shell.tsx`.
+- FAIL: Browser GIF/MP4 export bypasses the animation-template gate. The worker rejects missing animation templates, but web export buttons call the generic `createExport("gif" | "mp4")` path and create degraded records without `animation-template-required`. Evidence: `apps/web/components/editor-shell.tsx`.
+- FAIL: Editable PPTX subset does not match the plan. The plan requires `vectorLike` / `button` / `frame` as simple rectangle shapes and a public `createRasterizedPptx(...)`; implementation maps text/image/frame/block and tests assert `unsupported-pptx-node:button`.
+- WARN: Worker visual-diff records currently compare the current render hash to itself.
+- WARN: Browser-created non-PPTX export records do not consistently include `web-local-record`.
 
-**Agent 2 (security/resilience): FAIL**
+**Agent 2 (security and resilience): FAIL**
 
-- FAIL: Manifest spoofing still passes deep integrity. Persisted roundtrip package manifests can carry tampered embedded graph/assets/source/export state while `parseProjectBundleJson` accepts the bundle. Evidence: `packages/editor-core/src/code-roundtrip.ts:138`, `packages/editor-core/src/integrity.ts:740`.
-- PASS: Non-manifest Phase 10 persisted references reject stale ready markers, bad version diffs, missing export jobs, invalid publish URLs, and missing publish artifacts. Evidence: `packages/editor-core/src/integrity.ts:653`, `packages/editor-core/src/integrity.ts:666`, `packages/editor-core/src/integrity.ts:700`, `packages/editor-core/src/integrity.ts:717`.
-- PASS: ZIP entry names, output directories, fixture paths, and filenames are constrained. Evidence: `apps/export-worker/src/zip.ts:34`, `apps/export-worker/src/export-worker.ts:413`, `apps/export-worker/src/export-worker.ts:427`, `apps/export-worker/src/export-worker.ts:439`.
-- PASS: Exported preview content is generated from stored normalized state via standalone HTML, not live iframe/editor bridge DOM. Evidence: `packages/editor-core/src/export.ts:23`, `apps/export-worker/src/render.ts:23`.
-- WARN: Render path does not explicitly block network/resource requests during Playwright `setContent`, so external asset URLs can make worker exports nondeterministic. Evidence: `apps/export-worker/src/render.ts:24`, `apps/export-worker/src/render.ts:27`.
-- WARN: MP4 export failures are not normalized to the planned `mp4-export-failed` diagnostic/error shape. Evidence: `apps/export-worker/src/animation.ts:70`, `apps/export-worker/src/animation.ts:82`.
+- FAIL: Persisted code roundtrip package manifests accept tampered `projectBundle` fields outside the checked subset. Probe result from the agent: `PERSIST_ACCEPTED_HTML_TAMPER`.
+- FAIL: Export rendering can perform local/external network requests from untrusted stored HTML. Normal `http(s)` image `src` values survive into standalone HTML, and Playwright `setContent` does not block requests.
+- FAIL: `visual-diff` verification is not independent proof; expected and actual hashes come from the same current render value.
+- WARN: Worker fixture loading uses `ProjectBundleSchema.parse` instead of `parseProjectBundleJson`, bypassing normal persisted integrity validation at the UI load boundary.
+- PASS: ZIP entries, output file paths, fixture paths, MP4 timeout/error wrapping, GIF/MP4 worker template gate, and unsafe roundtrip payload tests are materially improved.
 
 ### Layer 2 - Guardrails
 
@@ -49,70 +45,76 @@ Fresh commands run:
 
 | Command | Result |
 |---------|--------|
+| `git diff --check ab01718..HEAD && git diff --cached --check` | PASS |
 | `pnpm lint` | PASS |
 | `pnpm typecheck` | PASS |
 | `npx tsc --noEmit` | PASS |
-| `pnpm test` | PASS: 23 files / 133 tests |
-| `pnpm e2e` | PASS: 30 browser tests |
 | `pnpm --filter @kdesign/export-worker build` | PASS |
 | `pnpm --filter @kdesign/export-worker test` | PASS: 1 file / 2 tests |
-| `pnpm --filter @kdesign/editor-core test -- src/__tests__/dev-mode.test.ts src/__tests__/export-fidelity.test.ts src/__tests__/code-roundtrip.test.ts src/__tests__/persistence.test.ts` | PASS: 22 files / 125 tests |
+| `pnpm --filter @kdesign/editor-core exec vitest run src/__tests__/dev-mode.test.ts src/__tests__/export-fidelity.test.ts src/__tests__/code-roundtrip.test.ts src/__tests__/persistence.test.ts` | PASS: 4 files / 31 tests |
+| `pnpm test` | PASS: 23 files / 134 tests |
+| `pnpm e2e` | PASS: 30 browser tests |
+| `node ~/.codex/sunco/bin/sunco-tools.cjs init phase-op 10` | PASS: context, research, plans, verification present |
+| `node ~/.codex/sunco/bin/sunco-tools.cjs artifact-hash check` | PASS: changed false |
 
 ### Layer 3 - BDD Criteria
 
 | Criterion | Status | Evidence |
 |-----------|--------|----------|
-| 10-01 shared Phase 10 ProjectBundle contract fields exist | PASS | `rg` found Dev Mode, export, publish, and roundtrip schemas/default arrays in `packages/editor-core/src/schemas.ts`. |
+| 10-01 shared ProjectBundle contract fields exist | PASS | Required schemas and default arrays exist in `packages/editor-core/src/schemas.ts`. |
 | 10-01 Dev Mode helpers derive inspect/code/readiness/diff/asset metadata from stored state | PASS | `dev-mode.ts` helpers exist and targeted tests pass. |
-| 10-01 export/publish/roundtrip helpers create validated records without hosted-production overclaim | PARTIAL | Publish/export helpers are local/server-portable, but roundtrip manifest validation is not deep enough. |
-| 10-01 persisted Phase 10 corruption probes reject missing references, stale revisions, runtime mismatches, invalid publish URLs | PARTIAL | Stale ready, invalid diff, missing artifacts, invalid publish URL paths reject, but deep manifest tampering is accepted. |
-| 10-01 handoff packages include Phase 10 records | PASS | `handoff.ts` includes `devModeReports`, `exportArtifacts`, and `codeRoundtripPackages`. |
-| 10-01 all task acceptance criteria verified | FAIL | Required exact `Code roundtrip runtime mismatch` string is not present; manifest deep equality is missing. |
-| 10-01 `/sunco:lint` / guardrails | PASS | Layer 2 commands pass. |
-| 10-02 export worker package builds and tests independently | PASS | `pnpm --filter @kdesign/export-worker build` and test pass. |
-| 10-02 worker writes real HTML, ZIP, PNG, PDF, PPTX, GIF, and MP4 from stored ProjectBundle state | PARTIAL | Real files are produced, but GIF/MP4 do not enforce the animation-template gate. |
-| 10-02 PPTX supports rasterized slides and editable subset with diagnostics | PARTIAL | Raster/editable artifacts exist and diagnostics render, but the planned public `createEditableSubsetPptx(...)` API is absent. |
-| 10-02 static publish preview is server-portable `kdesign://publish/...` | PASS | Publish URL schema and tests verify `kdesign://publish/...`. |
-| 10-02 code roundtrip package materialization validates against 10-01 contracts | FAIL | Deep manifest tampering probe accepted. |
-| 10-02 worker writes UI-loadable fixture from real worker output | PASS | `phase-10-worker-export-bundle.json` parses and e2e loads it. |
-| 10-02 all task acceptance criteria verified | FAIL | Missing `exportAnimationGif`, `exportAnimationMp4`, `createEditableSubsetPptx`, `animation-template-required`, and deep manifest validation. |
-| 10-02 install/build/test/lint/typecheck gates | PASS | Layer 2 and targeted worker checks pass. |
-| 10-03 Dev Mode panel exposes inspect, snippets, ready state, version diff, and asset downloads | PASS | `phase-10-dev-mode.spec.ts` passes. |
-| 10-03 export/publish panel exposes export kinds, publish preview, and roundtrip flows | PASS | `phase-10-export-publish.spec.ts` passes. |
-| 10-03 web UI loads and displays worker-created fixture artifact records | PASS | Browser test loads fixture and persisted records. |
-| 10-03 top Export button is wired and not inert | PASS | Top export path creates stored-state HTML artifact records. |
-| 10-03 reload persistence and no horizontal overflow at desktop/tablet/mobile | PASS | `pnpm e2e` passes across Phase 10 tests. |
-| 10-03 guidance/status docs reflect current route | PASS | This verification updates Phase 10 route to fixes required; the plan's pre-execution `Next SUNCO action: /sunco:execute 10` is intentionally superseded by current verification state. |
+| 10-01 export/publish/roundtrip helpers create validated records | PARTIAL | Helpers exist, but roundtrip package manifest validation is not full-snapshot deep validation. |
+| 10-01 persisted corruption probes reject missing references/stale revisions/runtime mismatches | PARTIAL | Many probes pass, but persisted `manifest.projectBundle.html.normalized` tamper is accepted. |
+| 10-01 handoff packages include Phase 10 records | PASS | `handoff.ts` includes Phase 10 surfaces; tests pass. |
+| 10-02 export worker package builds and tests independently | PASS | `pnpm --filter @kdesign/export-worker build/test` pass. |
+| 10-02 worker writes real HTML, ZIP, PNG, PDF, PPTX, GIF, and MP4 files from stored state | PARTIAL | File signatures pass, but export render can still load external/local URLs from untrusted HTML. |
+| 10-02 PPTX supports rasterized slides and editable subset | PARTIAL | PPTX files exist, but `createRasterizedPptx(...)` public API is missing and button/vector-like simple shape mapping is not implemented. |
+| 10-02 static publish preview is `kdesign://publish/...` | PASS | Publish schema/tests verify `kdesign://publish/...`. |
+| 10-02 code roundtrip package materialization validates 10-01 contracts | FAIL | Full embedded `projectBundle` tamper is accepted. |
+| 10-02 worker writes UI-loadable fixture from real worker output | PARTIAL | A committed fixture exists and parses, but worker tests write a temp fixture, not the committed fixture path. |
+| 10-03 Dev Mode panel exposes inspect/snippet/readiness/diff/asset workflows | PASS | `phase-10-dev-mode.spec.ts` passes. |
+| 10-03 export/publish panel exposes export/publish/roundtrip flows | PARTIAL | UI flows exist, but GIF/MP4 web records bypass animation-template eligibility and some browser-created records miss `web-local-record`. |
+| 10-03 web UI loads worker fixture records | PARTIAL | UI loads records, but uses `ProjectBundleSchema.parse` rather than `parseProjectBundleJson`. |
+| 10-03 top Export button is wired | PASS | Top export creates stored export records. |
+| 10-03 reload persistence and responsive overflow checks | PASS | Browser e2e passes desktop/tablet/mobile overflow checks. |
+| All plan smoke commands | PASS | Layer 2 commands pass. |
 
 ### Layer 4 - Permission Audit
 
-- `git diff --name-only ab01718..HEAD` shows Phase 10 implementation, export-worker package files, web UI/tests, summaries/checkpoints, status docs, and hash files.
-- WARN: `apps/export-worker/src/render.ts` and `apps/export-worker/src/gifenc.d.ts` are support files outside the original `files_modified` list. They are reasonable for Playwright rendering and gifenc typing but remain scope expansion.
-- WARN: `.planning/REQUIREMENTS.md`, `.planning/STATE.md`, `.planning/.hashes.json`, checkpoint files, summaries, and verification docs changed as bookkeeping outside implementation plan file lists.
+- `git diff ab01718..HEAD --name-only` shows expected Phase 10 implementation, tests, export-worker package files, fixture, planning summaries/checkpoints, status docs, and hash updates.
+- WARN: `apps/export-worker/src/render.ts`, `apps/export-worker/src/gifenc.d.ts`, and `packages/editor-core/src/__tests__/handoff.test.ts` are support files outside the original explicit file lists. They are reasonable for rendering/typing/handoff proof, but remain scope expansion.
+- WARN: `.planning/REQUIREMENTS.md`, `.planning/STATE.md`, `.planning/.hashes.json`, summaries, checkpoints, and verification docs changed as bookkeeping outside implementation plan file lists.
 - Secrets audit produced no output for `*.env`, `*.key`, `*.pem`, `*.secret`, `secrets*`, or `*credentials*`.
-- Direct network-call scan found no `fetch(`, `axios.`, `http.get`, `https.get`, `got(`, or `ky.` in `apps` / `packages`.
-- Git status before verification-doc updates: `## main...origin/main`.
+- Static direct network-call scan found no `fetch(`, `axios.`, `http.get`, `https.get`, `got(`, or `ky.` in `apps` / `packages`. This does not clear the Playwright resource-load issue from Layer 5.
+- Git status before this verification document update: `## main...origin/main`.
 
 ### Layer 5 - Adversarial
 
-The adversarial subagent was blocked by the runtime safety filter, so the layer used local, non-destructive integrity probes instead.
+Result: FAIL.
+
+Local probes:
 
 | Probe | Result | Evidence |
 |-------|--------|----------|
-| Deep code-roundtrip manifest tamper | FAIL: ACCEPTED | Local probe changed embedded `canvasGraph`, `editGraph`, `assets`, `sourceRecords`, and `exportArtifacts`; `parseProjectBundleJson(serializeProjectBundle(...))` returned success. |
-| Unsafe ZIP entry path | PASS: rejected | Earlier post-fix probe rejects `../escape.txt` with `Unsafe zip entry path`. |
-| Stale ready marker with valid object id | PASS: rejected | Local probe rejects with `Ready marker source revision is stale`. |
-| Missing version diff revisions | PASS: rejected | Earlier post-fix probe rejects missing revision ids. |
-| Unsafe export output directory | PASS: rejected | Earlier post-fix probe rejects output outside approved roots. |
+| `manifest.projectBundle.html.normalized` tamper on append | FAIL: ACCEPTED | Probe output: `append_html_tamper: ACCEPTED`. |
+| `manifest.projectBundle.html.normalized` tamper on persisted reload | FAIL: ACCEPTED | Probe output: `reload_html_tamper: ACCEPTED`. |
+| Export standalone HTML preserves local URL | FAIL: ACCEPTED | Probe output: `standalone_contains_local_url: true`. |
+| Playwright export render requests local URL | FAIL: REQUESTED | Probe output: `local_request_count: 1` for `http://127.0.0.1:9/private.png`. |
+| Deep canvasGraph/exportArtifact manifest tamper | PASS | Targeted tests now reject those specific fields. |
+| Unsafe ZIP entry path | PASS | Worker test rejects `../escape.txt`. |
+| Unsafe export output directory | PASS | Worker test rejects output outside approved roots. |
+| GIF export with no animation template in worker | PASS | Worker returns failed verification with `animation-template-required`. |
 
-### Layer 6 - Cross-model
+### Layer 6 - Cross-Model
 
-Result: WARN.
+Result: FAIL.
 
-- PASS: Prior Phase 10 blockers around public worker APIs, ZIP contents, unsafe ZIP paths, and stale ready/diff records are backed by code and regression tests.
-- PASS: Real worker artifact proof exists for file signatures, ZIP/PPTX entries, and fixture consumption.
-- WARN: Browser-side non-HTML export actions are still local records with `worker-required` degraded verification, not direct browser file materialization. This is acceptable only if Phase 10 keeps the worker-created artifact proof as the real export path.
-- WARN: Old failed verification text must not remain as the active verification result. This file has been rewritten as a fresh `/sunco:verify 10` result.
+Additional cross-model agent spawn was blocked by the active agent thread limit, so this layer used the workflow's skeptical fallback. The fallback did not introduce new categories beyond Layers 1 and 5, but it agrees these are structural blockers:
+
+- Full `ProjectBundle` roundtrip snapshot validation is still incomplete.
+- Export render must be local-first and deterministic; untrusted HTML resource requests break that boundary.
+- Current `visual-diff` records are self-comparisons and should not be claimed as deterministic visual-diff verification.
+- Phase 10 is still a strong foundation, but not yet at the claimed export fidelity contract level.
 
 ### Layer 7 - Human Eval
 
@@ -120,13 +122,12 @@ SKIPPED. Automated layers failed, so human approval was not requested and must n
 
 ## Issues to Fix
 
-- [x] Deep-validate code roundtrip manifests: embedded `projectBundle`, `canvasGraph`, `editGraph`, `assets`, `designSystem`, `sourceRecords`, and referenced `exportArtifacts` must structurally match the stored `ProjectBundle`, and persisted tampering must reject on load.
-- [x] Add regression tests for deep manifest tampering, not only top-level manifest mismatches.
-- [x] Implement the planned animation public APIs `exportAnimationGif(...)` and `exportAnimationMp4(...)`.
-- [x] Normalize MP4 export failures to `mp4-export-failed` with stderr/diagnostic evidence and avoid indefinite ffmpeg hangs.
-- [x] Enforce the GIF/MP4 animation-template gate: bundles without prototype or slide-deck animation templates must produce failed verification diagnostic `animation-template-required` instead of synthetic successful exports.
-- [x] Add deterministic `visual-diff` export verification records for rendered exports, or revise the Phase 10 contract before verifying.
-- [x] Align the required code roundtrip runtime mismatch error string with the plan contract (`Code roundtrip runtime mismatch`) or update the plan before verifying.
-- [x] Expose or rename the editable PPTX subset API so the plan's `createEditableSubsetPptx(...)` acceptance criterion is satisfied, or update the plan contract.
-- [ ] Consider routing worker fixture loading through `parseProjectBundleJson` / integrity validation instead of `ProjectBundleSchema.parse`.
-- [ ] Consider blocking external network/resource requests in Playwright render exports to keep worker output deterministic and local-first.
+- [ ] Deep-validate the complete embedded `manifest.projectBundle` snapshot, not only selected fields. Add regression tests for `projectBundle.html.normalized` and other non-selected-field tampering on append and persisted reload.
+- [ ] Block or rewrite all external/local resource loads during export-worker Playwright rendering. At minimum, abort network requests and add tests for `127.0.0.1`, private IPs, and external image/script/style URLs.
+- [ ] Replace self-comparison `visual-diff` records with a deterministic baseline/actual comparison, or revise the Phase 10 contract before marking EXP-10 verified.
+- [ ] Make worker fixture generation hermetic against the committed `apps/web/tests/fixtures/phase-10-worker-export-bundle.json`, or add an equality check proving the committed fixture equals worker output.
+- [ ] Load worker fixture records in the web UI through `parseProjectBundleJson` / integrity validation, not raw `ProjectBundleSchema.parse`.
+- [ ] Apply the animation-template gate to browser GIF/MP4 export actions; missing template should create failed/degraded records with `animation-template-required`, not a normal worker-required artifact.
+- [ ] Implement the planned `createRasterizedPptx(...)` public API.
+- [ ] Update editable PPTX subset behavior so `vectorLike`, `button`, and `frame` nodes map to simple rectangle shapes; do not assert `unsupported-pptx-node:button` as the expected behavior.
+- [ ] Ensure every browser-created export record includes `web-local-record` diagnostics where the plan requires it.
