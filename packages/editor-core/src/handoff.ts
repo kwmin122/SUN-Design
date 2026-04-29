@@ -82,7 +82,17 @@ function createHandoff(input: {
       "prototypeGraph",
       "slideDecks",
       "variationSets",
-      "agentRecipes"
+      "agentRecipes",
+      "sourceRecords",
+      "ingestionJobs",
+      "parsedContextArtifacts",
+      "source-notes.md",
+      "design-context.md",
+      "dataSources",
+      "dataBindings",
+      "assetLifecycle",
+      "projectAssetUrls",
+      "syncEnvelope"
     ],
     instructionsPath: "docs/prompts/context-driven-design-agent-prompt.md",
     createdAt

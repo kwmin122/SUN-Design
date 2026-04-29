@@ -411,6 +411,147 @@ describe("project bundle persistence", () => {
     expect(() => parseProjectBundleJson(JSON.stringify(raw)))
       .toThrow("Agent variation direction failed persisted validation");
   });
+
+  it("rejects persisted Phase 09 context references", () => {
+    const bundle = ensureCanvasGraph(createBundle());
+    const raw = JSON.parse(serializeProjectBundle(bundle));
+
+    raw.generatedNotes = [{
+      id: "note_corrupt",
+      kind: "source-notes",
+      path: "source-notes.md",
+      sourceIds: ["missing-source"],
+      content: "# Source Notes",
+      createdAt: AGENT_TEST_TIME,
+      updatedAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Generated note references missing source");
+
+    raw.generatedNotes = [];
+    raw.parsedContextArtifacts = [{
+      id: "parsed_corrupt",
+      sourceId: "missing-source",
+      kind: "documentSummary",
+      title: "Corrupt",
+      summary: "Corrupt",
+      textBlocks: ["Corrupt"],
+      tables: [],
+      frameNames: [],
+      assetIds: [],
+      metadata: {},
+      diagnostics: [],
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Parsed context artifact references missing source");
+
+    raw.sourceRecords = [{
+      id: "source_valid",
+      kind: "document",
+      name: "Doc",
+      hash: "hash_doc",
+      createdAt: AGENT_TEST_TIME,
+      importedAt: AGENT_TEST_TIME,
+      assetIds: [],
+      parseStatus: "parsed",
+      usageStatus: "candidate",
+      diagnostics: []
+    }];
+    raw.parsedContextArtifacts[0].sourceId = "source_valid";
+    raw.parsedContextArtifacts[0].assetIds = ["missing-asset"];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Parsed context artifact references missing asset");
+  });
+
+  it("rejects persisted Phase 09 snapshot data asset and sync corruption", () => {
+    const bundle = ensureCanvasGraph(createBundle());
+    const raw = JSON.parse(serializeProjectBundle(bundle));
+    const objectId = raw.canvasGraph.rootObjectIds[0];
+    raw.sourceRecords = [{
+      id: "source_valid",
+      kind: "webCapture",
+      name: "Web",
+      hash: "hash_web",
+      createdAt: AGENT_TEST_TIME,
+      importedAt: AGENT_TEST_TIME,
+      assetIds: [],
+      parseStatus: "parsed",
+      usageStatus: "candidate",
+      diagnostics: []
+    }];
+
+    raw.webSnapshots = [{
+      id: "snapshot_corrupt",
+      sourceId: "source_valid",
+      url: "https://example.com",
+      status: "editable",
+      sanitizedHtml: "<main></main>",
+      normalizedHtml: "<main></main>",
+      screenshotAssetId: "missing-asset",
+      canvasObjectIds: [],
+      diagnostics: [],
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Web snapshot references missing asset");
+
+    raw.webSnapshots = [];
+    raw.dataSources = [{
+      id: "data_valid",
+      kind: "csv",
+      name: "Data",
+      sourceId: "source_valid",
+      fields: ["name"],
+      rows: [{ name: "민지" }],
+      status: "ready",
+      createdAt: AGENT_TEST_TIME,
+      updatedAt: AGENT_TEST_TIME
+    }];
+    raw.dataBindings = [{
+      id: "binding_missing_source",
+      dataSourceId: "missing-data",
+      targetObjectId: objectId,
+      fieldMap: { title: "name" },
+      state: "ready",
+      sourceRevision: raw.baseRevision,
+      createdAt: AGENT_TEST_TIME,
+      updatedAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("data binding references missing data source");
+
+    raw.dataBindings[0].dataSourceId = "data_valid";
+    raw.dataBindings[0].sourceRevision = "rev_stale";
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Data binding source revision is stale");
+
+    raw.dataBindings = [];
+    raw.assets = [{
+      id: "asset_valid",
+      kind: "image",
+      status: "cached",
+      localPath: "asset.png"
+    }];
+    raw.assetLifecycle = [{
+      id: "event_corrupt",
+      assetId: "asset_valid",
+      type: "replaced",
+      nextAssetId: "missing-next-asset",
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Asset lifecycle next asset references missing asset");
+
+    raw.assetLifecycle = [];
+    raw.projectAssetUrls = [{
+      assetId: "asset_valid",
+      url: "kdesign://asset/phase-01-fixture/wrong-asset"
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Project asset URL mismatches asset id");
+
+    raw.projectAssetUrls = [];
+    raw.syncEnvelope = {
+      id: "sync_corrupt",
+      status: "synced",
+      localRevision: raw.baseRevision,
+      diagnostics: []
+    };
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("synced sync envelope");
+  });
 });
 
 function createRawAgentState(): {

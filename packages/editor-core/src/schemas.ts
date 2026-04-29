@@ -45,6 +45,193 @@ export const ContextAttachmentSchema = z.object({
 });
 export type ContextAttachment = z.infer<typeof ContextAttachmentSchema>;
 
+export const SourceKindSchema = z.enum([
+  "image",
+  "screenshot",
+  "url",
+  "webCapture",
+  "document",
+  "slideDeck",
+  "spreadsheet",
+  "csv",
+  "json",
+  "apiFixture",
+  "figma",
+  "codebase",
+  "unsupported"
+]);
+export type SourceKind = z.infer<typeof SourceKindSchema>;
+
+export const SourceParseStatusSchema = z.enum(["queued", "parsed", "partial", "failed", "blocked"]);
+export type SourceParseStatus = z.infer<typeof SourceParseStatusSchema>;
+
+export const SourceUsageStatusSchema = z.enum(["candidate", "approved", "used", "rejected", "unknownRights", "blocked"]);
+export type SourceUsageStatus = z.infer<typeof SourceUsageStatusSchema>;
+
+export const ParsedContextKindSchema = z.enum([
+  "documentSummary",
+  "slideDeckSummary",
+  "spreadsheetSummary",
+  "figmaSummary",
+  "codebaseSummary",
+  "urlSummary"
+]);
+export type ParsedContextKind = z.infer<typeof ParsedContextKindSchema>;
+
+export const GeneratedNoteKindSchema = z.enum(["source-notes", "design-context"]);
+export type GeneratedNoteKind = z.infer<typeof GeneratedNoteKindSchema>;
+
+export const WebSnapshotStatusSchema = z.enum(["editable", "referenceOnly", "blocked"]);
+export type WebSnapshotStatus = z.infer<typeof WebSnapshotStatusSchema>;
+
+export const DataSourceKindSchema = z.enum(["csv", "spreadsheet", "staticJson", "apiFixture"]);
+export type DataSourceKind = z.infer<typeof DataSourceKindSchema>;
+
+export const DataBindingStateSchema = z.enum(["ready", "empty", "loading", "error"]);
+export type DataBindingState = z.infer<typeof DataBindingStateSchema>;
+
+export const AssetLifecycleEventTypeSchema = z.enum([
+  "candidate",
+  "verified",
+  "cached",
+  "relinked",
+  "replaced",
+  "blocked",
+  "placeholder"
+]);
+export type AssetLifecycleEventType = z.infer<typeof AssetLifecycleEventTypeSchema>;
+
+export const SyncStatusSchema = z.enum(["localOnly", "synced", "diverged", "rejected"]);
+export type SyncStatus = z.infer<typeof SyncStatusSchema>;
+
+export const SourceRecordSchema = z.object({
+  id: z.string().min(1),
+  kind: SourceKindSchema,
+  name: z.string().min(1),
+  hash: z.string().min(1),
+  createdAt: z.string().min(1),
+  importedAt: z.string().min(1),
+  sourceUrl: z.string().optional(),
+  localPath: z.string().optional(),
+  mimeType: z.string().optional(),
+  assetIds: z.array(z.string().min(1)).default([]),
+  parseStatus: SourceParseStatusSchema,
+  usageStatus: SourceUsageStatusSchema,
+  rights: z.string().optional(),
+  uncertainty: z.string().optional(),
+  diagnostics: z.array(z.string().min(1)).default([])
+});
+export type SourceRecord = z.infer<typeof SourceRecordSchema>;
+
+export const IngestionJobSchema = z.object({
+  id: z.string().min(1),
+  sourceId: z.string().min(1),
+  status: SourceParseStatusSchema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  diagnostics: z.array(z.string().min(1)).default([])
+});
+export type IngestionJob = z.infer<typeof IngestionJobSchema>;
+
+export const ParsedContextArtifactSchema = z.object({
+  id: z.string().min(1),
+  sourceId: z.string().min(1),
+  kind: ParsedContextKindSchema,
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  textBlocks: z.array(z.string().min(1)).default([]),
+  tables: z.array(z.record(z.string(), z.string())).default([]),
+  frameNames: z.array(z.string().min(1)).default([]),
+  assetIds: z.array(z.string().min(1)).default([]),
+  metadata: z.record(z.string(), z.string()).default({}),
+  diagnostics: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type ParsedContextArtifact = z.infer<typeof ParsedContextArtifactSchema>;
+
+export const GeneratedNoteSchema = z.object({
+  id: z.string().min(1),
+  kind: GeneratedNoteKindSchema,
+  path: z.string().min(1),
+  sourceIds: z.array(z.string().min(1)),
+  content: z.string().min(1),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+});
+export type GeneratedNote = z.infer<typeof GeneratedNoteSchema>;
+
+export const WebSnapshotSchema = z.object({
+  id: z.string().min(1),
+  sourceId: z.string().min(1),
+  url: z.string().min(1),
+  status: WebSnapshotStatusSchema,
+  sanitizedHtml: z.string().optional(),
+  normalizedHtml: z.string().optional(),
+  screenshotAssetId: z.string().min(1).optional(),
+  canvasObjectIds: z.array(z.string().min(1)).default([]),
+  diagnostics: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type WebSnapshot = z.infer<typeof WebSnapshotSchema>;
+
+export const DataSourceSchema = z.object({
+  id: z.string().min(1),
+  kind: DataSourceKindSchema,
+  name: z.string().min(1),
+  sourceId: z.string().min(1),
+  fields: z.array(z.string().min(1)),
+  rows: z.array(z.record(z.string(), z.string())),
+  status: DataBindingStateSchema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+});
+export type DataSource = z.infer<typeof DataSourceSchema>;
+
+export const DataBindingSchema = z.object({
+  id: z.string().min(1),
+  dataSourceId: z.string().min(1),
+  targetObjectId: z.string().min(1),
+  targetNodeId: z.string().min(1).optional(),
+  fieldMap: z.record(z.string(), z.string()),
+  rowLimit: z.number().int().positive().optional(),
+  state: DataBindingStateSchema,
+  sourceRevision: z.string().min(1),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+});
+export type DataBinding = z.infer<typeof DataBindingSchema>;
+
+export const AssetLifecycleEventSchema = z.object({
+  id: z.string().min(1),
+  assetId: z.string().min(1),
+  type: AssetLifecycleEventTypeSchema,
+  sourceId: z.string().min(1).optional(),
+  previousAssetId: z.string().min(1).optional(),
+  nextAssetId: z.string().min(1).optional(),
+  reason: z.string().optional(),
+  createdAt: z.string().min(1)
+});
+export type AssetLifecycleEvent = z.infer<typeof AssetLifecycleEventSchema>;
+
+export const ProjectAssetUrlSchema = z.object({
+  assetId: z.string().min(1),
+  url: z.string().regex(/^kdesign:\/\/asset\/[A-Za-z0-9._~-]+\/[A-Za-z0-9._~-]+$/)
+});
+export type ProjectAssetUrl = z.infer<typeof ProjectAssetUrlSchema>;
+
+export const SyncEnvelopeSchema = z.object({
+  id: z.string().min(1),
+  status: SyncStatusSchema,
+  remoteDocumentId: z.string().min(1).optional(),
+  accountHint: z.string().min(1).optional(),
+  localRevision: z.string().min(1),
+  remoteRevision: z.string().min(1).optional(),
+  cursor: z.string().min(1).optional(),
+  lastSyncedAt: z.string().min(1).optional(),
+  diagnostics: z.array(z.string().min(1)).default([])
+});
+export type SyncEnvelope = z.infer<typeof SyncEnvelopeSchema>;
+
 export const EditNodeKindSchema = z.enum([
   "frame",
   "block",
@@ -766,7 +953,17 @@ export const ProjectBundleSchema = z.object({
   agentRecipes: z.array(AgentRecipeSchema).default([]),
   agentContextPackages: z.array(AgentContextPackageSchema).default([]),
   agentOutputs: z.array(AgentOutputEnvelopeSchema).default([]),
-  agentRuns: z.array(AgentRunSchema).default([])
+  agentRuns: z.array(AgentRunSchema).default([]),
+  sourceRecords: z.array(SourceRecordSchema).default([]),
+  ingestionJobs: z.array(IngestionJobSchema).default([]),
+  parsedContextArtifacts: z.array(ParsedContextArtifactSchema).default([]),
+  generatedNotes: z.array(GeneratedNoteSchema).default([]),
+  webSnapshots: z.array(WebSnapshotSchema).default([]),
+  dataSources: z.array(DataSourceSchema).default([]),
+  dataBindings: z.array(DataBindingSchema).default([]),
+  assetLifecycle: z.array(AssetLifecycleEventSchema).default([]),
+  projectAssetUrls: z.array(ProjectAssetUrlSchema).default([]),
+  syncEnvelope: SyncEnvelopeSchema.optional()
 });
 export type ProjectBundle = z.infer<typeof ProjectBundleSchema>;
 

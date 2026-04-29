@@ -18,6 +18,7 @@ import { validateAgentDirectionSafety, validateAgentOutputScope } from "./agent-
 const COMPONENT_STATES = new Set(["default", "hover", "pressed", "disabled"]);
 
 export function assertProjectBundleIntegrity(bundle: ProjectBundle): void {
+  assertContextIngestionIntegrity(bundle);
   assertPrototypeIntegrity(bundle);
   assertPresentationIntegrity(bundle);
   assertSlideDeckIntegrity(bundle);
@@ -26,6 +27,95 @@ export function assertProjectBundleIntegrity(bundle: ProjectBundle): void {
   assertAgentContextPackageIntegrity(bundle);
   assertAgentOutputIntegrity(bundle);
   assertAgentRunIntegrity(bundle);
+}
+
+export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
+  const sourceIds = new Set(bundle.sourceRecords.map((source) => source.id));
+  const assetIds = new Set(bundle.assets.map((asset) => asset.id));
+  const dataSourceIds = new Set(bundle.dataSources.map((source) => source.id));
+  const noteIds = new Set(bundle.generatedNotes.map((note) => note.id));
+
+  for (const job of bundle.ingestionJobs) {
+    assertSource(sourceIds, job.sourceId, "Ingestion job");
+  }
+  for (const artifact of bundle.parsedContextArtifacts) {
+    assertSource(sourceIds, artifact.sourceId, "Parsed context artifact");
+    for (const assetId of artifact.assetIds) {
+      assertAsset(assetIds, assetId, "Parsed context artifact");
+    }
+  }
+  for (const note of bundle.generatedNotes) {
+    if (note.kind === "source-notes" && note.path !== "source-notes.md") {
+      throw new Error(`Generated source notes use an invalid path: ${note.path}`);
+    }
+    if (note.kind === "design-context" && note.path !== "design-context.md") {
+      throw new Error(`Generated design context uses an invalid path: ${note.path}`);
+    }
+    for (const sourceId of note.sourceIds) {
+      assertSource(sourceIds, sourceId, "Generated note");
+    }
+  }
+  if (noteIds.size !== bundle.generatedNotes.length) {
+    throw new Error("Generated note id is duplicated.");
+  }
+  for (const snapshot of bundle.webSnapshots) {
+    assertSource(sourceIds, snapshot.sourceId, "Web snapshot");
+    if (snapshot.status === "editable" && (!snapshot.sanitizedHtml || !snapshot.normalizedHtml)) {
+      throw new Error(`Editable web snapshot is missing stored HTML: ${snapshot.id}`);
+    }
+    if (snapshot.screenshotAssetId) {
+      assertAsset(assetIds, snapshot.screenshotAssetId, "Web snapshot");
+    }
+    for (const objectId of snapshot.canvasObjectIds) {
+      assertCanvasObject(bundle, objectId, "Web snapshot");
+    }
+  }
+  for (const dataSource of bundle.dataSources) {
+    assertSource(sourceIds, dataSource.sourceId, "Data source");
+  }
+  for (const binding of bundle.dataBindings) {
+    if (!dataSourceIds.has(binding.dataSourceId)) {
+      throw new Error(`data binding references missing data source: ${binding.dataSourceId}`);
+    }
+    const object = assertCanvasObject(bundle, binding.targetObjectId, "Data binding");
+    if (binding.targetNodeId) {
+      if (!bundle.editGraph.nodes[binding.targetNodeId]) {
+        throw new Error(`Data binding references missing edit node: ${binding.targetNodeId}`);
+      }
+      if (object.nodeId && object.nodeId !== binding.targetNodeId) {
+        throw new Error(`Data binding target node does not match canvas object: ${binding.id}`);
+      }
+    }
+    if (binding.sourceRevision !== bundle.baseRevision) {
+      throw new Error(`Data binding source revision is stale: ${binding.id}`);
+    }
+  }
+  for (const event of bundle.assetLifecycle) {
+    assertAsset(assetIds, event.assetId, "Asset lifecycle");
+    if (event.sourceId) {
+      assertSource(sourceIds, event.sourceId, "Asset lifecycle");
+    }
+    if (event.previousAssetId) {
+      assertAsset(assetIds, event.previousAssetId, "Asset lifecycle previous asset");
+    }
+    if (event.nextAssetId) {
+      assertAsset(assetIds, event.nextAssetId, "Asset lifecycle next asset");
+    }
+  }
+  for (const item of bundle.projectAssetUrls) {
+    assertAsset(assetIds, item.assetId, "Project asset URL");
+    if (item.url !== `kdesign://asset/${encodeURIComponent(bundle.id)}/${encodeURIComponent(item.assetId)}`) {
+      throw new Error(`Project asset URL mismatches asset id: ${item.assetId}`);
+    }
+  }
+  if (bundle.syncEnvelope) {
+    if (bundle.syncEnvelope.localRevision !== bundle.baseRevision) {
+      throw new Error(`sync envelope local revision is stale: ${bundle.syncEnvelope.localRevision}`);
+    }
+    if (bundle.syncEnvelope.status === "synced" && !bundle.syncEnvelope.remoteDocumentId) {
+      throw new Error("synced sync envelope requires remote document id");
+    }
+  }
 }
 
 function assertPrototypeIntegrity(bundle: ProjectBundle): void {
@@ -413,6 +503,18 @@ function assertCanvasObject(bundle: ProjectBundle, objectId: string, label: stri
     throw new Error(`${label} references missing canvas object: ${objectId}`);
   }
   return object;
+}
+
+function assertSource(sourceIds: Set<string>, sourceId: string, label: string): void {
+  if (!sourceIds.has(sourceId)) {
+    throw new Error(`${label} references missing source: ${sourceId}`);
+  }
+}
+
+function assertAsset(assetIds: Set<string>, assetId: string, label: string): void {
+  if (!assetIds.has(assetId)) {
+    throw new Error(`${label} references missing asset: ${assetId}`);
+  }
 }
 
 function assertSlideExists(bundle: ProjectBundle, slideId: string, label: string): void {
