@@ -69,5 +69,10 @@ describe("design system and handoff helpers", () => {
     expect(codex.includes).toContain("dataSources");
     expect(codex.includes).toContain("assetLifecycle");
     expect(codex.includes).toContain("syncEnvelope");
+    expect(codex.includes).toContain("devModeReports");
+    expect(codex.includes).toContain("readyForDevMarkers");
+    expect(codex.includes).toContain("exportArtifacts");
+    expect(codex.includes).toContain("publishPreviews");
+    expect(codex.includes).toContain("codeRoundtripPackages");
   });
 });

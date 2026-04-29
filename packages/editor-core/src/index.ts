@@ -21,4 +21,7 @@ export * from "./data-bindings.js";
 export * from "./asset-lifecycle.js";
 export * from "./sync.js";
 export * from "./export.js";
+export * from "./dev-mode.js";
+export * from "./export-fidelity.js";
+export * from "./code-roundtrip.js";
 export * from "./handoff.js";

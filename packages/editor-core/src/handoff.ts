@@ -92,7 +92,17 @@ function createHandoff(input: {
       "dataBindings",
       "assetLifecycle",
       "projectAssetUrls",
-      "syncEnvelope"
+      "syncEnvelope",
+      "devModeReports",
+      "devCodeSnippets",
+      "readyForDevMarkers",
+      "versionDiffs",
+      "assetDownloads",
+      "exportArtifacts",
+      "exportVerifications",
+      "publishPreviews",
+      "codeRoundtripPackages",
+      "codeRoundtripImports"
     ],
     instructionsPath: "docs/prompts/context-driven-design-agent-prompt.md",
     createdAt

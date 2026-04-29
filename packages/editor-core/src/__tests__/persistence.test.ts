@@ -618,6 +618,102 @@ describe("project bundle persistence", () => {
     };
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("synced-remote-revision-mismatch");
   });
+
+  it("rejects persisted Phase 10 records with missing references", () => {
+    const bundle = ensureCanvasGraph(createBundle());
+    const raw = JSON.parse(serializeProjectBundle(bundle)) as RawProjectBundle;
+    const object = Object.values(raw.canvasGraph.objects).find((item) => item.nodeId);
+    if (!object?.nodeId) {
+      throw new Error("Expected fixture object with nodeId.");
+    }
+
+    raw.devModeReports = [{
+      id: "dev_report_corrupt",
+      objectId: "missing-object",
+      sourceRevision: raw.baseRevision,
+      measurement: {
+        objectId: "missing-object",
+        bounds: { x: 0, y: 0, width: 10, height: 10 },
+        spacing: {},
+        layout: {},
+        capturedAt: AGENT_TEST_TIME
+      },
+      cssProperties: {},
+      tokenReferences: [],
+      accessibilityNotes: [],
+      componentMetadata: {},
+      prototypeMetadata: {},
+      assetIds: [],
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Dev Mode report references missing canvas object");
+
+    raw.devModeReports = [];
+    raw.exportJobs = [{
+      id: "export_job_valid",
+      kind: "html",
+      status: "ready",
+      sourceRevision: raw.baseRevision,
+      viewport: "desktop",
+      filename: "index.html",
+      bytes: 10,
+      createdAt: AGENT_TEST_TIME,
+      cleanHtml: "<!doctype html>"
+    }];
+    raw.exportArtifacts = [{
+      id: "artifact_corrupt",
+      jobId: "missing-job",
+      kind: "html",
+      filename: "index.html",
+      mimeType: "text/html",
+      bytes: 10,
+      sha256: "hash",
+      sourceRevision: raw.baseRevision,
+      viewport: "desktop",
+      filePath: "artifacts/index.html",
+      diagnostics: [],
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Export artifact references missing job");
+
+    raw.exportArtifacts = [{
+      id: "artifact_valid",
+      jobId: "export_job_valid",
+      kind: "html",
+      filename: "index.html",
+      mimeType: "text/html",
+      bytes: 10,
+      sha256: "hash",
+      sourceRevision: raw.baseRevision,
+      viewport: "desktop",
+      filePath: "artifacts/index.html",
+      diagnostics: [],
+      createdAt: AGENT_TEST_TIME
+    }];
+    raw.publishPreviews = [{
+      id: "publish_corrupt",
+      sourceRevision: raw.baseRevision,
+      url: "kdesign://publish/phase-01-fixture/publish_bad",
+      artifactIds: ["missing-artifact"],
+      viewports: ["desktop"],
+      status: "ready",
+      diagnostics: [],
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Publish preview references missing artifact");
+
+    raw.publishPreviews = [];
+    raw.codeRoundtripPackages = [{
+      id: "roundtrip_pkg_corrupt",
+      runtime: "codex",
+      sourceRevision: raw.baseRevision,
+      artifactIds: ["missing-artifact"],
+      instructionPath: "docs/prompts/context-driven-design-agent-prompt.md",
+      manifestJson: "{}",
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip package references missing artifact");
+  });
 });
 
 function createRawAgentState(): {

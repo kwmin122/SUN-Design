@@ -3,15 +3,25 @@ import type {
   AgentOutputEnvelope,
   AgentRecipe,
   AgentRun,
+  AssetDownloadRecord,
   CanvasOperation,
+  CodeRoundtripImport,
+  CodeRoundtripPackage,
+  DevCodeSnippet,
+  DevModeInspectReport,
+  ExportArtifact,
+  ExportVerification,
   PresentationState,
   ProjectBundle,
+  PublishPreview,
   PrototypeCondition,
   PrototypeInteraction,
+  ReadyForDevMarker,
   SlideBlock,
   SlideFeedback,
   VariationDirection,
-  VariationSet
+  VariationSet,
+  VersionDiffRecord
 } from "./schemas.js";
 import { validateAgentDirectionSafety, validateAgentOutputScope } from "./agent-output.js";
 import { validatePublicSourceUrl } from "./context-ingestion.js";
@@ -29,6 +39,7 @@ export function assertProjectBundleIntegrity(bundle: ProjectBundle): void {
   assertAgentContextPackageIntegrity(bundle);
   assertAgentOutputIntegrity(bundle);
   assertAgentRunIntegrity(bundle);
+  assertPhase10Integrity(bundle);
 }
 
 export function assertContextIngestionIntegrity(bundle: ProjectBundle): void {
@@ -559,6 +570,189 @@ function assertAgentRunRefs(
   }
 }
 
+function assertPhase10Integrity(bundle: ProjectBundle): void {
+  const revisionIds = new Set([bundle.baseRevision, ...bundle.versions.map((version) => version.id)]);
+  const tokenIds = new Set(bundle.designSystem?.tokens.map((token) => token.id) ?? []);
+  const assetIds = new Set(bundle.assets.map((asset) => asset.id));
+  const assetUrls = new Set(bundle.projectAssetUrls.map((item) => item.url));
+  const sourceIds = new Set(bundle.sourceRecords.map((source) => source.id));
+  const jobIds = new Set(bundle.exportJobs.map((job) => job.id));
+  const artifactIds = new Set(bundle.exportArtifacts.map((artifact) => artifact.id));
+  const packageIds = new Set(bundle.codeRoundtripPackages.map((item) => item.id));
+
+  for (const report of bundle.devModeReports) {
+    assertDevModeReportIntegrity(bundle, tokenIds, assetIds, report);
+  }
+  for (const snippet of bundle.devCodeSnippets) {
+    assertDevCodeSnippetIntegrity(bundle, snippet);
+  }
+  for (const marker of bundle.readyForDevMarkers) {
+    assertReadyForDevMarkerIntegrity(bundle, marker);
+  }
+  for (const diff of bundle.versionDiffs) {
+    assertVersionDiffIntegrity(bundle, revisionIds, diff);
+  }
+  for (const download of bundle.assetDownloads) {
+    assertAssetDownloadIntegrity(assetIds, assetUrls, sourceIds, download);
+  }
+  for (const artifact of bundle.exportArtifacts) {
+    assertExportArtifactIntegrity(revisionIds, jobIds, artifact);
+  }
+  for (const verification of bundle.exportVerifications) {
+    assertExportVerificationIntegrity(artifactIds, verification);
+  }
+  for (const preview of bundle.publishPreviews) {
+    assertPublishPreviewIntegrity(revisionIds, artifactIds, preview);
+  }
+  for (const roundtripPackage of bundle.codeRoundtripPackages) {
+    assertCodeRoundtripPackageIntegrity(revisionIds, artifactIds, roundtripPackage);
+  }
+  for (const roundtripImport of bundle.codeRoundtripImports) {
+    assertCodeRoundtripImportIntegrity(bundle, revisionIds, packageIds, roundtripImport);
+  }
+}
+
+function assertDevModeReportIntegrity(
+  bundle: ProjectBundle,
+  tokenIds: Set<string>,
+  assetIds: Set<string>,
+  report: DevModeInspectReport
+): void {
+  const object = assertCanvasObject(bundle, report.objectId, "Dev Mode report");
+  assertNodeMatchesObject(bundle, object, report.nodeId, "Dev Mode report");
+  if (report.measurement.objectId !== report.objectId) {
+    throw new Error(`Dev Mode measurement object mismatch: ${report.id}`);
+  }
+  assertNodeMatchesObject(bundle, object, report.measurement.nodeId, "Dev Mode measurement");
+  for (const token of report.tokenReferences) {
+    if (!tokenIds.has(token.tokenId)) {
+      throw new Error(`Dev Mode report references missing token: ${token.tokenId}`);
+    }
+  }
+  for (const assetId of report.assetIds) {
+    assertAsset(assetIds, assetId, "Dev Mode report");
+  }
+}
+
+function assertDevCodeSnippetIntegrity(
+  bundle: ProjectBundle,
+  snippet: DevCodeSnippet
+): void {
+  const object = assertCanvasObject(bundle, snippet.objectId, "Dev code snippet");
+  assertNodeMatchesObject(bundle, object, snippet.nodeId, "Dev code snippet");
+}
+
+function assertReadyForDevMarkerIntegrity(
+  bundle: ProjectBundle,
+  marker: ReadyForDevMarker
+): void {
+  const object = assertCanvasObject(bundle, marker.objectId, "Ready-for-dev marker");
+  assertNodeMatchesObject(bundle, object, marker.nodeId, "Ready-for-dev marker");
+}
+
+function assertVersionDiffIntegrity(
+  bundle: ProjectBundle,
+  revisionIds: Set<string>,
+  diff: VersionDiffRecord
+): void {
+  void revisionIds;
+  for (const objectId of diff.objectIds) {
+    assertCanvasObject(bundle, objectId, "Version diff");
+  }
+  for (const change of diff.changes) {
+    const object = assertCanvasObject(bundle, change.objectId, "Version diff change");
+    assertNodeMatchesObject(bundle, object, change.nodeId, "Version diff change");
+  }
+}
+
+function assertAssetDownloadIntegrity(
+  assetIds: Set<string>,
+  assetUrls: Set<string>,
+  sourceIds: Set<string>,
+  download: AssetDownloadRecord
+): void {
+  assertAsset(assetIds, download.assetId, "Asset download");
+  if (!assetUrls.has(download.url)) {
+    throw new Error(`Asset download requires stored project URL: ${download.assetId}`);
+  }
+  if (download.sourceId) {
+    assertSource(sourceIds, download.sourceId, "Asset download");
+  }
+}
+
+function assertExportArtifactIntegrity(
+  revisionIds: Set<string>,
+  jobIds: Set<string>,
+  artifact: ExportArtifact
+): void {
+  if (!jobIds.has(artifact.jobId)) {
+    throw new Error(`Export artifact references missing job: ${artifact.jobId}`);
+  }
+  assertKnownRevision(revisionIds, artifact.sourceRevision, "Export artifact");
+}
+
+function assertExportVerificationIntegrity(artifactIds: Set<string>, verification: ExportVerification): void {
+  if (!artifactIds.has(verification.artifactId)) {
+    throw new Error(`Export verification references missing artifact: ${verification.artifactId}`);
+  }
+}
+
+function assertPublishPreviewIntegrity(
+  revisionIds: Set<string>,
+  artifactIds: Set<string>,
+  preview: PublishPreview
+): void {
+  assertKnownRevision(revisionIds, preview.sourceRevision, "Publish preview");
+  for (const artifactId of preview.artifactIds) {
+    if (!artifactIds.has(artifactId)) {
+      throw new Error(`Publish preview references missing artifact: ${artifactId}`);
+    }
+  }
+}
+
+function assertCodeRoundtripPackageIntegrity(
+  revisionIds: Set<string>,
+  artifactIds: Set<string>,
+  roundtripPackage: CodeRoundtripPackage
+): void {
+  assertKnownRevision(revisionIds, roundtripPackage.sourceRevision, "Code roundtrip package");
+  for (const artifactId of roundtripPackage.artifactIds) {
+    if (!artifactIds.has(artifactId)) {
+      throw new Error(`Code roundtrip package references missing artifact: ${artifactId}`);
+    }
+  }
+}
+
+function assertCodeRoundtripImportIntegrity(
+  bundle: ProjectBundle,
+  revisionIds: Set<string>,
+  packageIds: Set<string>,
+  roundtripImport: CodeRoundtripImport
+): void {
+  if (!packageIds.has(roundtripImport.packageId)) {
+    throw new Error(`Code roundtrip import references missing package: ${roundtripImport.packageId}`);
+  }
+  const roundtripPackage = bundle.codeRoundtripPackages.find((item) => item.id === roundtripImport.packageId);
+  if (roundtripPackage && roundtripImport.runtime !== roundtripPackage.runtime) {
+    throw new Error(`Code roundtrip import runtime does not match package: ${roundtripImport.id}`);
+  }
+  if (roundtripImport.status === "validated") {
+    assertKnownRevision(revisionIds, roundtripImport.sourceRevision, "Code roundtrip import");
+  }
+  const patchIds = new Set(bundle.patches.map((patch) => patch.id));
+  const operationIds = new Set(bundle.canvasOperations.map((operation) => operation.id));
+  for (const patchId of roundtripImport.patchIds) {
+    if (!patchIds.has(patchId)) {
+      throw new Error(`Code roundtrip import references missing patch: ${patchId}`);
+    }
+  }
+  for (const operationId of roundtripImport.operationIds) {
+    if (!operationIds.has(operationId)) {
+      throw new Error(`Code roundtrip import references missing operation: ${operationId}`);
+    }
+  }
+}
+
 function isAgentOutputProvenance(provenance: string): boolean {
   return provenance.startsWith("agent-output:");
 }
@@ -573,6 +767,29 @@ function assertCanvasObject(bundle: ProjectBundle, objectId: string, label: stri
     throw new Error(`${label} references missing canvas object: ${objectId}`);
   }
   return object;
+}
+
+function assertNodeMatchesObject(
+  bundle: ProjectBundle,
+  object: NonNullable<ProjectBundle["canvasGraph"]>["objects"][string],
+  nodeId: string | undefined,
+  label: string
+): void {
+  if (!nodeId) {
+    return;
+  }
+  if (!bundle.editGraph.nodes[nodeId]) {
+    throw new Error(`${label} references missing edit node: ${nodeId}`);
+  }
+  if (object.nodeId && object.nodeId !== nodeId) {
+    throw new Error(`${label} node does not match canvas object: ${nodeId}`);
+  }
+}
+
+function assertKnownRevision(revisionIds: Set<string>, revision: string, label: string): void {
+  if (!revisionIds.has(revision)) {
+    throw new Error(`${label} references missing revision: ${revision}`);
+  }
 }
 
 function assertSource(sourceIds: Set<string>, sourceId: string, label: string): void {

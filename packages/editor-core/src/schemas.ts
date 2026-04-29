@@ -25,7 +25,7 @@ export type KoreanPreset = z.infer<typeof KoreanPresetSchema>;
 export const PreviewDeviceSchema = z.enum(["desktop", "tablet", "mobile"]);
 export type PreviewDevice = z.infer<typeof PreviewDeviceSchema>;
 
-export const ExportKindSchema = z.enum(["html", "png", "pdf", "zip", "pptx"]);
+export const ExportKindSchema = z.enum(["html", "png", "pdf", "zip", "pptx", "gif", "mp4"]);
 export type ExportKind = z.infer<typeof ExportKindSchema>;
 
 export const ShareAccessSchema = z.enum(["view", "comment", "edit"]);
@@ -471,6 +471,197 @@ export const ExportJobSchema = z.object({
   cleanHtml: z.string().optional()
 });
 export type ExportJob = z.infer<typeof ExportJobSchema>;
+
+export const DevModeMeasurementSchema = z.object({
+  objectId: z.string().min(1),
+  nodeId: z.string().min(1).optional(),
+  bounds: z.object({
+    x: z.number(),
+    y: z.number(),
+    width: z.number().nonnegative(),
+    height: z.number().nonnegative()
+  }),
+  spacing: z.object({
+    margin: z.string().optional(),
+    padding: z.string().optional(),
+    gap: z.string().optional()
+  }).default({}),
+  layout: z.record(z.string(), z.string()).default({}),
+  capturedAt: z.string().min(1)
+});
+export type DevModeMeasurement = z.infer<typeof DevModeMeasurementSchema>;
+
+export const DevModeTokenReferenceSchema = z.object({
+  tokenId: z.string().min(1),
+  name: z.string().min(1),
+  category: z.enum(["color", "typography", "spacing", "radius", "shadow", "layout", "component", "motion", "other"]),
+  value: z.string().min(1),
+  cssVariable: z.string().optional(),
+  tailwindClass: z.string().optional(),
+  codeReferenceId: z.string().min(1).optional()
+});
+export type DevModeTokenReference = z.infer<typeof DevModeTokenReferenceSchema>;
+
+export const DevModeAccessibilityNoteSchema = z.object({
+  id: z.string().min(1),
+  severity: z.enum(["info", "warning", "error"]),
+  code: z.string().min(1),
+  message: z.string().min(1),
+  objectId: z.string().min(1).optional(),
+  nodeId: z.string().min(1).optional()
+});
+export type DevModeAccessibilityNote = z.infer<typeof DevModeAccessibilityNoteSchema>;
+
+export const DevModeInspectReportSchema = z.object({
+  id: z.string().min(1),
+  objectId: z.string().min(1),
+  nodeId: z.string().min(1).optional(),
+  sourceRevision: z.string().min(1),
+  measurement: DevModeMeasurementSchema,
+  cssProperties: z.record(z.string(), z.string()).default({}),
+  tokenReferences: z.array(DevModeTokenReferenceSchema).default([]),
+  accessibilityNotes: z.array(DevModeAccessibilityNoteSchema).default([]),
+  componentMetadata: z.record(z.string(), z.string()).default({}),
+  prototypeMetadata: z.record(z.string(), z.string()).default({}),
+  assetIds: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type DevModeInspectReport = z.infer<typeof DevModeInspectReportSchema>;
+
+export const DevCodeSnippetKindSchema = z.enum(["css", "tailwind", "reactProps", "tokenReference"]);
+export type DevCodeSnippetKind = z.infer<typeof DevCodeSnippetKindSchema>;
+
+export const DevCodeSnippetSchema = z.object({
+  id: z.string().min(1),
+  objectId: z.string().min(1),
+  nodeId: z.string().min(1).optional(),
+  kind: DevCodeSnippetKindSchema,
+  label: z.string().min(1),
+  language: z.string().min(1),
+  code: z.string(),
+  sourceRevision: z.string().min(1),
+  createdAt: z.string().min(1)
+});
+export type DevCodeSnippet = z.infer<typeof DevCodeSnippetSchema>;
+
+export const ReadyForDevMarkerSchema = z.object({
+  id: z.string().min(1),
+  objectId: z.string().min(1),
+  nodeId: z.string().min(1).optional(),
+  status: z.enum(["draft", "ready", "changed", "blocked"]),
+  label: z.string().min(1),
+  reviewer: z.string().optional(),
+  notes: z.string().optional(),
+  sourceRevision: z.string().min(1),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1)
+});
+export type ReadyForDevMarker = z.infer<typeof ReadyForDevMarkerSchema>;
+
+export const VersionDiffChangeSchema = z.object({
+  id: z.string().min(1),
+  objectId: z.string().min(1),
+  nodeId: z.string().min(1).optional(),
+  kind: z.enum(["text", "style", "layout", "asset", "component", "prototype", "unknown"]),
+  before: z.string(),
+  after: z.string(),
+  severity: z.enum(["info", "warning", "breaking"])
+});
+export type VersionDiffChange = z.infer<typeof VersionDiffChangeSchema>;
+
+export const VersionDiffRecordSchema = z.object({
+  id: z.string().min(1),
+  fromRevision: z.string().min(1),
+  toRevision: z.string().min(1),
+  objectIds: z.array(z.string().min(1)),
+  changes: z.array(VersionDiffChangeSchema),
+  createdAt: z.string().min(1)
+});
+export type VersionDiffRecord = z.infer<typeof VersionDiffRecordSchema>;
+
+export const AssetDownloadRecordSchema = z.object({
+  id: z.string().min(1),
+  assetId: z.string().min(1),
+  filename: z.string().min(1),
+  mimeType: z.string().min(1),
+  bytes: z.number().int().nonnegative(),
+  url: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  sourceId: z.string().min(1).optional(),
+  license: z.string().optional(),
+  createdAt: z.string().min(1)
+});
+export type AssetDownloadRecord = z.infer<typeof AssetDownloadRecordSchema>;
+
+export const ExportArtifactSchema = z.object({
+  id: z.string().min(1),
+  jobId: z.string().min(1),
+  kind: ExportKindSchema,
+  filename: z.string().min(1),
+  mimeType: z.string().min(1),
+  bytes: z.number().int().nonnegative(),
+  sha256: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  viewport: PreviewDeviceSchema,
+  filePath: z.string().min(1),
+  diagnostics: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type ExportArtifact = z.infer<typeof ExportArtifactSchema>;
+
+export const ExportVerificationSchema = z.object({
+  id: z.string().min(1),
+  artifactId: z.string().min(1),
+  kind: z.enum(["visual-diff", "signature", "manifest", "roundtrip"]),
+  status: z.enum(["passed", "failed", "degraded"]),
+  expectedHash: z.string().optional(),
+  actualHash: z.string().optional(),
+  diagnostics: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type ExportVerification = z.infer<typeof ExportVerificationSchema>;
+
+export const PublishPreviewSchema = z.object({
+  id: z.string().min(1),
+  sourceRevision: z.string().min(1),
+  url: z.string().regex(/^kdesign:\/\/publish\/[A-Za-z0-9._~-]+\/publish_[a-z0-9]+$/),
+  artifactIds: z.array(z.string().min(1)),
+  viewports: z.array(PreviewDeviceSchema),
+  status: z.enum(["ready", "failed"]),
+  diagnostics: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type PublishPreview = z.infer<typeof PublishPreviewSchema>;
+
+export const CodeRoundtripPackageSchema = z.object({
+  id: z.string().min(1),
+  runtime: AgentRuntimeSchema,
+  sourceRevision: z.string().min(1),
+  artifactIds: z.array(z.string().min(1)),
+  instructionPath: z.string().refine((path) => (
+    path.startsWith("docs/prompts/") &&
+    path.endsWith(".md") &&
+    !path.includes("..") &&
+    !path.includes("://") &&
+    !path.startsWith("/")
+  ), "instructionPath must be a safe repo-relative prompt markdown path"),
+  manifestJson: z.string().min(1),
+  createdAt: z.string().min(1)
+});
+export type CodeRoundtripPackage = z.infer<typeof CodeRoundtripPackageSchema>;
+
+export const CodeRoundtripImportSchema = z.object({
+  id: z.string().min(1),
+  packageId: z.string().min(1),
+  runtime: AgentRuntimeSchema,
+  sourceRevision: z.string().min(1),
+  status: z.enum(["validated", "conflict", "rejected"]),
+  patchIds: z.array(z.string().min(1)).default([]),
+  operationIds: z.array(z.string().min(1)).default([]),
+  diagnostics: z.array(z.string().min(1)).default([]),
+  createdAt: z.string().min(1)
+});
+export type CodeRoundtripImport = z.infer<typeof CodeRoundtripImportSchema>;
 
 export const QualityIssueSchema = z.object({
   id: z.string().min(1),
@@ -940,6 +1131,16 @@ export const ProjectBundleSchema = z.object({
   versions: z.array(BundleVersionSchema).default([]),
   tweakValues: z.record(z.string(), z.unknown()).default({}),
   exportJobs: z.array(ExportJobSchema).default([]),
+  devModeReports: z.array(DevModeInspectReportSchema).default([]),
+  devCodeSnippets: z.array(DevCodeSnippetSchema).default([]),
+  readyForDevMarkers: z.array(ReadyForDevMarkerSchema).default([]),
+  versionDiffs: z.array(VersionDiffRecordSchema).default([]),
+  assetDownloads: z.array(AssetDownloadRecordSchema).default([]),
+  exportArtifacts: z.array(ExportArtifactSchema).default([]),
+  exportVerifications: z.array(ExportVerificationSchema).default([]),
+  publishPreviews: z.array(PublishPreviewSchema).default([]),
+  codeRoundtripPackages: z.array(CodeRoundtripPackageSchema).default([]),
+  codeRoundtripImports: z.array(CodeRoundtripImportSchema).default([]),
   qualityIssues: z.array(QualityIssueSchema).default([]),
   designSystem: DesignSystemSchema.optional(),
   shareLinks: z.array(ShareLinkSchema).default([]),
