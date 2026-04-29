@@ -690,6 +690,40 @@ describe("project bundle persistence", () => {
       diagnostics: [],
       createdAt: AGENT_TEST_TIME
     }];
+    raw.readyForDevMarkers = [{
+      id: "ready_corrupt",
+      objectId: object.id,
+      nodeId: object.nodeId,
+      status: "ready",
+      label: "Ready",
+      sourceRevision: "missing-revision",
+      createdAt: AGENT_TEST_TIME,
+      updatedAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Ready marker source revision is stale");
+
+    raw.readyForDevMarkers = [];
+    raw.versionDiffs = [{
+      id: "diff_corrupt",
+      fromRevision: "missing-from",
+      toRevision: "missing-to",
+      objectIds: [object.id],
+      changes: [],
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Version diff from revision references missing revision");
+
+    raw.versionDiffs = [{
+      id: "diff_equal",
+      fromRevision: raw.baseRevision,
+      toRevision: raw.baseRevision,
+      objectIds: [object.id],
+      changes: [],
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Version diff revisions must differ");
+
+    raw.versionDiffs = [];
     raw.publishPreviews = [{
       id: "publish_corrupt",
       sourceRevision: raw.baseRevision,
@@ -703,6 +737,23 @@ describe("project bundle persistence", () => {
     expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Publish preview references missing artifact");
 
     raw.publishPreviews = [];
+    raw.codeRoundtripPackages = [{
+      id: "roundtrip_pkg_bad_manifest",
+      runtime: "codex",
+      sourceRevision: raw.baseRevision,
+      artifactIds: ["artifact_valid"],
+      instructionPath: "docs/prompts/context-driven-design-agent-prompt.md",
+      manifestJson: JSON.stringify({
+        projectId: "wrong-project",
+        sourceRevision: "wrong-revision",
+        runtime: "claudeCode",
+        artifactIds: ["missing-artifact"],
+        sourceOfTruth: "LiveIframeDom"
+      }),
+      createdAt: AGENT_TEST_TIME
+    }];
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Code roundtrip manifest");
+
     raw.codeRoundtripPackages = [{
       id: "roundtrip_pkg_corrupt",
       runtime: "codex",

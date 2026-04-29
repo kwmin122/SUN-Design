@@ -49,8 +49,31 @@ describe("code roundtrip packages", () => {
     bundle = appendCodeRoundtripPackage(bundle, roundtripPackage);
 
     expect(roundtripPackage.runtime).toBe("codex");
-    expect(roundtripPackage.manifestJson).toContain("\"sourceOfTruth\": \"ProjectBundle\"");
+    const manifest = JSON.parse(roundtripPackage.manifestJson);
+    expect(manifest.sourceOfTruth).toBe("ProjectBundle");
+    expect(manifest.projectBundle.id).toBe(bundle.id);
+    expect(manifest.baseRevision).toBe(bundle.baseRevision);
+    expect(manifest.canvasGraph.rootObjectIds.length).toBeGreaterThan(0);
+    expect(manifest.editGraph.rootNodeIds.length).toBeGreaterThan(0);
+    expect(manifest.exportArtifacts[0]?.id).toBe(artifactId);
+    expect(manifest.instructionsPath).toBe("docs/prompts/context-driven-design-agent-prompt.md");
     expect(bundle.codeRoundtripPackages[0]?.artifactIds).toEqual([artifactId]);
+  });
+
+  it("rejects caller-supplied roundtrip manifests that do not match stored state", () => {
+    const bundle = createBundleWithArtifact();
+    expect(() => createCodeRoundtripPackage(bundle, {
+      runtime: "codex",
+      artifactIds: [bundle.exportArtifacts[0]!.id],
+      manifestJson: JSON.stringify({
+        projectId: "wrong-project",
+        sourceRevision: "wrong-revision",
+        runtime: "claudeCode",
+        artifactIds: ["missing-artifact"],
+        sourceOfTruth: "LiveIframeDom"
+      }),
+      createdAt: NOW
+    })).toThrow("Code roundtrip manifest");
   });
 
   it("validates roundtrip imports and records source revision conflicts", () => {

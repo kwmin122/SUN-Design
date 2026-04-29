@@ -15,8 +15,8 @@ Canonical product intent: `.planning/PRODUCT-NORTH-STAR.md`. Claude Design, Pape
 Mandatory coding principles: `docs/guides/coding-principles.md`. Every coding agent must think before coding, prefer simplicity, make surgical changes, and execute against verifiable success criteria.
 
 Current phase: Phase 10 — Dev Mode, Publish, and Export Fidelity
-Phase status: verification needs fixes
-Next SUNCO action: fix Phase 10 verification issues, then rerun `/sunco:verify 10`
+Phase status: verification fixes applied; verify pending
+Next SUNCO action: `/sunco:verify 10`
 
 Competitive parity plan: `.planning/research/COMPETITIVE-GAP-REVIEW.md`. Official Claude Design, Paper, and Figma checks showed the next bar is professional canvas/component modeling, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, Dev Mode/publish/export fidelity, and collaboration/search/governance across Phase 06-11. These phases are the path to full product parity, not optional polish.
 
@@ -98,4 +98,4 @@ Phase 10: Dev Mode, Publish, and Export Fidelity
 
 Goal: Dev Mode inspect/code/readiness/version diff, real stored-state export materialization, static publish preview, code-agent roundtrip, and PPTX/animation export foundations.
 
-Phase 10 execution reached formal verification, but `/sunco:verify 10` found unresolved blockers in export-worker API parity, code roundtrip manifest validation, ZIP/export path hardening, persisted ready/version-diff integrity, and editable PPTX diagnostic contract alignment. Fix those issues before rerunning `/sunco:verify 10`. Verification must preserve the full Claude Design / Paper / Figma-level product target while keeping Phase 10 scoped to Dev Mode, publish preview, export fidelity, and code roundtrip. Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.
+Phase 10 execution reached formal verification, and the blockers found in export-worker API parity, code roundtrip manifest validation, ZIP/export path hardening, persisted ready/version-diff integrity, and editable PPTX diagnostic contract alignment have been fixed. Rerun `/sunco:verify 10` before shipping. Verification must preserve the full Claude Design / Paper / Figma-level product target while keeping Phase 10 scoped to Dev Mode, publish preview, export fidelity, and code roundtrip. Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.

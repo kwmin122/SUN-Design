@@ -226,7 +226,7 @@ function unsupportedNodeDiagnostics(bundle: ProjectBundle): string[] {
   const unsupported = Object.values(bundle.editGraph.nodes)
     .filter((node) => !supported.has(node.kind))
     .map((node) => node.kind);
-  return [...new Set(unsupported)].map((kind) => `unsupported-node-kind:${kind}`);
+  return [...new Set(unsupported)].map((kind) => `unsupported-pptx-node:${kind}`);
 }
 
 function pictureXml(

@@ -138,13 +138,36 @@ describe("Dev Mode helpers", () => {
     const object = firstNodeObject(bundle);
     const report = createDevModeInspectReport(bundle, { objectId: object.id, createdAt: NOW });
     const snippet = createDevCodeSnippet(bundle, { objectId: object.id, kind: "css", createdAt: NOW });
-    const diff = createVersionDiffRecord(bundle, { fromRevision: "missing_revision", objectIds: [object.id], createdAt: NOW });
+    bundle = ProjectBundleSchema.parse({
+      ...bundle,
+      versions: [{
+        id: "previous_revision",
+        label: "Previous",
+        html: bundle.html.normalized,
+        patchCount: 0,
+        createdAt: NOW
+      }]
+    });
+    const diff = createVersionDiffRecord(bundle, { fromRevision: "previous_revision", objectIds: [object.id], createdAt: NOW });
     const download = createAssetDownloadRecord(bundle, { assetId: "asset_hero", createdAt: NOW });
 
     bundle = appendDevModeReport(bundle, report);
     bundle = appendDevCodeSnippet(bundle, snippet);
     bundle = markReadyForDev(bundle, { objectId: object.id, label: "Ready for handoff", createdAt: NOW });
-    bundle = ProjectBundleSchema.parse({ ...bundle, baseRevision: "phase-10-next-revision" });
+    bundle = ProjectBundleSchema.parse({
+      ...bundle,
+      versions: [
+        ...bundle.versions,
+        {
+          id: bundle.baseRevision,
+          label: "Ready revision",
+          html: bundle.html.normalized,
+          patchCount: bundle.patches.length,
+          createdAt: NOW
+        }
+      ],
+      baseRevision: "phase-10-next-revision"
+    });
     bundle = markReadyForDevChanged(bundle, object.id, NOW);
     bundle = appendVersionDiffRecord(bundle, diff);
     bundle = appendAssetDownloadRecord(bundle, download);
@@ -153,7 +176,7 @@ describe("Dev Mode helpers", () => {
     expect(parsed.devModeReports).toHaveLength(1);
     expect(parsed.devCodeSnippets).toHaveLength(1);
     expect(parsed.readyForDevMarkers[0]?.status).toBe("changed");
-    expect(parsed.versionDiffs[0]?.changes[0]?.before).toBe("missing-version-source");
+    expect(parsed.versionDiffs[0]?.fromRevision).toBe("previous_revision");
     expect(parsed.assetDownloads[0]?.url).toBe("kdesign://asset/phase-10-dev-fixture/asset_hero");
   });
 

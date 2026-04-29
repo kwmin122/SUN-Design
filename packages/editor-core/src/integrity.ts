@@ -25,6 +25,7 @@ import type {
 } from "./schemas.js";
 import { validateAgentDirectionSafety, validateAgentOutputScope } from "./agent-output.js";
 import { validatePublicSourceUrl } from "./context-ingestion.js";
+import { validateCodeRoundtripPackageManifest } from "./code-roundtrip.js";
 import { validateSyncEnvelope } from "./sync.js";
 
 const COMPONENT_STATES = new Set(["default", "hover", "pressed", "disabled"]);
@@ -587,7 +588,7 @@ function assertPhase10Integrity(bundle: ProjectBundle): void {
     assertDevCodeSnippetIntegrity(bundle, snippet);
   }
   for (const marker of bundle.readyForDevMarkers) {
-    assertReadyForDevMarkerIntegrity(bundle, marker);
+    assertReadyForDevMarkerIntegrity(bundle, revisionIds, marker);
   }
   for (const diff of bundle.versionDiffs) {
     assertVersionDiffIntegrity(bundle, revisionIds, diff);
@@ -605,7 +606,7 @@ function assertPhase10Integrity(bundle: ProjectBundle): void {
     assertPublishPreviewIntegrity(revisionIds, artifactIds, preview);
   }
   for (const roundtripPackage of bundle.codeRoundtripPackages) {
-    assertCodeRoundtripPackageIntegrity(revisionIds, artifactIds, roundtripPackage);
+    assertCodeRoundtripPackageIntegrity(bundle, revisionIds, artifactIds, roundtripPackage);
   }
   for (const roundtripImport of bundle.codeRoundtripImports) {
     assertCodeRoundtripImportIntegrity(bundle, revisionIds, packageIds, roundtripImport);
@@ -644,10 +645,17 @@ function assertDevCodeSnippetIntegrity(
 
 function assertReadyForDevMarkerIntegrity(
   bundle: ProjectBundle,
+  revisionIds: Set<string>,
   marker: ReadyForDevMarker
 ): void {
   const object = assertCanvasObject(bundle, marker.objectId, "Ready-for-dev marker");
   assertNodeMatchesObject(bundle, object, marker.nodeId, "Ready-for-dev marker");
+  if (!revisionIds.has(marker.sourceRevision)) {
+    throw new Error("Ready marker source revision is stale");
+  }
+  if (marker.status !== "changed" && marker.sourceRevision !== bundle.baseRevision) {
+    throw new Error("Ready marker source revision is stale");
+  }
 }
 
 function assertVersionDiffIntegrity(
@@ -655,7 +663,11 @@ function assertVersionDiffIntegrity(
   revisionIds: Set<string>,
   diff: VersionDiffRecord
 ): void {
-  void revisionIds;
+  assertKnownRevision(revisionIds, diff.fromRevision, "Version diff from revision");
+  assertKnownRevision(revisionIds, diff.toRevision, "Version diff to revision");
+  if (diff.fromRevision === diff.toRevision) {
+    throw new Error(`Version diff revisions must differ: ${diff.id}`);
+  }
   for (const objectId of diff.objectIds) {
     assertCanvasObject(bundle, objectId, "Version diff");
   }
@@ -702,6 +714,9 @@ function assertPublishPreviewIntegrity(
   artifactIds: Set<string>,
   preview: PublishPreview
 ): void {
+  if (!preview.url.startsWith("kdesign://publish/")) {
+    throw new Error("Publish preview URL must be kdesign");
+  }
   assertKnownRevision(revisionIds, preview.sourceRevision, "Publish preview");
   for (const artifactId of preview.artifactIds) {
     if (!artifactIds.has(artifactId)) {
@@ -711,6 +726,7 @@ function assertPublishPreviewIntegrity(
 }
 
 function assertCodeRoundtripPackageIntegrity(
+  bundle: ProjectBundle,
   revisionIds: Set<string>,
   artifactIds: Set<string>,
   roundtripPackage: CodeRoundtripPackage
@@ -721,6 +737,7 @@ function assertCodeRoundtripPackageIntegrity(
       throw new Error(`Code roundtrip package references missing artifact: ${artifactId}`);
     }
   }
+  validateCodeRoundtripPackageManifest(bundle, roundtripPackage);
 }
 
 function assertCodeRoundtripImportIntegrity(

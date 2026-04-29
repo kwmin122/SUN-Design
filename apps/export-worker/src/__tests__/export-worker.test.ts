@@ -8,7 +8,13 @@ import { describe, expect, it } from "vitest";
 
 import { BASIC_LANDING_FIXTURE_HTML, normalizeHtml } from "@kdesign/editor-core";
 
-import { writeWorkerBundleFixture } from "../export-worker.js";
+import {
+  materializeCodeRoundtripPackage,
+  materializeStaticPublishPreview,
+  materializeStoredStateExport,
+  writeWorkerBundleFixture
+} from "../export-worker.js";
+import { writeDeterministicZip } from "../zip.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const OUT_DIR = path.join(ROOT, ".tmp-export-worker/phase-10");
@@ -69,22 +75,75 @@ describe("Phase 10 export worker", () => {
     expect(editableSlide).toContain("<p:pic>");
     expect(editableSlide).toContain("editable-diagnostics");
     expect(editableSlide).toContain("editable-subset:skipped:");
-    expect(editableSlide).toContain("unsupported-node-kind:button");
+    expect(editableSlide).toContain("unsupported-pptx-node:button");
     expect(editableRels).toContain("Target=\"../media/asset_1bgo2te.svg\"");
+    await expectZipContains("site.zip", ["index.html", "manifest.json", "project-bundle.json"]);
 
     const fixture = parseProjectBundleJson(await readFile(FIXTURE_PATH, "utf8"));
-    expect(fixture.exportArtifacts).toHaveLength(8);
+    expect(fixture.exportArtifacts).toHaveLength(9);
     expect(fixture.exportArtifacts.find((artifact) => artifact.kind === "png")?.bytes).toBeGreaterThan(20_000);
     expect(fixture.exportArtifacts.find((artifact) => artifact.kind === "pdf")?.bytes).toBeGreaterThan(20_000);
     expect(fixture.exportArtifacts.find((artifact) => artifact.kind === "gif")?.diagnostics).toContain("animation-frames:3");
     const editableArtifact = fixture.exportArtifacts.find((artifact) => artifact.filename === "slides-editable.pptx");
     expect(editableArtifact?.diagnostics).toContain("editable-subset:skipped:7");
-    expect(editableArtifact?.diagnostics).toContain("unsupported-node-kind:button");
+    expect(editableArtifact?.diagnostics).toContain("unsupported-pptx-node:button");
     expect(fixture.exportVerifications.some((item) => item.kind === "signature")).toBe(true);
     expect(fixture.exportVerifications.some((item) => item.kind === "manifest")).toBe(true);
+    expect(fixture.exportVerifications.some((item) => item.kind === "roundtrip")).toBe(true);
     expect(fixture.publishPreviews[0]?.url).toMatch(/^kdesign:\/\/publish\/phase-10-worker-fixture\/publish_/);
-    expect(fixture.codeRoundtripPackages[0]?.manifestJson).toContain("ProjectBundle");
+    const roundtripManifest = JSON.parse(fixture.codeRoundtripPackages[0]!.manifestJson);
+    expect(roundtripManifest.sourceOfTruth).toBe("ProjectBundle");
+    expect(roundtripManifest.projectBundle.id).toBe("phase-10-worker-fixture");
+    expect(roundtripManifest.exportArtifacts.length).toBeGreaterThan(0);
     expect(fixture.html.normalized).not.toContain("live iframe DOM");
+  });
+
+  it("exposes plan-level public APIs and rejects unsafe paths", async () => {
+    await rm(OUT_DIR, { recursive: true, force: true });
+    await mkdir(OUT_DIR, { recursive: true });
+    const bundle = ProjectBundleSchema.parse({
+      ...normalizeHtml({
+        id: "phase-10-api-fixture",
+        title: "Phase 10 API Fixture",
+        html: BASIC_LANDING_FIXTURE_HTML
+      }),
+      createdAt: NOW,
+      updatedAt: NOW
+    });
+
+    const html = await materializeStoredStateExport({
+      bundle,
+      kind: "html",
+      viewport: "desktop",
+      outputDir: OUT_DIR,
+      createdAt: NOW
+    });
+    expect(html.artifact.filename).toBe("index.html");
+
+    const publish = await materializeStaticPublishPreview({
+      bundle: html.bundle,
+      outputDir: OUT_DIR,
+      createdAt: NOW
+    });
+    expect(publish.preview.url).toMatch(/^kdesign:\/\/publish\//);
+
+    const roundtrip = await materializeCodeRoundtripPackage({
+      bundle: publish.bundle,
+      runtime: "codex",
+      outputDir: OUT_DIR,
+      createdAt: NOW
+    });
+    expect(roundtrip.package.manifestJson).toContain("\"projectBundle\"");
+    expect(roundtrip.artifact.filename).toBe("code-agent-package.zip");
+
+    expect(() => writeDeterministicZip([{ path: "../escape.txt", data: "owned" }])).toThrow("Unsafe zip entry path");
+    await expect(materializeStoredStateExport({
+      bundle,
+      kind: "html",
+      viewport: "desktop",
+      outputDir: path.join(ROOT, "outside-exports"),
+      createdAt: NOW
+    })).rejects.toThrow("approved roots");
   });
 });
 

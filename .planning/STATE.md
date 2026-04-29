@@ -22,10 +22,10 @@
 | Phase 07 status | shipped |
 | Phase 08 status | shipped |
 | Phase 09 status | shipped |
-| Phase 10 status | verification needs fixes |
+| Phase 10 status | verification fixes applied; verify pending |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 26/46 v2 requirements complete; 10 Phase 10 v2 requirements executed and awaiting verify; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
-| Next action | Fix Phase 10 verification blockers, then rerun `/sunco:verify 10` |
+| Next action | Run `/sunco:verify 10` |
 
 ## Phase Queue
 
@@ -45,7 +45,7 @@
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 reached formal verification for Dev Mode inspect/code/readiness/version diff, rendered export-worker materialization, static publish preview, PPTX/animation exports, code-agent roundtrip, and export fidelity fixes, but verification found unresolved blockers. The next step is to fix the Phase 10 verification blockers and rerun `/sunco:verify 10`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 reached formal verification for Dev Mode inspect/code/readiness/version diff, rendered export-worker materialization, static publish preview, PPTX/animation exports, code-agent roundtrip, and export fidelity fixes; the verification blockers have been fixed in code and need a fresh `/sunco:verify 10` run.
 
 ## Key Decisions Carried Forward
 
@@ -68,7 +68,7 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 
 ## Blockers
 
-- Phase 10 verification is blocked by unresolved export-worker API parity, code roundtrip manifest validation, ZIP/export path hardening, persisted ready/version-diff integrity, and editable PPTX diagnostic contract issues. See `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-VERIFICATION.md`.
+- No known Phase 10 fix blockers remain after closing export-worker API parity, code roundtrip manifest validation, ZIP/export path hardening, persisted ready/version-diff integrity, and editable PPTX diagnostic contract issues. Fresh `/sunco:verify 10` is still required before shipping.
 
 ## Verification Notes
 

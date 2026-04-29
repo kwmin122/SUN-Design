@@ -2,6 +2,42 @@
 
 Generated: 2026-04-29T21:18:18+09:00
 
+Post-fix updated: 2026-04-29T21:53:07+09:00
+
+## Post-Fix Update
+
+The failed verification below is retained as historical evidence. The listed blockers have been fixed in code and covered by targeted regression tests plus adversarial probes, but this document does not replace the formal 7-layer `/sunco:verify 10` run. Re-run `/sunco:verify 10` before `/sunco:ship 10`.
+
+Fresh post-fix checks:
+
+| Check | Result |
+|-------|--------|
+| `pnpm --filter @kdesign/editor-core test -- src/__tests__/code-roundtrip.test.ts src/__tests__/dev-mode.test.ts src/__tests__/persistence.test.ts` | PASS: 22 files / 125 tests |
+| `pnpm --filter @kdesign/export-worker build` | PASS |
+| `pnpm --filter @kdesign/export-worker test` | PASS: 1 file / 2 tests |
+| Bad code roundtrip manifest adversarial probe | PASS: rejected |
+| Unsafe ZIP entry adversarial probe | PASS: rejected |
+| Stale ready marker adversarial probe | PASS: rejected |
+| Missing version diff revisions adversarial probe | PASS: rejected |
+| `pnpm e2e -- apps/web/tests/phase-10-dev-mode.spec.ts` | PASS: 1 browser test |
+| `pnpm lint` | PASS |
+| `pnpm typecheck` | PASS |
+| `pnpm test` | PASS: 23 files / 133 tests |
+| `pnpm e2e` | PASS: 30 browser tests |
+| `npx tsc --noEmit` | PASS |
+| `npx eslint packages/ apps/export-worker --max-warnings 0` | PASS |
+
+Post-fix issue status:
+
+- [x] Add or reconcile the planned export-worker public APIs: `materializeStoredStateExport`, `materializeStaticPublishPreview`, and `materializeCodeRoundtripPackage`.
+- [x] Make code roundtrip manifests full and internally validated: ProjectBundle, baseRevision, canvasGraph, editGraph, assets, designSystem, sourceRecords, exportArtifacts, instructionsPath, runtime, revision, artifact ids, and sourceOfTruth must match stored state.
+- [x] Include `project-bundle.json` in ZIP exports and include `source-notes.md` / `design-context.md` when present.
+- [x] Validate ZIP entry names and reject absolute paths, `..`, and drive-style paths.
+- [x] Constrain export output paths and fixture paths to an approved export root or make the API impossible to call with arbitrary escape paths.
+- [x] Reject stale ready markers and invalid/equal version diff revisions in persisted integrity checks.
+- [x] Align editable PPTX unsupported diagnostics with the planned `unsupported-pptx-node:` contract.
+- [x] Add regression tests for the adversarial probes above.
+
 ## Summary
 
 | Layer | Name | Result | Notes |

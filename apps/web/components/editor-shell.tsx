@@ -848,9 +848,22 @@ export function EditorShell() {
       return;
     }
     try {
-      const fromRevision = current.versions[0]?.id ?? current.baseRevision;
-      const diff = createVersionDiffRecord(current, { fromRevision, objectIds: [objectId] });
-      commitBundle(appendVersionDiffRecord(current, diff), { trackUndo: true });
+      const previousVersion = current.versions.find((version) => version.id !== current.baseRevision);
+      const baselineVersion: BundleVersion = previousVersion ?? {
+        id: `dev_baseline_${stableHash(`${current.id}:${current.baseRevision}:${objectId}`)}`,
+        label: "Dev baseline",
+        html: current.html.normalized,
+        patchCount: current.patches.length,
+        createdAt: new Date().toISOString()
+      };
+      const bundleWithBaseline = previousVersion
+        ? current
+        : ProjectBundleSchema.parse({
+          ...current,
+          versions: [baselineVersion, ...current.versions]
+        });
+      const diff = createVersionDiffRecord(bundleWithBaseline, { fromRevision: baselineVersion.id, objectIds: [objectId] });
+      commitBundle(appendVersionDiffRecord(bundleWithBaseline, diff), { trackUndo: true });
     } catch (error) {
       reportWorkflowError("version_diff_rejected", error);
     }
