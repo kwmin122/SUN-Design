@@ -6,6 +6,7 @@ import {
   createCodeRoundtripPackage,
   validateCodeRoundtripImport
 } from "../code-roundtrip.js";
+import { ensureCanvasGraph } from "../canvas-graph.js";
 import { createExportJob } from "../export.js";
 import { appendExportArtifact, createExportArtifactRecord } from "../export-fidelity.js";
 import { BASIC_LANDING_FIXTURE_HTML } from "../fixtures.js";
@@ -16,11 +17,11 @@ import { ProjectBundleSchema } from "../schemas.js";
 const NOW = "2026-04-29T00:00:00.000Z";
 
 function createBundleWithArtifact() {
-  let bundle = normalizeHtml({
+  let bundle = ensureCanvasGraph(normalizeHtml({
     id: "phase-10-roundtrip-fixture",
     title: "Phase 10 Roundtrip Fixture",
     html: BASIC_LANDING_FIXTURE_HTML
-  });
+  }));
   const job = createExportJob({ bundle, kind: "zip", viewport: "desktop", createdAt: NOW });
   bundle = ProjectBundleSchema.parse({ ...bundle, exportJobs: [job] });
   const artifact = createExportArtifactRecord(bundle, {
@@ -100,5 +101,78 @@ describe("code roundtrip packages", () => {
     expect(result.status).toBe("rejected");
     expect(result.diagnostics).toContain("runtime-mismatch:cursor:codex");
     expect(result.diagnostics).toContain("missing-operation:missing_operation");
+  });
+
+  it("validates incoming roundtrip payloads before recording import ids", () => {
+    const bundle = createBundleWithArtifact();
+    const roundtripPackage = createCodeRoundtripPackage(bundle, {
+      runtime: "codex",
+      artifactIds: [bundle.exportArtifacts[0]!.id],
+      createdAt: NOW
+    });
+    const withPackage = appendCodeRoundtripPackage(bundle, roundtripPackage);
+    const object = Object.values(withPackage.canvasGraph?.objects ?? {}).find((item) => item.nodeId);
+    const nodeId = object?.nodeId;
+    if (!object || !nodeId) {
+      throw new Error("Expected fixture canvas object with edit node.");
+    }
+
+    const safe = validateCodeRoundtripImport(withPackage, {
+      packageId: roundtripPackage.id,
+      runtime: "codex",
+      sourceRevision: withPackage.baseRevision,
+      patches: [{
+        id: "roundtrip_patch_safe",
+        nodeId,
+        op: "setText",
+        value: "Roundtrip payload text",
+        source: "agent",
+        baseRevision: withPackage.baseRevision,
+        createdAt: NOW
+      }],
+      operations: [{
+        id: "roundtrip_operation_safe",
+        op: "setLayoutConstraints",
+        objectId: object.id,
+        value: { constraints: { layout: { gap: "18px" } } },
+        source: "agent",
+        baseRevision: withPackage.baseRevision,
+        createdAt: NOW
+      }],
+      createdAt: NOW
+    });
+
+    expect(safe.status).toBe("validated");
+    expect(safe.patchIds).toContain("roundtrip_patch_safe");
+    expect(safe.operationIds).toContain("roundtrip_operation_safe");
+
+    const unsafe = validateCodeRoundtripImport(withPackage, {
+      packageId: roundtripPackage.id,
+      runtime: "codex",
+      sourceRevision: withPackage.baseRevision,
+      patches: [{
+        id: "roundtrip_patch_unsafe",
+        nodeId,
+        op: "setStyle",
+        value: { backgroundImage: "url(javascript:alert(1))" },
+        source: "agent",
+        baseRevision: withPackage.baseRevision,
+        createdAt: NOW
+      }],
+      operations: [{
+        id: "roundtrip_operation_unsupported",
+        op: "reorderObject",
+        objectId: object.id,
+        value: { parentId: object.id, index: 0 },
+        source: "agent",
+        baseRevision: withPackage.baseRevision,
+        createdAt: NOW
+      }],
+      createdAt: NOW
+    });
+
+    expect(unsafe.status).toBe("rejected");
+    expect(unsafe.diagnostics.some((diagnostic) => diagnostic.startsWith("unsafe-patch"))).toBe(true);
+    expect(unsafe.diagnostics).toContain("unsupported-operation:reorderObject");
   });
 });

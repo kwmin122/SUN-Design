@@ -1,15 +1,27 @@
 import { stableHash } from "./ids.js";
+import { applyCanvasOperationsToBundle } from "./canvas-operations.js";
+import { applyEditPatchesToBundle } from "./patches.js";
 import {
+  CanvasOperationSchema,
   CodeRoundtripImportSchema,
   CodeRoundtripPackageSchema,
+  EditPatchSchema,
   ProjectBundleSchema,
   type AgentRuntime,
+  type CanvasOperation,
   type CodeRoundtripImport,
   type CodeRoundtripPackage,
+  type EditPatch,
   type ProjectBundle
 } from "./schemas.js";
 
 const DEFAULT_INSTRUCTION_PATH = "docs/prompts/context-driven-design-agent-prompt.md";
+const ALLOWED_ROUNDTRIP_CANVAS_OPS = new Set<CanvasOperation["op"]>([
+  "setObjectName",
+  "setObjectVisibility",
+  "setObjectLock",
+  "setLayoutConstraints"
+]);
 
 export function createCodeRoundtripPackage(
   bundle: ProjectBundle,
@@ -72,6 +84,8 @@ export function validateCodeRoundtripImport(
     sourceRevision: string;
     patchIds?: string[];
     operationIds?: string[];
+    patches?: EditPatch[];
+    operations?: CanvasOperation[];
     createdAt?: string;
   }
 ): CodeRoundtripImport {
@@ -99,9 +113,16 @@ export function validateCodeRoundtripImport(
       diagnostics.push(`missing-operation:${operationId}`);
     }
   }
+  const payloadDiagnostics = validateRoundtripPayload(bundle, roundtripPackage, input);
+  diagnostics.push(...payloadDiagnostics);
   const status: CodeRoundtripImport["status"] = diagnostics.length === 0
     ? "validated"
-    : diagnostics.some((diagnostic) => diagnostic.startsWith("missing-"))
+    : diagnostics.some((diagnostic) => (
+      diagnostic.startsWith("missing-") ||
+      diagnostic.startsWith("unsupported-operation") ||
+      diagnostic.startsWith("unsafe-patch") ||
+      diagnostic.startsWith("unsafe-operation")
+    ))
       ? "rejected"
       : "conflict";
 
@@ -111,11 +132,58 @@ export function validateCodeRoundtripImport(
     runtime: input.runtime,
     sourceRevision: input.sourceRevision,
     status,
-    patchIds: input.patchIds ?? [],
-    operationIds: input.operationIds ?? [],
+    patchIds: [...new Set([...(input.patchIds ?? []), ...(input.patches ?? []).map((patch) => patch.id)])],
+    operationIds: [...new Set([...(input.operationIds ?? []), ...(input.operations ?? []).map((operation) => operation.id)])],
     diagnostics,
     createdAt
   });
+}
+
+function validateRoundtripPayload(
+  bundle: ProjectBundle,
+  roundtripPackage: CodeRoundtripPackage,
+  input: {
+    patches?: EditPatch[];
+    operations?: CanvasOperation[];
+  }
+): string[] {
+  const diagnostics: string[] = [];
+  const patches = (input.patches ?? []).map((patch) => EditPatchSchema.parse(patch));
+  const operations = (input.operations ?? []).map((operation) => CanvasOperationSchema.parse(operation));
+  for (const patch of patches) {
+    if (patch.baseRevision !== roundtripPackage.sourceRevision) {
+      diagnostics.push(`payload-patch-revision-mismatch:${patch.id}`);
+    }
+    if (!bundle.editGraph.nodes[patch.nodeId]) {
+      diagnostics.push(`missing-patch-node:${patch.nodeId}`);
+    }
+  }
+  for (const operation of operations) {
+    if (!ALLOWED_ROUNDTRIP_CANVAS_OPS.has(operation.op)) {
+      diagnostics.push(`unsupported-operation:${operation.op}`);
+    }
+    if (operation.baseRevision !== roundtripPackage.sourceRevision) {
+      diagnostics.push(`payload-operation-revision-mismatch:${operation.id}`);
+    }
+    if (!bundle.canvasGraph?.objects[operation.objectId]) {
+      diagnostics.push(`missing-operation-object:${operation.objectId}`);
+    }
+  }
+  try {
+    if (patches.length > 0) {
+      applyEditPatchesToBundle(ProjectBundleSchema.parse(bundle), patches);
+    }
+  } catch (error) {
+    diagnostics.push(`unsafe-patch:${error instanceof Error ? error.message : "unknown"}`);
+  }
+  try {
+    if (operations.length > 0) {
+      applyCanvasOperationsToBundle(ProjectBundleSchema.parse(bundle), operations);
+    }
+  } catch (error) {
+    diagnostics.push(`unsafe-operation:${error instanceof Error ? error.message : "unknown"}`);
+  }
+  return diagnostics;
 }
 
 export function appendCodeRoundtripImport(

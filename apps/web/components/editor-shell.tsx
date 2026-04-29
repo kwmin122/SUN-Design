@@ -79,6 +79,7 @@ import {
   createExportJob,
   createExportArtifactRecord,
   createExportVerification,
+  createStandaloneHtml,
   appendExportArtifact,
   createPublishPreview,
   appendPublishPreview,
@@ -728,50 +729,62 @@ export function EditorShell() {
     }), { trackUndo: true });
   }, [commitBundle]);
 
-  const createExport = useCallback((kind: ExportKind, diagnostics: string[] = ["web-local-record"]) => {
+  const createExport = useCallback((kind: ExportKind, diagnostics?: string[]) => {
     const current = projectBundleRef.current;
     if (!current) {
       return;
     }
 
+    const cleanHtml = createStandaloneHtml(current);
+    const materializedBytes = new TextEncoder().encode(cleanHtml).byteLength;
+    const exportDiagnostics = diagnostics ?? (kind === "html"
+      ? ["browser-materialized", "html-standalone"]
+      : ["worker-required", "browser-export-request"]);
     const job = createExportJob({
       bundle: current,
       kind,
       viewport: previewDevice
     });
+    const materializedJob = kind === "html"
+      ? { ...job, bytes: materializedBytes, cleanHtml }
+      : job;
     const issues = current.qualityIssues.length > 0 ? current.qualityIssues : runKoreanQualityAudit(current);
     const bundleWithJob = ProjectBundleSchema.parse({
       ...current,
-      exportJobs: [job, ...current.exportJobs],
+      exportJobs: [materializedJob, ...current.exportJobs],
       qualityIssues: issues,
-      updatedAt: job.createdAt
+      updatedAt: materializedJob.createdAt
     });
-    const sha256 = stableHash(`${bundleWithJob.id}:${job.id}:${job.kind}:${job.viewport}:${job.bytes}:${diagnostics.join(",")}`);
+    const shaInput = kind === "html"
+      ? cleanHtml
+      : `${bundleWithJob.id}:${materializedJob.id}:${materializedJob.kind}:${materializedJob.viewport}:worker-required`;
+    const sha256 = stableHash(shaInput);
     const artifact = createExportArtifactRecord(bundleWithJob, {
-      jobId: job.id,
+      jobId: materializedJob.id,
       kind,
-      filename: job.filename,
-      bytes: job.bytes,
+      filename: materializedJob.filename,
+      bytes: materializedJob.bytes,
       sha256,
-      viewport: job.viewport,
-      filePath: `web-local/${job.filename}`,
-      diagnostics,
-      createdAt: job.createdAt
+      viewport: materializedJob.viewport,
+      filePath: kind === "html" ? `browser-materialized/${materializedJob.filename}` : `worker-required/${materializedJob.filename}`,
+      diagnostics: exportDiagnostics,
+      createdAt: materializedJob.createdAt
     });
     const signature = createExportVerification({
       artifactId: artifact.id,
       kind: "signature",
+      status: kind === "html" ? "passed" : "degraded",
       expectedHash: sha256,
       actualHash: sha256,
-      diagnostics: ["web-local-signature"],
-      createdAt: job.createdAt
+      diagnostics: kind === "html" ? ["browser-materialized-signature"] : ["worker-required-signature"],
+      createdAt: materializedJob.createdAt
     });
     const manifest = createExportVerification({
       artifactId: artifact.id,
       kind: "manifest",
-      status: "passed",
-      diagnostics: ["web-local-manifest"],
-      createdAt: job.createdAt
+      status: kind === "html" ? "passed" : "degraded",
+      diagnostics: kind === "html" ? ["browser-materialized-manifest"] : ["worker-required-manifest"],
+      createdAt: materializedJob.createdAt
     });
     const withArtifact = appendExportArtifact(bundleWithJob, artifact, signature);
     commitBundle(ProjectBundleSchema.parse({

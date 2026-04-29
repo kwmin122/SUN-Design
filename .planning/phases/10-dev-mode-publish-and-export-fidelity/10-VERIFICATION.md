@@ -1,7 +1,7 @@
 # Phase 10 Execution Report
 
-**Phase:** 10 — Dev Mode, Publish, and Export Fidelity  
-**Executed:** 2026-04-29T19:18:00+09:00  
+**Phase:** 10 - Dev Mode, Publish, and Export Fidelity
+**Executed:** 2026-04-29T19:18:00+09:00
 **Executor model:** codex
 
 ---
@@ -14,7 +14,7 @@
 | 10-02 | Build real export worker and worker-to-UI artifact proof | 2 | completed | PASS |
 | 10-03 | Expose Dev Mode, publish, export, and roundtrip workflows in the web studio | 3 | completed | PASS |
 
-**Plans completed:** 3/3  
+**Plans completed:** 3/3
 **Lint gate:** all pass
 
 ---
@@ -67,10 +67,30 @@
 
 - Dev Mode records are stored in `ProjectBundle`: inspect reports, code snippets, ready markers, version diffs, and asset downloads.
 - Export fidelity records are stored in `ProjectBundle`: export artifacts, verifications, static publish previews, code roundtrip packages, and roundtrip imports.
-- The local `@kdesign/export-worker` writes deterministic HTML, ZIP, PNG, PDF, raster PPTX, editable-subset PPTX, GIF, and MP4 files from stored state.
+- The local `@kdesign/export-worker` writes deterministic HTML, ZIP, Playwright-rendered PNG, Playwright-rendered PDF, raster PPTX with the rendered PNG, editable-subset PPTX mapped from edit graph nodes, GIF from rendered frames, and MP4 from rendered frames through bundled ffmpeg.
 - The worker emits `apps/web/tests/fixtures/phase-10-worker-export-bundle.json`; the web UI loads that fixture through `phase-10-load-worker-export-fixture` and renders the worker-created artifact records.
-- Top Export now uses the same stored-state export artifact path as the right-rail Phase 10 export panel.
+- Worker tests are hermetic: test output writes to `.tmp-export-worker/phase-10`, and rerunning `pnpm --filter @kdesign/export-worker test` does not dirty the tracked web fixture.
+- Top Export and right-rail browser export controls now distinguish browser-materialized HTML from worker-required PNG/PDF/PPTX/GIF/MP4 request records, instead of pretending browser metadata is a real worker artifact.
+- Code roundtrip import validation now checks incoming patch and operation payloads against safe patch application and a conservative canvas-operation allowlist before recording import ids.
 - Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.
+
+---
+
+## Post-Verification Fixes
+
+- Closed trailing whitespace failures in this verification report and removed the PDF placeholder string from the worker path.
+- Replaced placeholder PNG/PDF/GIF/MP4 outputs with stored-state rendering:
+  - PNG: Playwright screenshot of `createStandaloneHtml(bundle)`.
+  - PDF: Playwright print output of the same stored-state HTML.
+  - GIF: three rendered PNG frames encoded with `gifenc`.
+  - MP4: the same rendered frames encoded with bundled ffmpeg.
+- Strengthened PPTX output:
+  - Raster PPTX embeds the rendered PNG as slide media.
+  - Editable-subset PPTX maps stored edit graph text/image/frame/block nodes into slide shapes.
+- Strengthened roundtrip:
+  - Incoming patch payloads are parsed and applied against the current stored bundle to catch unsafe style, URL, and attribute values.
+  - Incoming canvas-operation payloads are restricted to `setObjectName`, `setObjectVisibility`, `setObjectLock`, and `setLayoutConstraints`.
+- Added regression coverage for real artifact byte sizes, PPTX contents, hermetic export-worker tests, and unsafe code-roundtrip payload rejection.
 
 ---
 

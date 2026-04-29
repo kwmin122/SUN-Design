@@ -11,7 +11,6 @@ import {
   createExportJob,
   createExportVerification,
   createPublishPreview,
-  createStandaloneHtml,
   ProjectBundleSchema,
   serializeProjectBundle,
   type ExportKind,
@@ -21,6 +20,7 @@ import {
 
 import { createGifBytes, createMp4Bytes, ffmpegDiagnostic } from "./animation.js";
 import { createPptxBytes, type PptxMode } from "./pptx.js";
+import { renderBundlePreview, type RenderedBundlePreview } from "./render.js";
 import { createZipArchive } from "./zip.js";
 
 export type ExportWorkerArtifact = {
@@ -66,6 +66,8 @@ export async function materializePhase10Exports(input: {
   const createdAt = input.createdAt ?? new Date().toISOString();
   await mkdir(input.outDir, { recursive: true });
   let current = ProjectBundleSchema.parse(input.bundle);
+  const sourceBundle = current;
+  const rendered = await renderBundlePreview(sourceBundle, path.join(input.outDir, ".render"));
   const artifacts: ExportWorkerArtifact[] = [];
 
   for (const spec of EXPORT_SPECS) {
@@ -77,7 +79,7 @@ export async function materializePhase10Exports(input: {
       createdAt: jobCreatedAt
     });
     const filePath = path.join(input.outDir, spec.filename);
-    const bytes = bytesForSpec(current, spec);
+    const bytes = await bytesForSpec(sourceBundle, spec, rendered, input.outDir);
     await writeFile(filePath, bytes);
     const sha256 = hashBytes(bytes);
     current = ProjectBundleSchema.parse({
@@ -92,7 +94,7 @@ export async function materializePhase10Exports(input: {
       sha256,
       viewport: spec.viewport,
       filePath,
-      diagnostics: spec.diagnostics,
+      diagnostics: [...spec.diagnostics, ...rendered.diagnostics],
       createdAt: jobCreatedAt
     });
     const signature = createExportVerification({
@@ -109,7 +111,7 @@ export async function materializePhase10Exports(input: {
       filePath,
       bytes: bytes.byteLength,
       sha256,
-      diagnostics: spec.diagnostics
+      diagnostics: [...spec.diagnostics, ...rendered.diagnostics]
     });
   }
 
@@ -175,49 +177,42 @@ export async function writeWorkerBundleFixture(input: {
   return result;
 }
 
-function bytesForSpec(bundle: ProjectBundle, spec: ExportSpec): Uint8Array {
+async function bytesForSpec(
+  bundle: ProjectBundle,
+  spec: ExportSpec,
+  rendered: RenderedBundlePreview,
+  outDir: string
+): Promise<Uint8Array> {
   if (spec.kind === "html") {
-    return encode(createStandaloneHtml(bundle));
+    return encode(rendered.html);
   }
   if (spec.kind === "zip") {
     return createZipArchive({
-      "index.html": createStandaloneHtml(bundle),
+      "index.html": rendered.html,
       "manifest.json": JSON.stringify({
         projectId: bundle.id,
         sourceRevision: bundle.baseRevision,
-        sourceOfTruth: "ProjectBundle"
+        sourceOfTruth: "ProjectBundle",
+        render: rendered.diagnostics
       }, null, 2)
     });
   }
   if (spec.kind === "png") {
-    return Uint8Array.from(Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
-      "base64"
-    ));
+    return rendered.png;
   }
   if (spec.kind === "pdf") {
-    return encode(`%PDF-1.4
-1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
-2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj
-3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 960 540]/Contents 4 0 R>>endobj
-4 0 obj<</Length 44>>stream
-BT /F1 24 Tf 72 460 Td (${escapePdf(bundle.title)}) Tj ET
-endstream endobj
-xref
-0 5
-0000000000 65535 f 
-trailer<</Root 1 0 R/Size 5>>
-startxref
-0
-%%EOF`);
+    return rendered.pdf;
   }
   if (spec.kind === "pptx") {
-    return createPptxBytes(bundle, spec.pptxMode ?? "rasterized");
+    return createPptxBytes(bundle, spec.pptxMode ?? "rasterized", {
+      previewPng: rendered.png,
+      renderDiagnostics: rendered.diagnostics
+    });
   }
   if (spec.kind === "gif") {
-    return createGifBytes();
+    return createGifBytes(rendered.animationFrames);
   }
-  return createMp4Bytes();
+  return createMp4Bytes(rendered.animationFrames, path.join(outDir, ".render"));
 }
 
 function encode(value: string): Uint8Array {
@@ -226,8 +221,4 @@ function encode(value: string): Uint8Array {
 
 function hashBytes(bytes: Uint8Array): string {
   return createHash("sha256").update(bytes).digest("hex");
-}
-
-function escapePdf(value: string): string {
-  return value.replaceAll("\\", "\\\\").replaceAll("(", "\\(").replaceAll(")", "\\)");
 }
