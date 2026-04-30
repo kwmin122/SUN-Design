@@ -120,8 +120,8 @@
 - [x] **SLIDE-01**: User can create a slide deck with slide view, grid view, speaker/presenter notes, and deck outline navigation.
 - [x] **SLIDE-02**: User can embed playable prototype blocks or live canvas objects inside a slide.
 - [x] **SLIDE-03**: User can collect presentation feedback through comments, polls, voting, or alignment-scale primitives.
-- [ ] **SLIDE-04**: User can export rasterized PPTX slides from artboards.
-- [ ] **SLIDE-05**: User can export editable PPTX for a strict subset of text, image, and shape nodes.
+- [x] **SLIDE-04**: User can export rasterized PPTX slides from artboards.
+- [x] **SLIDE-05**: User can export editable PPTX for a strict subset of text, image, and shape nodes.
 
 ### Context, Data, and Assets
 
@@ -134,14 +134,14 @@
 
 ### Dev Mode, Publish, and Export
 
-- [ ] **DEV-01**: User can inspect selected objects for measurements, spacing, CSS, tokens, accessibility notes, component metadata, and prototype interactions.
-- [ ] **DEV-02**: User can copy code snippets or token references that correspond to the selected design object.
-- [ ] **DEV-03**: User can mark frames or components as ready for dev and compare changes across saved versions.
-- [ ] **DEV-04**: User can download detected assets and inspect original asset metadata from the dev surface.
-- [ ] **EXP-09**: User can publish a responsive hosted preview or static site from stored artifact state.
-- [ ] **EXP-10**: User can export real files for HTML, ZIP, PNG, PDF, and PPTX with deterministic visual-diff verification.
-- [ ] **EXP-11**: User can export MP4/GIF for authored animation templates.
-- [ ] **EXP-12**: User can export a GitHub/code-agent package and roundtrip code-side changes back into the artifact package.
+- [x] **DEV-01**: User can inspect selected objects for measurements, spacing, CSS, tokens, accessibility notes, component metadata, and prototype interactions.
+- [x] **DEV-02**: User can copy code snippets or token references that correspond to the selected design object.
+- [x] **DEV-03**: User can mark frames or components as ready for dev and compare changes across saved versions.
+- [x] **DEV-04**: User can download detected assets and inspect original asset metadata from the dev surface.
+- [x] **EXP-09**: User can publish a responsive hosted preview or static site from stored artifact state.
+- [x] **EXP-10**: User can export real files for HTML, ZIP, PNG, PDF, and PPTX with deterministic visual-diff verification.
+- [x] **EXP-11**: User can export MP4/GIF for authored animation templates.
+- [x] **EXP-12**: User can export a GitHub/code-agent package and roundtrip code-side changes back into the artifact package.
 
 ### Collaboration and Governance
 

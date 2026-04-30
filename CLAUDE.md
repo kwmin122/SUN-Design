@@ -14,9 +14,9 @@ Canonical product intent: `.planning/PRODUCT-NORTH-STAR.md`. Claude Design, Pape
 
 Mandatory coding principles: `docs/guides/coding-principles.md`. Every coding agent must think before coding, prefer simplicity, make surgical changes, and execute against verifiable success criteria.
 
-Current phase: Phase 10 — Dev Mode, Publish, and Export Fidelity
-Phase status: verified; ready for `/sunco:ship 10`
-Next SUNCO action: `/sunco:ship 10`
+Current phase: Phase 11 — Collaboration, Search, and Governance
+Phase status: context captured; ready for planning
+Next SUNCO action: `/sunco:plan 11`
 
 Competitive parity plan: `.planning/research/COMPETITIVE-GAP-REVIEW.md`. Official Claude Design, Paper, and Figma checks showed the next bar is professional canvas/component modeling, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, Dev Mode/publish/export fidelity, and collaboration/search/governance across Phase 06-11. These phases are the path to full product parity, not optional polish.
 
@@ -98,4 +98,4 @@ Phase 10: Dev Mode, Publish, and Export Fidelity
 
 Goal: Dev Mode inspect/code/readiness/version diff, real stored-state export materialization, static publish preview, code-agent roundtrip, and PPTX/animation export foundations.
 
-Phase 10 formal verification now passes after closing the export fidelity blockers: code roundtrip deep manifest validation, append helper integrity, artifact/job and signature/hash semantics, publish/package revision consistency, persisted/exported HTML safety, local/private URL stripping, raster PPTX raw-byte API alignment, and export-worker filesystem helper boundaries. The next route is `/sunco:ship 10`. Verification preserves the full Claude Design / Paper / Figma-level product target while keeping Phase 10 scoped to Dev Mode, publish preview, export fidelity, and code roundtrip. Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.
+Phase 10 is shipped direct-to-main after formal verification passed and the final requirements drift was corrected. The export fidelity blockers are closed: code roundtrip deep manifest validation, append helper integrity, artifact/job and signature/hash semantics, publish/package revision consistency, persisted/exported HTML safety, local/private URL stripping, raster PPTX raw-byte API alignment, and export-worker filesystem helper boundaries. Verification preserves the full Claude Design / Paper / Figma-level product target while keeping Phase 10 scoped to Dev Mode, publish preview, export fidelity, and code roundtrip. Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred. Next route: `/sunco:plan 11`.
