@@ -22,10 +22,10 @@
 | Phase 07 status | shipped |
 | Phase 08 status | shipped |
 | Phase 09 status | shipped |
-| Phase 10 status | verification fixes applied; ready for formal re-verify |
+| Phase 10 status | verification needs fixes |
 | Phase 11 status | context |
 | Requirement coverage | 49/49 v1 complete; 26/46 v2 requirements complete; 10 Phase 10 v2 requirements executed but not verified; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
-| Next action | Rerun `/sunco:verify 10` |
+| Next action | Fix Phase 10 verification blockers, then rerun `/sunco:verify 10` |
 
 ## Phase Queue
 
@@ -45,7 +45,7 @@
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 reached fresh formal verification for Dev Mode inspect/code/readiness/version diff, rendered export-worker materialization, static publish preview, PPTX/animation exports, code-agent roundtrip, and export fidelity fixes. The verification blockers found in that pass have been fixed: code-roundtrip embedded ProjectBundle tampering is rejected, export-worker rendering blocks resource requests, visual-diff no longer self-compares, worker fixture loading uses persisted integrity validation, browser GIF/MP4 respects the animation-template gate, editable PPTX covers button/frame/vector-like shape mapping, and browser export diagnostics include `web-local-record`. The next step is to rerun `/sunco:verify 10`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 reached fresh formal verification for Dev Mode inspect/code/readiness/version diff, rendered export-worker materialization, static publish preview, PPTX/animation exports, code-agent roundtrip, and export fidelity fixes. Verification is still blocked by structural integrity gaps: recomputed-hash roundtrip snapshot tamper, append helper integrity bypasses, artifact/job and signature/hash semantic mismatches, unsafe persisted/exported HTML, unsafe local/private export URLs, and the `createRasterizedPptx` API mismatch. The next step is to fix those blockers and rerun `/sunco:verify 10`.
 
 ## Key Decisions Carried Forward
 
@@ -68,7 +68,7 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 
 ## Blockers
 
-- No active implementation blockers. Phase 10 verification blockers have code/test fixes applied; rerun `/sunco:verify 10` for the formal gate.
+- Phase 10 verification is blocked. See `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-VERIFICATION.md` for the current Issues to Fix list.
 
 ## Verification Notes
 
