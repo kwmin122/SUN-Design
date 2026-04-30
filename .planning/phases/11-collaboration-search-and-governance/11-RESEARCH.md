@@ -26,7 +26,7 @@ Use the existing `ProjectBundle` as the durable source of truth and add small, t
 
 - Project home metadata: folder path, tags, owner, lifecycle status, pinned/recent/template/example/design-system-library categories.
 - Search index helpers: deterministic records derived from bundle title, tags, source records, assets, design system names/tokens, artifact types, comments, notes, and parsed context summaries.
-- Collaboration records: collaborators, roles, share entries, presence snapshots, follow/spotlight state, comment/annotation threads, review/approval records, activity/audit events.
+- Collaboration records: collaborators, shared document access, two independent document sessions against the same bundle/share id, role permission decisions, share entries, presence snapshots, follow/spotlight state, comment/annotation threads, review/approval records, activity/audit events.
 - Quality gate reports: deterministic checks over stored state and rendered snapshot inputs. Reports must include pass/warn/fail status, issue codes, target references, and provenance diagnostics.
 - Regeneration replay: reapply stored patches and canvas operations onto a regenerated base revision only when target ids/kinds/revisions are compatible. Missing or changed targets become explicit conflicts.
 
@@ -49,6 +49,8 @@ Create the workspace library and search model. This can execute independently fr
 
 Create local-first collaboration and governance records after the workspace/search contract lands. This keeps shared `schemas.ts`, `integrity.ts`, `handoff.ts`, and `index.ts` edits serial instead of allowing concurrent overwrite risk.
 
+COLL-01 cannot be satisfied by comments metadata alone. Execution must prove two distinct collaborators can open the same shared document id in two sessions, see/reload the same project state, and have viewer/commenter/editor/owner permissions enforced with audit records.
+
 ### Wave 3: Quality gates and regeneration replay
 
 Depends on Wave 1 and Wave 2. Quality gate output should feed project activity/audit records, and regeneration conflicts should be visible in governance/review surfaces.
@@ -56,7 +58,7 @@ Depends on Wave 1 and Wave 2. Quality gate output should feed project activity/a
 ## Risk Register
 
 - Shared schema conflicts: all Phase 11 plans touch shared schema/integrity contracts, so execution is intentionally serial: 11-01, then 11-02, then 11-03. Do not parallelize these plans.
-- Overclaiming realtime collaboration: presence and follow/spotlight in this phase are local persisted records and UI affordances, not live sockets or CRDT.
+- Overclaiming realtime collaboration: presence and follow/spotlight in this phase are local persisted records and UI affordances, not live sockets or CRDT. However, COLL-01 still requires a two-user/two-session same-document proof with shared access and role enforcement.
 - Search becoming demo-only: search must derive from multiple fields and source/context artifacts, not just project title.
 - Quality gate false confidence: gate reports must state deterministic limitations and include negative tests for missing provenance, generic AI visuals, low contrast, overflow risk, and stale rendered snapshots.
 - Replay data loss: regeneration replay must default to conflict instead of silently dropping or force-applying edits.
