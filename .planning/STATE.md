@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 11 context; plan pending |
+| Current phase | Phase 11 planned |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -23,9 +23,9 @@
 | Phase 08 status | shipped |
 | Phase 09 status | shipped |
 | Phase 10 status | shipped |
-| Phase 11 status | context |
+| Phase 11 status | planned |
 | Requirement coverage | 49/49 v1 complete; 36/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
-| Next action | `/sunco:plan 11` |
+| Next action | `/sunco:execute 11` |
 
 ## Phase Queue
 
@@ -41,11 +41,11 @@
 | Phase 08 | Prototyping, Slides, and AI Variations | shipped | 11 complete |
 | Phase 09 | Context Ingestion, Live Data, and Assets | shipped | 6 |
 | Phase 10 | Dev Mode, Publish, and Export Fidelity | shipped | 10 |
-| Phase 11 | Collaboration, Search, and Governance | context | 9 |
+| Phase 11 | Collaboration, Search, and Governance | planned | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 is shipped direct-to-main for Dev Mode inspect/code/readiness/version diff, rendered export-worker materialization, static publish preview, PPTX/animation exports, code-agent roundtrip, and export fidelity fixes. Phase 11 context is captured and the next step is `/sunco:plan 11`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 is shipped direct-to-main for Dev Mode inspect/code/readiness/version diff, rendered export-worker materialization, static publish preview, PPTX/animation exports, code-agent roundtrip, and export fidelity fixes. Phase 11 research and execution plans are created; the next step is `/sunco:execute 11`.
 
 ## Key Decisions Carried Forward
 
@@ -68,7 +68,7 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 
 ## Blockers
 
-- None. Phase 10 shipped; next action is `/sunco:plan 11`.
+- None. Phase 11 is planned; next action is `/sunco:execute 11`.
 
 ## Verification Notes
 
@@ -149,10 +149,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 10 execution completed across three serial waves: Wave 1 added shared editor-core Dev Mode/export/publish/roundtrip schemas, helpers, persisted integrity, and handoff coverage; Wave 2 added `@kdesign/export-worker`, deterministic real artifact files, and a worker-created web fixture; Wave 3 added Dev Mode and export/publish/roundtrip UI panels, top Export wiring, worker fixture loading, and browser coverage. Gates passed: `pnpm lint`, `pnpm typecheck`, `npx tsc --noEmit`, `pnpm test` (23 files / 131 tests), and `pnpm e2e` (30 browser tests). Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.
 - Phase 10 verification remediation closed the structural blockers from `/sunco:verify 10`: roundtrip manifest deep validation now rejects recomputed-hash ProjectBundle tamper; append helpers run full integrity; export artifacts are tied to job semantics; passed signatures must match artifact hashes; publish previews and code roundtrip packages require matching artifact revisions; persisted/exported HTML is re-sanitized; local/private resource URLs are stripped; `createRasterizedPptx` returns raw `Uint8Array`; and export-worker helper paths are restricted to approved roots. Gates passed: `pnpm lint`, `pnpm typecheck`, `npx tsc --noEmit`, `pnpm --filter @kdesign/export-worker test`, `pnpm test` (23 files / 139 tests), and `pnpm e2e` (30 browser tests). Formal Phase 10 verification now passes in `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-VERIFICATION.md`.
 - Phase 10 shipped direct-to-main after final requirements source-of-truth alignment: the Phase 10 body checklist in `.planning/REQUIREMENTS.md`, traceability table, `.planning/STATE.md`, `CLAUDE.md`, and `10-VERIFICATION.md` all agree that Phase 10 is complete. A PR was not created because the verified work was already committed and pushed on `main`, matching the Phase 06-09 direct-to-main shipping pattern.
+- Phase 11 research and execution plans were created in `.planning/phases/11-collaboration-search-and-governance/`: Wave 1 project home/search/organization, Wave 2 collaboration/review/activity/annotation governance, and Wave 3 quality gates plus regeneration replay conflict handling. The wave order is intentionally serial because all three plans touch shared schema/integrity/handoff contracts. Full realtime CRDT collaboration, hosted auth/enterprise compliance, public marketplace, and external search service remain deferred.
 
 ---
-*Last updated: 2026-05-01 after Phase 10 ship*
-- **phase**: 10
-- **last_updated**: 2026-05-01T00:12:30+09:00
-- **status**: shipped
-- **next_action**: /sunco:plan 11
+*Last updated: 2026-05-01 after Phase 11 planning*
+- **phase**: 11
+- **last_updated**: 2026-05-01T00:26:57+09:00
+- **status**: planned
+- **next_action**: /sunco:execute 11

@@ -15,8 +15,8 @@ Canonical product intent: `.planning/PRODUCT-NORTH-STAR.md`. Claude Design, Pape
 Mandatory coding principles: `docs/guides/coding-principles.md`. Every coding agent must think before coding, prefer simplicity, make surgical changes, and execute against verifiable success criteria.
 
 Current phase: Phase 11 — Collaboration, Search, and Governance
-Phase status: context captured; ready for planning
-Next SUNCO action: `/sunco:plan 11`
+Phase status: planned; ready for execution
+Next SUNCO action: `/sunco:execute 11`
 
 Competitive parity plan: `.planning/research/COMPETITIVE-GAP-REVIEW.md`. Official Claude Design, Paper, and Figma checks showed the next bar is professional canvas/component modeling, governed tokens/code connection, prototype/slide interactions, real context ingestion/live data, Dev Mode/publish/export fidelity, and collaboration/search/governance across Phase 06-11. These phases are the path to full product parity, not optional polish.
 
@@ -94,8 +94,8 @@ This prompt is not a general engineering prompt. It is the production standard f
 
 ## Current Phase
 
-Phase 10: Dev Mode, Publish, and Export Fidelity
+Phase 11: Collaboration, Search, and Governance
 
-Goal: Dev Mode inspect/code/readiness/version diff, real stored-state export materialization, static publish preview, code-agent roundtrip, and PPTX/animation export foundations.
+Goal: Make the workspace navigable and team-ready without losing the local-first path.
 
-Phase 10 is shipped direct-to-main after formal verification passed and the final requirements drift was corrected. The export fidelity blockers are closed: code roundtrip deep manifest validation, append helper integrity, artifact/job and signature/hash semantics, publish/package revision consistency, persisted/exported HTML safety, local/private URL stripping, raster PPTX raw-byte API alignment, and export-worker filesystem helper boundaries. Verification preserves the full Claude Design / Paper / Figma-level product target while keeping Phase 10 scoped to Dev Mode, publish preview, export fidelity, and code roundtrip. Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred. Next route: `/sunco:plan 11`.
+Phase 11 is planned with three serial execution plans: Wave 1 project home/search/organization, Wave 2 collaboration/review/activity/annotation governance, and Wave 3 quality gates plus regeneration replay conflict handling. Verification must preserve the full Claude Design / Paper / Figma-level product target while keeping this phase scoped to local-first governance foundations. Full realtime CRDT collaboration, hosted auth/enterprise compliance, public marketplace, and external search service remain deferred. Next route: `/sunco:execute 11`.
