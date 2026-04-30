@@ -57,11 +57,12 @@ describe("export fidelity records", () => {
       html: BASIC_LANDING_FIXTURE_HTML
     });
     const job = createExportJob({ bundle, kind: "zip", viewport: "mobile", createdAt: NOW });
-    bundle = ProjectBundleSchema.parse({ ...bundle, exportJobs: [job] });
+    const storedJob = { ...job, bytes: 120, filename: "site.zip" };
+    bundle = ProjectBundleSchema.parse({ ...bundle, exportJobs: [storedJob] });
     const artifact = createExportArtifactRecord(bundle, {
-      jobId: job.id,
+      jobId: storedJob.id,
       kind: "zip",
-      filename: job.filename,
+      filename: storedJob.filename,
       bytes: 120,
       sha256: "sha256-zip",
       viewport: "mobile",
@@ -90,7 +91,7 @@ describe("export fidelity records", () => {
       jobId: job.id,
       kind: "pdf",
       filename: job.filename,
-      bytes: 12,
+      bytes: job.bytes,
       sha256: "sha256-pdf",
       sourceRevision: "stale",
       viewport: "tablet",
@@ -99,6 +100,66 @@ describe("export fidelity records", () => {
     })).toThrow("source revision is stale");
     expect(() => createPublishPreview(withJob, { artifactIds: ["missing_artifact"], createdAt: NOW }))
       .toThrow("missing artifact");
+  });
+
+  it("rejects persisted export records that are detached from their job or signature", () => {
+    let bundle = normalizeHtml({
+      id: "phase-10-export-integrity-negative",
+      title: "Phase 10 Export Integrity Negative",
+      html: BASIC_LANDING_FIXTURE_HTML
+    });
+    const job = createExportJob({ bundle, kind: "html", viewport: "desktop", createdAt: NOW });
+    bundle = ProjectBundleSchema.parse({ ...bundle, exportJobs: [job] });
+    const artifact = createExportArtifactRecord(bundle, {
+      jobId: job.id,
+      kind: "html",
+      filename: job.filename,
+      bytes: job.bytes,
+      sha256: "sha256-html",
+      viewport: "desktop",
+      filePath: "artifacts/index.html",
+      createdAt: NOW
+    });
+
+    expect(() => appendExportArtifact(bundle, { ...artifact, jobId: "missing-job" }))
+      .toThrow("Export artifact references missing job");
+    expect(() => appendExportArtifact(bundle, { ...artifact, kind: "zip", mimeType: "application/zip" }))
+      .toThrow("Export artifact kind does not match job");
+    expect(() => appendExportArtifact(bundle, artifact, createExportVerification({
+      artifactId: artifact.id,
+      kind: "signature",
+      expectedHash: "wrong",
+      actualHash: "wrong",
+      createdAt: NOW
+    }))).toThrow("Export signature verification hash does not match artifact");
+  });
+
+  it("rejects publish previews whose artifacts do not match the preview source revision", () => {
+    let bundle = normalizeHtml({
+      id: "phase-10-publish-integrity-negative",
+      title: "Phase 10 Publish Integrity Negative",
+      html: BASIC_LANDING_FIXTURE_HTML
+    });
+    const job = createExportJob({ bundle, kind: "zip", viewport: "desktop", createdAt: NOW });
+    const storedJob = { ...job, filename: "site.zip", bytes: 256 };
+    bundle = ProjectBundleSchema.parse({ ...bundle, exportJobs: [storedJob] });
+    const artifact = createExportArtifactRecord(bundle, {
+      jobId: storedJob.id,
+      kind: "zip",
+      filename: storedJob.filename,
+      bytes: storedJob.bytes,
+      sha256: "sha256-zip",
+      viewport: "desktop",
+      filePath: "artifacts/site.zip",
+      createdAt: NOW
+    });
+    bundle = appendExportArtifact(bundle, artifact);
+
+    const preview = createPublishPreview(bundle, { artifactIds: [artifact.id], createdAt: NOW });
+    expect(() => appendPublishPreview(bundle, {
+      ...preview,
+      sourceRevision: "rev_missing"
+    })).toThrow("Publish preview references missing revision");
   });
 
   it("maps animation export kinds to concrete MIME types", () => {

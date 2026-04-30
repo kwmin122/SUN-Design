@@ -98,7 +98,9 @@ export async function exportAnimationMp4(
   if (framePaths.length === 0) {
     throw new Error("mp4-export-failed: no frames");
   }
-  const framePattern = path.join(path.dirname(framePaths[0]!), "frame-%03d.png");
+  const resolvedOutputPath = resolveTrustedWorkerPath(input.outputPath, "MP4 output");
+  const resolvedFramePaths = framePaths.map((framePath) => resolveTrustedWorkerPath(framePath, "MP4 frame"));
+  const framePattern = path.join(path.dirname(resolvedFramePaths[0]!), "frame-%03d.png");
   try {
     const ffmpegPath = resolveFfmpegPath();
     await execFileAsync(ffmpegPath, [
@@ -111,7 +113,7 @@ export async function exportAnimationMp4(
       "format=yuv420p",
       "-movflags",
       "+faststart",
-      input.outputPath
+      resolvedOutputPath
     ], { timeout: 30_000 });
   } catch (error) {
     const detail = error && typeof error === "object" && "stderr" in error
@@ -137,4 +139,23 @@ function resolveFfmpegPath(): string {
     throw new Error("Unable to resolve bundled ffmpeg path.");
   }
   return ffmpeg.path;
+}
+
+function resolveTrustedWorkerPath(inputPath: string, label: string): string {
+  const resolved = path.resolve(inputPath);
+  const approvedRoots = [
+    path.resolve(".tmp-export-worker"),
+    path.resolve(".kdesign/exports"),
+    path.resolve("../..", ".tmp-export-worker"),
+    path.resolve("../..", ".kdesign/exports")
+  ];
+  if (!approvedRoots.some((root) => isWithin(root, resolved))) {
+    throw new Error(`${label} path escapes approved roots: ${inputPath}`);
+  }
+  return resolved;
+}
+
+function isWithin(root: string, child: string): boolean {
+  const relative = path.relative(root, child);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }

@@ -11,6 +11,7 @@ import {
   type ProjectBundle,
   type PublishPreview
 } from "./schemas.js";
+import { assertProjectBundleIntegrity } from "./integrity.js";
 
 export function createExportArtifactRecord(
   bundle: ProjectBundle,
@@ -31,8 +32,18 @@ export function createExportArtifactRecord(
   if (sourceRevision !== bundle.baseRevision) {
     throw new Error(`Export artifact source revision is stale: ${sourceRevision}`);
   }
-  if (!bundle.exportJobs.some((job) => job.id === input.jobId)) {
+  const job = bundle.exportJobs.find((item) => item.id === input.jobId);
+  if (!job) {
     throw new Error(`Export artifact references missing job: ${input.jobId}`);
+  }
+  if (
+    job.kind !== input.kind ||
+    job.sourceRevision !== sourceRevision ||
+    job.viewport !== input.viewport ||
+    job.filename !== input.filename ||
+    job.bytes !== input.bytes
+  ) {
+    throw new Error(`Export artifact does not match job contract: ${input.jobId}`);
   }
   const createdAt = input.createdAt ?? new Date().toISOString();
   return ExportArtifactSchema.parse({
@@ -87,10 +98,14 @@ export function createPublishPreview(
   if (artifactIds.length === 0) {
     throw new Error("Publish preview requires at least one export artifact.");
   }
-  const knownArtifacts = new Set(bundle.exportArtifacts.map((artifact) => artifact.id));
+  const knownArtifacts = new Map(bundle.exportArtifacts.map((artifact) => [artifact.id, artifact]));
   for (const artifactId of artifactIds) {
-    if (!knownArtifacts.has(artifactId)) {
+    const artifact = knownArtifacts.get(artifactId);
+    if (!artifact) {
       throw new Error(`Publish preview references missing artifact: ${artifactId}`);
+    }
+    if (artifact.sourceRevision !== bundle.baseRevision) {
+      throw new Error(`Publish preview artifact revision mismatch: ${artifactId}`);
     }
   }
   const createdAt = input.createdAt ?? new Date().toISOString();
@@ -116,20 +131,24 @@ export function appendExportArtifact(
   const nextVerifications = verification
     ? [verification, ...bundle.exportVerifications.filter((item) => item.id !== verification.id)]
     : bundle.exportVerifications;
-  return ProjectBundleSchema.parse({
+  const nextBundle = ProjectBundleSchema.parse({
     ...bundle,
     exportArtifacts: nextArtifacts,
     exportVerifications: nextVerifications,
     updatedAt: artifact.createdAt
   });
+  assertProjectBundleIntegrity(nextBundle);
+  return nextBundle;
 }
 
 export function appendPublishPreview(bundle: ProjectBundle, preview: PublishPreview): ProjectBundle {
-  return ProjectBundleSchema.parse({
+  const nextBundle = ProjectBundleSchema.parse({
     ...bundle,
     publishPreviews: [preview, ...bundle.publishPreviews.filter((item) => item.id !== preview.id)],
     updatedAt: preview.createdAt
   });
+  assertProjectBundleIntegrity(nextBundle);
+  return nextBundle;
 }
 
 function inferViewports(bundle: ProjectBundle, artifactIds: string[]): PreviewDevice[] {

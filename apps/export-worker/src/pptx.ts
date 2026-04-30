@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import path from "node:path";
 
 import type { AssetRef, CanvasObject, EditNode, ProjectBundle } from "@kdesign/editor-core";
 
@@ -78,23 +79,19 @@ export function createEditableSubsetPptx(
 
 export function createRasterizedPptx(
   bundle: ProjectBundle,
-  input: { pngArtifactPaths?: string[]; renderDiagnostics?: string[] } = {}
-): { data: Uint8Array; diagnostics: string[] } {
+  input: { deckId?: string; pngArtifactPaths?: string[]; renderDiagnostics?: string[]; createdAt?: string } = {}
+): Uint8Array {
+  void input.deckId;
+  void input.createdAt;
   const previewPng = input.pngArtifactPaths?.[0]
-    ? new Uint8Array(readFileSync(input.pngArtifactPaths[0]))
+    ? readTrustedPngArtifact(input.pngArtifactPaths[0])
     : undefined;
-  return {
-    data: createPptxBytes(bundle, "rasterized", {
-      ...(previewPng ? { previewPng } : {}),
-      renderDiagnostics: input.renderDiagnostics ?? [
-        previewPng ? "pptx-rasterized:preview-artifact" : "pptx-rasterized:preview-missing"
-      ]
-    }),
-    diagnostics: [
-      "pptx-mode:rasterized",
+  return createPptxBytes(bundle, "rasterized", {
+    ...(previewPng ? { previewPng } : {}),
+    renderDiagnostics: input.renderDiagnostics ?? [
       previewPng ? "pptx-rasterized:preview-artifact" : "pptx-rasterized:preview-missing"
     ]
-  };
+  });
 }
 
 export function collectEditableSubsetDiagnostics(bundle: ProjectBundle): string[] {
@@ -392,4 +389,26 @@ function escapeXml(value: string): string {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll("\"", "&quot;");
+}
+
+function readTrustedPngArtifact(inputPath: string): Uint8Array {
+  const resolved = path.resolve(inputPath);
+  if (path.extname(resolved).toLowerCase() !== ".png") {
+    throw new Error(`PPTX raster preview must be a PNG artifact: ${inputPath}`);
+  }
+  const approvedRoots = [
+    path.resolve(".tmp-export-worker"),
+    path.resolve(".kdesign/exports"),
+    path.resolve("../..", ".tmp-export-worker"),
+    path.resolve("../..", ".kdesign/exports")
+  ];
+  if (!approvedRoots.some((root) => isWithin(root, resolved))) {
+    throw new Error(`PPTX raster preview path escapes approved roots: ${inputPath}`);
+  }
+  return new Uint8Array(readFileSync(resolved));
+}
+
+function isWithin(root: string, child: string): boolean {
+  const relative = path.relative(root, child);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }

@@ -6,7 +6,7 @@
 |-------|-------|
 | Project | K-Design Studio |
 | Current milestone | 2 |
-| Current phase | Phase 10 executed; verify pending |
+| Current phase | Phase 10 verified; ship pending |
 | Granularity | standard |
 | Mode | yolo |
 | Git branching | milestone |
@@ -22,10 +22,10 @@
 | Phase 07 status | shipped |
 | Phase 08 status | shipped |
 | Phase 09 status | shipped |
-| Phase 10 status | verification needs fixes |
+| Phase 10 status | verified |
 | Phase 11 status | context |
-| Requirement coverage | 49/49 v1 complete; 26/46 v2 requirements complete; 10 Phase 10 v2 requirements executed but not verified; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
-| Next action | Fix Phase 10 verification blockers, then rerun `/sunco:verify 10` |
+| Requirement coverage | 49/49 v1 complete; 36/46 v2 requirements complete; AI-01 through AI-04 complete through local-first structured agent output ingestion with persisted reload/promote invariants |
+| Next action | `/sunco:ship 10` |
 
 ## Phase Queue
 
@@ -40,12 +40,12 @@
 | Phase 07 | Design System, Tokens, and Code Connect | shipped | 5 |
 | Phase 08 | Prototyping, Slides, and AI Variations | shipped | 11 complete |
 | Phase 09 | Context Ingestion, Live Data, and Assets | shipped | 6 |
-| Phase 10 | Dev Mode, Publish, and Export Fidelity | executed | 10 |
+| Phase 10 | Dev Mode, Publish, and Export Fidelity | verified | 10 |
 | Phase 11 | Collaboration, Search, and Governance | context | 9 |
 
 ## Active Phase
 
-No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 reached fresh formal verification for Dev Mode inspect/code/readiness/version diff, rendered export-worker materialization, static publish preview, PPTX/animation exports, code-agent roundtrip, and export fidelity fixes. Verification is still blocked by structural integrity gaps: recomputed-hash roundtrip snapshot tamper, append helper integrity bypasses, artifact/job and signature/hash semantic mismatches, unsafe persisted/exported HTML, unsafe local/private export URLs, and the `createRasterizedPptx` API mismatch. The next step is to fix those blockers and rerun `/sunco:verify 10`.
+No active implementation phase is currently executing. Milestone 1 remains complete. Phase 06 is shipped direct-to-main for the Milestone 2 canvas/component foundation. Phase 07 is shipped direct-to-main for governed design systems, tokens, code references, code mapping, publish/remix/rollback, and component playground. Phase 08 is shipped direct-to-main for prototyping, slides, selected-region agent context packages, structured agent output ingestion, validated typed operation/patch candidates, diagnostics, explicit promote workflow, persisted reload/promote invariant checks, and runtime provenance checks. Phase 09 is shipped direct-to-main for context ingestion, generated source/design notes, safe editable web snapshots, local-first data binding, asset lifecycle, stable project asset URLs, and server-portable sync foundation. Phase 10 formal verification now passes for Dev Mode inspect/code/readiness/version diff, rendered export-worker materialization, static publish preview, PPTX/animation exports, code-agent roundtrip, and export fidelity fixes. The next step is `/sunco:ship 10`.
 
 ## Key Decisions Carried Forward
 
@@ -68,7 +68,7 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 
 ## Blockers
 
-- Phase 10 verification is blocked. See `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-VERIFICATION.md` for the current Issues to Fix list.
+- None. Phase 10 verification passed; next action is `/sunco:ship 10`.
 
 ## Verification Notes
 
@@ -147,10 +147,11 @@ No active implementation phase is currently executing. Milestone 1 remains compl
 - Phase 09 shipped direct-to-main in `38cb30f` / remote `38cb30f7bb6f868b552147ae786a159b32641485`. A PR was not created because the verified work was already committed and pushed on `main`.
 - Phase 10 research and execution plans were created in `.planning/phases/10-dev-mode-publish-and-export-fidelity/`: Wave 1 shared editor-core Dev Mode/export/publish/roundtrip contracts, Wave 2 local export-worker/file materialization plus worker-created web fixture, and Wave 3 web Dev Mode/export/publish/roundtrip workflows. The three-wave structure is intentional to avoid parallel writes to `schemas.ts`, `integrity.ts`, `handoff.ts`, and `index.ts` while proving worker-created artifacts render in the UI. Full hosted production publish, full Figma export, and unrestricted PPT authoring remain deferred.
 - Phase 10 execution completed across three serial waves: Wave 1 added shared editor-core Dev Mode/export/publish/roundtrip schemas, helpers, persisted integrity, and handoff coverage; Wave 2 added `@kdesign/export-worker`, deterministic real artifact files, and a worker-created web fixture; Wave 3 added Dev Mode and export/publish/roundtrip UI panels, top Export wiring, worker fixture loading, and browser coverage. Gates passed: `pnpm lint`, `pnpm typecheck`, `npx tsc --noEmit`, `pnpm test` (23 files / 131 tests), and `pnpm e2e` (30 browser tests). Full hosted production publish, pixel-perfect editable Figma export, and unrestricted native PPT authoring remain deferred.
+- Phase 10 verification remediation closed the structural blockers from `/sunco:verify 10`: roundtrip manifest deep validation now rejects recomputed-hash ProjectBundle tamper; append helpers run full integrity; export artifacts are tied to job semantics; passed signatures must match artifact hashes; publish previews and code roundtrip packages require matching artifact revisions; persisted/exported HTML is re-sanitized; local/private resource URLs are stripped; `createRasterizedPptx` returns raw `Uint8Array`; and export-worker helper paths are restricted to approved roots. Gates passed: `pnpm lint`, `pnpm typecheck`, `npx tsc --noEmit`, `pnpm --filter @kdesign/export-worker test`, `pnpm test` (23 files / 139 tests), and `pnpm e2e` (30 browser tests). Formal Phase 10 verification now passes in `.planning/phases/10-dev-mode-publish-and-export-fidelity/10-VERIFICATION.md`.
 
 ---
-*Last updated: 2026-04-29 after Phase 10 execution*
+*Last updated: 2026-04-30 after Phase 10 verification*
 - **phase**: 10
-- **last_updated**: 2026-04-29T19:18:00+09:00
-- **status**: executed
-- **next_action**: /sunco:verify 10
+- **last_updated**: 2026-04-30T23:53:11+09:00
+- **status**: verified
+- **next_action**: /sunco:ship 10

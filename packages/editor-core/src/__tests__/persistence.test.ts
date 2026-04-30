@@ -66,6 +66,13 @@ describe("project bundle persistence", () => {
     expect(loaded?.html.normalized).toBe(bundle.html.normalized);
   });
 
+  it("rejects persisted normalized HTML that reintroduces active content or local URLs", () => {
+    const raw = JSON.parse(serializeProjectBundle(createBundle()));
+    raw.html.normalized = `${raw.html.normalized}<script>alert("persisted")</script><img src="http://127.0.0.1/private.png">`;
+
+    expect(() => parseProjectBundleJson(JSON.stringify(raw))).toThrow("Persisted normalized HTML is not sanitized");
+  });
+
   it("stores cloned JSON values rather than object references", async () => {
     const bundle = createBundle();
     const repository = createMemoryProjectRepository();
@@ -323,14 +330,15 @@ describe("project bundle persistence", () => {
       viewport: "desktop",
       createdAt: AGENT_TEST_TIME
     });
+    const storedJob = { ...job, filename: "roundtrip.zip", bytes: 1024 };
     bundle = {
       ...bundle,
-      exportJobs: [job]
+      exportJobs: [storedJob]
     };
     const artifact = createExportArtifactRecord(bundle, {
-      jobId: job.id,
+      jobId: storedJob.id,
       kind: "zip",
-      filename: "roundtrip.zip",
+      filename: storedJob.filename,
       bytes: 1024,
       sha256: "sha256-roundtrip",
       viewport: "desktop",

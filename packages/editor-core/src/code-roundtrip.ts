@@ -37,10 +37,14 @@ export function createCodeRoundtripPackage(
   if (artifactIds.length === 0) {
     throw new Error("Code roundtrip package requires at least one artifact.");
   }
-  const knownArtifacts = new Set(bundle.exportArtifacts.map((artifact) => artifact.id));
+  const knownArtifacts = new Map(bundle.exportArtifacts.map((artifact) => [artifact.id, artifact]));
   for (const artifactId of artifactIds) {
-    if (!knownArtifacts.has(artifactId)) {
+    const artifact = knownArtifacts.get(artifactId);
+    if (!artifact) {
       throw new Error(`Code roundtrip package references missing artifact: ${artifactId}`);
+    }
+    if (artifact.sourceRevision !== bundle.baseRevision) {
+      throw new Error(`Code roundtrip package artifact revision mismatch: ${artifactId}`);
     }
   }
   const createdAt = input.createdAt ?? new Date().toISOString();
@@ -142,6 +146,10 @@ export function validateCodeRoundtripPackageManifest(
   if (parsedProjectBundle.id !== bundle.id || parsedProjectBundle.baseRevision !== roundtripPackage.sourceRevision) {
     throw new Error(`Code roundtrip manifest project bundle mismatch: ${roundtripPackage.id}`);
   }
+  assertManifestDeepEqual(parsedProjectBundle.schemaVersion, bundle.schemaVersion, "projectBundle.schemaVersion", roundtripPackage.id);
+  assertManifestDeepEqual(parsedProjectBundle.title, bundle.title, "projectBundle.title", roundtripPackage.id);
+  assertManifestDeepEqual(parsedProjectBundle.createdAt, bundle.createdAt, "projectBundle.createdAt", roundtripPackage.id);
+  assertManifestDeepEqual(parsedProjectBundle.sanitizerReport, bundle.sanitizerReport, "projectBundle.sanitizerReport", roundtripPackage.id);
   assertManifestValue(
     manifest,
     "projectBundleHash",
@@ -157,6 +165,9 @@ export function validateCodeRoundtripPackageManifest(
     }
     const manifestArtifact = exportArtifacts.find((artifact) => artifact["id"] === artifactId);
     const storedArtifact = bundle.exportArtifacts.find((artifact) => artifact.id === artifactId);
+    if (storedArtifact?.sourceRevision !== roundtripPackage.sourceRevision) {
+      throw new Error(`Code roundtrip manifest artifact revision mismatch: ${artifactId}`);
+    }
     assertManifestDeepEqual(manifestArtifact, storedArtifact, `exportArtifacts.${artifactId}`, roundtripPackage.id);
   }
 

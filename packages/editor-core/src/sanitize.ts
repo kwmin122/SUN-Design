@@ -37,12 +37,29 @@ const URL_ATTRS = new Set(["href", "src", "poster", "xlink:href"]);
 
 export function isDangerousUrl(value: string): boolean {
   const normalized = value.trim().toLowerCase();
-  return (
+  if (
     normalized.startsWith("javascript:") ||
     normalized.startsWith("data:text/html") ||
     normalized.startsWith("vbscript:") ||
     normalized.startsWith("//")
-  );
+  ) {
+    return true;
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return false;
+  }
+
+  if (parsed.protocol === "file:") {
+    return true;
+  }
+  if (["http:", "https:"].includes(parsed.protocol)) {
+    return isPrivateOrLocalHostname(parsed.hostname);
+  }
+  return false;
 }
 
 export function sanitizeInlineStyle(
@@ -260,4 +277,88 @@ function collectBlockedStylesheet(
       reason: "external stylesheets are tracked as blocked assets"
     });
   }
+}
+
+function isPrivateOrLocalHostname(hostname: string): boolean {
+  const normalized = hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.+$/g, "");
+  if (["localhost", "0.0.0.0", "::", "::1"].includes(normalized) || normalized.endsWith(".localhost")) {
+    return true;
+  }
+  const mappedIpv4 = ipv4FromMappedIpv6(normalized);
+  if (mappedIpv4) {
+    return isPrivateIpv4Hostname(mappedIpv4);
+  }
+  if (isPrivateIpv4Hostname(normalized)) {
+    return true;
+  }
+  if (normalized.includes(":")) {
+    return (
+      normalized.startsWith("fc") ||
+      normalized.startsWith("fd") ||
+      isIpv6LinkLocal(normalized) ||
+      normalized.startsWith("ff")
+    );
+  }
+  return false;
+}
+
+function isPrivateIpv4Hostname(hostname: string): boolean {
+  const octets = parseIpv4Octets(hostname);
+  if (!octets) {
+    return false;
+  }
+  const [first, second, third] = octets;
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168) ||
+    (first === 192 && second === 0 && third === 2) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    (first === 198 && second === 51 && third === 100) ||
+    (first === 203 && second === 0 && third === 113) ||
+    first >= 224
+  );
+}
+
+function parseIpv4Octets(hostname: string): [number, number, number, number] | undefined {
+  if (!/^\d{1,3}(?:\.\d{1,3}){3}$/.test(hostname)) {
+    return undefined;
+  }
+  const octets = hostname.split(".").map((item) => Number(item));
+  if (octets.some((item) => !Number.isInteger(item) || item < 0 || item > 255)) {
+    return undefined;
+  }
+  return octets as [number, number, number, number];
+}
+
+function isIpv6LinkLocal(hostname: string): boolean {
+  const first = hostname.split(":")[0];
+  if (!first || !/^[0-9a-f]{1,4}$/.test(first)) {
+    return false;
+  }
+  const value = Number.parseInt(first, 16);
+  return value >= 0xfe80 && value <= 0xfebf;
+}
+
+function ipv4FromMappedIpv6(hostname: string): string | undefined {
+  const dotted = hostname.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/);
+  if (dotted?.[1]) {
+    return dotted[1];
+  }
+  const hex = hostname.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  if (!hex?.[1] || !hex[2]) {
+    return undefined;
+  }
+  const high = Number.parseInt(hex[1], 16);
+  const low = Number.parseInt(hex[2], 16);
+  return [
+    (high >> 8) & 255,
+    high & 255,
+    (low >> 8) & 255,
+    low & 255
+  ].join(".");
 }

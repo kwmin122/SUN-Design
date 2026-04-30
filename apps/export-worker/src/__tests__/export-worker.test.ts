@@ -136,8 +136,9 @@ describe("Phase 10 export worker", () => {
     expect(Buffer.from(editableSubset.data).subarray(0, 2).toString("latin1")).toBe("PK");
     expect(editableSubset.diagnostics.some((diagnostic) => diagnostic.startsWith("editable-subset:mapped:"))).toBe(true);
     const rasterized = createRasterizedPptx(bundle);
-    expect(Buffer.from(rasterized.data).subarray(0, 2).toString("latin1")).toBe("PK");
-    expect(rasterized.diagnostics).toContain("pptx-rasterized:preview-missing");
+    expect(Buffer.from(rasterized).subarray(0, 2).toString("latin1")).toBe("PK");
+    expect(() => createRasterizedPptx(bundle, { pngArtifactPaths: ["/etc/passwd"] }))
+      .toThrow("PPTX raster preview must be a PNG artifact");
 
     const html = await materializeStoredStateExport({
       bundle,
@@ -194,7 +195,7 @@ describe("Phase 10 export worker", () => {
     })).rejects.toThrow("approved roots");
   });
 
-  it("blocks local and external resource requests during worker rendering", async () => {
+  it("strips local resource URLs before worker rendering", async () => {
     await rm(OUT_DIR, { recursive: true, force: true });
     await mkdir(OUT_DIR, { recursive: true });
     const base = normalizeHtml({
@@ -213,8 +214,8 @@ describe("Phase 10 export worker", () => {
     });
 
     const rendered = await renderBundlePreview(bundle, path.join(OUT_DIR, "network-render"));
-    expect(rendered.diagnostics).toContain("blocked-resource-requests:1");
-    expect(rendered.diagnostics.some((diagnostic) => diagnostic.includes("127.0.0.1"))).toBe(true);
+    expect(rendered.html).not.toContain("127.0.0.1");
+    expect(rendered.diagnostics.some((diagnostic) => diagnostic.includes("127.0.0.1"))).toBe(false);
   });
 });
 

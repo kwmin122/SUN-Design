@@ -7,6 +7,7 @@ import {
   validateCodeRoundtripImport
 } from "../code-roundtrip.js";
 import { ensureCanvasGraph } from "../canvas-graph.js";
+import { stableHash } from "../ids.js";
 import { createExportJob } from "../export.js";
 import { appendExportArtifact, createExportArtifactRecord } from "../export-fidelity.js";
 import { BASIC_LANDING_FIXTURE_HTML } from "../fixtures.js";
@@ -23,11 +24,12 @@ function createBundleWithArtifact() {
     html: BASIC_LANDING_FIXTURE_HTML
   }));
   const job = createExportJob({ bundle, kind: "zip", viewport: "desktop", createdAt: NOW });
-  bundle = ProjectBundleSchema.parse({ ...bundle, exportJobs: [job] });
+  const storedJob = { ...job, filename: "roundtrip.zip", bytes: 512 };
+  bundle = ProjectBundleSchema.parse({ ...bundle, exportJobs: [storedJob] });
   const artifact = createExportArtifactRecord(bundle, {
-    jobId: job.id,
+    jobId: storedJob.id,
     kind: "zip",
-    filename: job.filename,
+    filename: storedJob.filename,
     bytes: 512,
     sha256: "sha256-roundtrip",
     viewport: "desktop",
@@ -35,6 +37,17 @@ function createBundleWithArtifact() {
     createdAt: NOW
   });
   return appendExportArtifact(bundle, artifact);
+}
+
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableStringify(item)).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${stableStringify(record[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
 }
 
 describe("code roundtrip packages", () => {
@@ -112,6 +125,16 @@ describe("code roundtrip packages", () => {
       manifestJson: JSON.stringify(htmlManifest),
       createdAt: NOW
     })).toThrow("Code roundtrip manifest projectBundleHash mismatch");
+
+    const titleManifest = JSON.parse(roundtripPackage.manifestJson);
+    titleManifest.projectBundle.title = "Tampered Title";
+    titleManifest.projectBundleHash = stableHash(stableStringify(titleManifest.projectBundle));
+    expect(() => createCodeRoundtripPackage(bundle, {
+      runtime: "codex",
+      artifactIds: [artifactId],
+      manifestJson: JSON.stringify(titleManifest),
+      createdAt: NOW
+    })).toThrow("Code roundtrip manifest projectBundle.title mismatch");
   });
 
   it("validates roundtrip imports and records source revision conflicts", () => {

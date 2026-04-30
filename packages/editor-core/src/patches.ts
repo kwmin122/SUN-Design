@@ -3,6 +3,7 @@ import type { DefaultTreeAdapterMap } from "parse5";
 
 import { stableHash } from "./ids.js";
 import { buildEditGraph } from "./normalize.js";
+import { isDangerousUrl } from "./sanitize.js";
 import {
   EditPatchSchema,
   ProjectBundleSchema,
@@ -258,7 +259,7 @@ function isSafeStyleValue(value: string): boolean {
 }
 
 function isSafeUrl(value: string): boolean {
-  return /^(https?:|data:image\/|blob:|kdesign:\/\/asset\/|\/|#)/i.test(value) && !/javascript:/i.test(value);
+  return /^(https?:|data:image\/|blob:|kdesign:\/\/asset\/|\/|#)/i.test(value) && !isDangerousUrl(value);
 }
 
 function asString(value: unknown): string {

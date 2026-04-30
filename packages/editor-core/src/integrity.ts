@@ -10,6 +10,7 @@ import type {
   DevCodeSnippet,
   DevModeInspectReport,
   ExportArtifact,
+  ExportJob,
   ExportVerification,
   PresentationState,
   ProjectBundle,
@@ -26,11 +27,13 @@ import type {
 import { validateAgentDirectionSafety, validateAgentOutputScope } from "./agent-output.js";
 import { validatePublicSourceUrl } from "./context-ingestion.js";
 import { validateCodeRoundtripPackageManifest } from "./code-roundtrip.js";
+import { sanitizeHtml } from "./sanitize.js";
 import { validateSyncEnvelope } from "./sync.js";
 
 const COMPONENT_STATES = new Set(["default", "hover", "pressed", "disabled"]);
 
 export function assertProjectBundleIntegrity(bundle: ProjectBundle): void {
+  assertHtmlSurfaceIntegrity(bundle);
   assertContextIngestionIntegrity(bundle);
   assertPrototypeIntegrity(bundle);
   assertPresentationIntegrity(bundle);
@@ -577,8 +580,9 @@ function assertPhase10Integrity(bundle: ProjectBundle): void {
   const assetIds = new Set(bundle.assets.map((asset) => asset.id));
   const assetUrls = new Set(bundle.projectAssetUrls.map((item) => item.url));
   const sourceIds = new Set(bundle.sourceRecords.map((source) => source.id));
-  const jobIds = new Set(bundle.exportJobs.map((job) => job.id));
-  const artifactIds = new Set(bundle.exportArtifacts.map((artifact) => artifact.id));
+  const jobsById = new Map(bundle.exportJobs.map((job) => [job.id, job]));
+  const artifactsById = new Map(bundle.exportArtifacts.map((artifact) => [artifact.id, artifact]));
+  const artifactIds = new Set(artifactsById.keys());
   const packageIds = new Set(bundle.codeRoundtripPackages.map((item) => item.id));
 
   for (const report of bundle.devModeReports) {
@@ -597,19 +601,31 @@ function assertPhase10Integrity(bundle: ProjectBundle): void {
     assertAssetDownloadIntegrity(assetIds, assetUrls, sourceIds, download);
   }
   for (const artifact of bundle.exportArtifacts) {
-    assertExportArtifactIntegrity(revisionIds, jobIds, artifact);
+    assertExportArtifactIntegrity(revisionIds, jobsById, artifact);
   }
   for (const verification of bundle.exportVerifications) {
-    assertExportVerificationIntegrity(artifactIds, verification);
+    assertExportVerificationIntegrity(artifactsById, verification);
   }
   for (const preview of bundle.publishPreviews) {
-    assertPublishPreviewIntegrity(revisionIds, artifactIds, preview);
+    assertPublishPreviewIntegrity(revisionIds, artifactsById, preview);
   }
   for (const roundtripPackage of bundle.codeRoundtripPackages) {
-    assertCodeRoundtripPackageIntegrity(bundle, revisionIds, artifactIds, roundtripPackage);
+    assertCodeRoundtripPackageIntegrity(bundle, revisionIds, artifactsById, roundtripPackage);
   }
   for (const roundtripImport of bundle.codeRoundtripImports) {
     assertCodeRoundtripImportIntegrity(bundle, revisionIds, packageIds, roundtripImport);
+  }
+}
+
+function assertHtmlSurfaceIntegrity(bundle: ProjectBundle): void {
+  for (const [label, html] of [
+    ["sanitized", bundle.html.sanitized],
+    ["normalized", bundle.html.normalized]
+  ] as const) {
+    const result = sanitizeHtml(html);
+    if (result.report.changes.length > 0) {
+      throw new Error(`Persisted ${label} HTML is not sanitized: ${result.report.changes[0]?.reason ?? "unsafe content"}`);
+    }
   }
 }
 
@@ -694,33 +710,80 @@ function assertAssetDownloadIntegrity(
 
 function assertExportArtifactIntegrity(
   revisionIds: Set<string>,
-  jobIds: Set<string>,
+  jobsById: Map<string, ExportJob>,
   artifact: ExportArtifact
 ): void {
-  if (!jobIds.has(artifact.jobId)) {
+  const job = jobsById.get(artifact.jobId);
+  if (!job) {
     throw new Error(`Export artifact references missing job: ${artifact.jobId}`);
   }
   assertKnownRevision(revisionIds, artifact.sourceRevision, "Export artifact");
+  if (artifact.kind !== job.kind) {
+    throw new Error(`Export artifact kind does not match job: ${artifact.id}`);
+  }
+  if (artifact.filename !== job.filename) {
+    throw new Error(`Export artifact filename does not match job: ${artifact.id}`);
+  }
+  if (artifact.bytes !== job.bytes) {
+    throw new Error(`Export artifact bytes do not match job: ${artifact.id}`);
+  }
+  if (artifact.sourceRevision !== job.sourceRevision) {
+    throw new Error(`Export artifact revision does not match job: ${artifact.id}`);
+  }
+  if (artifact.viewport !== job.viewport) {
+    throw new Error(`Export artifact viewport does not match job: ${artifact.id}`);
+  }
+  if (artifact.mimeType !== expectedMimeTypeForKind(artifact.kind)) {
+    throw new Error(`Export artifact MIME type does not match kind: ${artifact.id}`);
+  }
 }
 
-function assertExportVerificationIntegrity(artifactIds: Set<string>, verification: ExportVerification): void {
-  if (!artifactIds.has(verification.artifactId)) {
+function assertExportVerificationIntegrity(
+  artifactsById: Map<string, ExportArtifact>,
+  verification: ExportVerification
+): void {
+  const artifact = artifactsById.get(verification.artifactId);
+  if (!artifact) {
     throw new Error(`Export verification references missing artifact: ${verification.artifactId}`);
+  }
+  if (
+    verification.kind === "signature" &&
+    verification.status === "passed" &&
+    (verification.expectedHash !== artifact.sha256 || verification.actualHash !== artifact.sha256)
+  ) {
+    throw new Error(`Export signature verification hash does not match artifact: ${verification.id}`);
   }
 }
 
 function assertPublishPreviewIntegrity(
   revisionIds: Set<string>,
-  artifactIds: Set<string>,
+  artifactsById: Map<string, ExportArtifact>,
   preview: PublishPreview
 ): void {
   if (!preview.url.startsWith("kdesign://publish/")) {
     throw new Error("Publish preview URL must be kdesign");
   }
   assertKnownRevision(revisionIds, preview.sourceRevision, "Publish preview");
+  if (preview.artifactIds.length === 0) {
+    throw new Error(`Publish preview requires export artifacts: ${preview.id}`);
+  }
+  if (preview.viewports.length === 0) {
+    throw new Error(`Publish preview requires at least one viewport: ${preview.id}`);
+  }
+  const artifactViewports = new Set<string>();
   for (const artifactId of preview.artifactIds) {
-    if (!artifactIds.has(artifactId)) {
+    const artifact = artifactsById.get(artifactId);
+    if (!artifact) {
       throw new Error(`Publish preview references missing artifact: ${artifactId}`);
+    }
+    if (artifact.sourceRevision !== preview.sourceRevision) {
+      throw new Error(`Publish preview artifact revision mismatch: ${preview.id}`);
+    }
+    artifactViewports.add(artifact.viewport);
+  }
+  for (const viewport of preview.viewports) {
+    if (!artifactViewports.has(viewport)) {
+      throw new Error(`Publish preview viewport has no artifact: ${viewport}`);
     }
   }
 }
@@ -728,16 +791,32 @@ function assertPublishPreviewIntegrity(
 function assertCodeRoundtripPackageIntegrity(
   bundle: ProjectBundle,
   revisionIds: Set<string>,
-  artifactIds: Set<string>,
+  artifactsById: Map<string, ExportArtifact>,
   roundtripPackage: CodeRoundtripPackage
 ): void {
   assertKnownRevision(revisionIds, roundtripPackage.sourceRevision, "Code roundtrip package");
   for (const artifactId of roundtripPackage.artifactIds) {
-    if (!artifactIds.has(artifactId)) {
+    const artifact = artifactsById.get(artifactId);
+    if (!artifact) {
       throw new Error(`Code roundtrip package references missing artifact: ${artifactId}`);
+    }
+    if (artifact.sourceRevision !== roundtripPackage.sourceRevision) {
+      throw new Error(`Code roundtrip package artifact revision mismatch: ${roundtripPackage.id}`);
     }
   }
   validateCodeRoundtripPackageManifest(bundle, roundtripPackage);
+}
+
+function expectedMimeTypeForKind(kind: ExportArtifact["kind"]): string {
+  return {
+    html: "text/html",
+    png: "image/png",
+    pdf: "application/pdf",
+    zip: "application/zip",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    gif: "image/gif",
+    mp4: "video/mp4"
+  }[kind];
 }
 
 function assertCodeRoundtripImportIntegrity(

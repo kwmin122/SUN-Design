@@ -21,6 +21,28 @@ describe("stored-state export helpers", () => {
     expect(html).not.toContain("preview.ready");
   });
 
+  it("strips unsafe active content and local resource URLs from standalone HTML", () => {
+    const bundle = normalizeHtml({
+      id: "export-unsafe-url-fixture",
+      title: "Export Unsafe URL Fixture",
+      html: `
+        <main>
+          <img src="file:///Users/a0000/private.png" alt="local">
+          <img src="http://127.0.0.1/private.png" alt="loopback">
+          <a href="http://[::ffff:169.254.169.254]/metadata">metadata</a>
+          <script>alert("blocked")</script>
+        </main>
+      `
+    });
+
+    const html = createStandaloneHtml(bundle);
+
+    expect(html).not.toContain("file://");
+    expect(html).not.toContain("127.0.0.1");
+    expect(html).not.toContain("169.254.169.254");
+    expect(html).not.toContain("<script");
+  });
+
   it("creates deterministic export job records from bundle state", () => {
     const bundle = normalizeHtml({
       id: "export-fixture",
